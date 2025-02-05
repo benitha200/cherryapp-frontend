@@ -222,7 +222,7 @@ const ProcessingList = () => {
                   <th className="px-4 py-3">Total Price (RWF)</th>
                   <th className="px-4 py-3">Grade</th>
                   <th className="px-4 py-3">CWS</th>
-                  <th className="px-4 py-3">Site Collection</th>
+                  {/* <th className="px-4 py-3">Site Collection</th> */}
                   <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
@@ -255,7 +255,7 @@ const ProcessingList = () => {
                     <td className="px-4 py-3">{totalPrice.toFixed(2)}</td>
                     <td className="px-4 py-3">{grade}</td>
                     <td className="px-4 py-3">{cws}</td>
-                    <td className="px-4 py-3">{siteCollection}</td>
+                    {/* <td className="px-4 py-3">{siteCollection}</td> */}
                     <td className="px-4 py-3">
                       <button 
                         className="btn btn-sm"
