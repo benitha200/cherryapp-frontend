@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import axios from 'axios';
 import API_URL from '../constants/Constants';
+import PurchasesDashboardSkeleton from './PurchaseDashboardSkeleton';
 
 // Custom theme colors that complement Sucafina teal (#008080)
 const theme = {
@@ -122,7 +123,7 @@ const PurchasesDashboard = () => {
     }
   ];
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <PurchasesDashboardSkeleton />;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
 

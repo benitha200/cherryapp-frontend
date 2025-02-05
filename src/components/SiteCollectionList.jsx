@@ -8,6 +8,7 @@ const SiteCollectionList = () => {
   const [siteCollections, setSiteCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const skeletonRows = Array(5).fill(0);
 
   useEffect(() => {
     fetchSiteCollections();
@@ -27,9 +28,72 @@ const SiteCollectionList = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center p-5">
-        <div className="spinner-border text-info" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <div className="container-fluid py-4">
+        <div className="card border-0 shadow-sm">
+          <div className="card-header bg-light bg-opacity-10 py-3">
+            <div className="d-flex justify-content-between align-items-center">
+              <div 
+                className="skeleton-title"
+                style={{ 
+                  backgroundColor: '#e0e0e0', 
+                  width: '200px', 
+                  height: '30px', 
+                  borderRadius: '4px' 
+                }}
+              />
+              <div 
+                className="skeleton-button"
+                style={{ 
+                  backgroundColor: '#e0e0e0', 
+                  width: '150px', 
+                  height: '40px', 
+                  borderRadius: '4px' 
+                }}
+              />
+            </div>
+          </div>
+          <div className="card-body p-0">
+            <div className="table-responsive">
+              <table className="table table-hover mb-0">
+                <thead className="table-light">
+                  <tr>
+                    {['Name', 'CWS', 'Created Date'].map((header, index) => (
+                      <th key={index} className="text-uppercase text-secondary px-4 py-3">
+                        <div 
+                          className="skeleton-header"
+                          style={{ 
+                            backgroundColor: '#e0e0e0', 
+                            width: '100px', 
+                            height: '20px', 
+                            borderRadius: '4px' 
+                          }}
+                        />
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {skeletonRows.map((_, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {[1, 2, 3].map((cellIndex) => (
+                        <td key={cellIndex} className="px-4 py-3">
+                          <div 
+                            className="skeleton-cell"
+                            style={{ 
+                              backgroundColor: '#f0f0f0', 
+                              width: '80%', 
+                              height: '20px', 
+                              borderRadius: '4px' 
+                            }}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     );

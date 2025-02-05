@@ -19,6 +19,7 @@ const PurchaseList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const skeletonRows = Array(5).fill(0);
 
   useEffect(() => {
     fetchGroupedPurchases();
@@ -61,9 +62,74 @@ const PurchaseList = () => {
   const viewDailyDetails = date => navigate(`/purchases/date/${date}`);
 
   if (loading) return (
-    <div className="d-flex justify-content-center p-5">
-      <div className="spinner-border" style={{ color: theme.primary }} role="status">
-        <span className="visually-hidden">Loading...</span>
+    <div className="container-fluid py-4">
+      <div className="card border-0 shadow-sm">
+        <div 
+          className="d-flex justify-content-between align-items-center"
+          style={{ backgroundColor: theme.neutral }}
+        >
+          <div 
+            className="skeleton-title h4 mb-0 m-4"
+            style={{ 
+              backgroundColor: '#f0f0f0', 
+              width: '200px', 
+              height: '25px', 
+              borderRadius: '4px' 
+            }}
+          />
+          <div 
+            className="skeleton-button m-4"
+            style={{ 
+              backgroundColor: '#f0f0f0', 
+              width: '120px', 
+              height: '35px', 
+              borderRadius: '4px' 
+            }}
+          />
+        </div>
+
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <table className="table mb-0">
+              <thead style={{ backgroundColor: theme.neutral }}>
+                <tr>
+                  {['Date', 'Total', 'KGs', 'Price', 'Delivery', 'Actions'].map((header, index) => (
+                    <th key={index}>
+                      <div 
+                        className="skeleton-header"
+                        style={{ 
+                          backgroundColor: '#f0f0f0', 
+                          width: '80px', 
+                          height: '15px', 
+                          borderRadius: '4px' 
+                        }}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {skeletonRows.map((_, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {[1, 2, 3, 4, 5, 6].map((cellIndex) => (
+                      <td key={cellIndex}>
+                        <div 
+                          className="skeleton-cell"
+                          style={{ 
+                            backgroundColor: '#f5f5f5', 
+                            width: '80%', 
+                            height: '15px', 
+                            borderRadius: '4px' 
+                          }}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -97,6 +97,7 @@ const ProcessingList = () => {
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedPurchases, setSelectedPurchases] = useState([]);
+  const skeletonRows = Array(5).fill(0);
 
   useEffect(() => {
     fetchPurchases();
@@ -125,9 +126,64 @@ const ProcessingList = () => {
   };
 
   if (loading) return (
-    <div className="d-flex justify-content-center p-5">
-      <div className="spinner-border" style={{ color: theme.primary }} role="status">
-        <span className="visually-hidden">Loading...</span>
+    <div className="container-fluid py-4">
+      <div className="card border-0 shadow-sm">
+        <div 
+          className="d-flex align-items-center"
+          style={{ backgroundColor: theme.neutral }}
+        >
+          <div 
+            className="skeleton-title h4 mb-0 m-4"
+            style={{ 
+              backgroundColor: '#e0e0e0', 
+              width: '200px', 
+              height: '30px', 
+              borderRadius: '4px' 
+            }}
+          />
+        </div>
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <table className="table mb-0">
+              <thead style={{ backgroundColor: theme.neutral }}>
+                <tr>
+                  {['Batch No', 'Total KGs', 'Total Price', 'Grade', 'CWS', 'Site Collection', 'Actions'].map((header, index) => (
+                    <th key={index} className="px-4 py-3">
+                      <div 
+                        className="skeleton-header"
+                        style={{ 
+                          backgroundColor: '#e0e0e0', 
+                          width: '100px', 
+                          height: '20px', 
+                          borderRadius: '4px' 
+                        }}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {skeletonRows.map((_, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {[1, 2, 3, 4, 5, 6, 7].map((cellIndex) => (
+                      <td key={cellIndex} className="px-4 py-3">
+                        <div 
+                          className="skeleton-cell"
+                          style={{ 
+                            backgroundColor: '#f0f0f0', 
+                            width: '80%', 
+                            height: '20px', 
+                            borderRadius: '4px' 
+                          }}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

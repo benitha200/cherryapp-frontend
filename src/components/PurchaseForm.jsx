@@ -388,6 +388,7 @@ const PurchaseForm = () => {
   const [formData, setFormData] = useState({
     cwsId: userInfo.cwsId,
     deliveryType: 'DIRECT_DELIVERY',
+    purchaseDate: '',
     grades: {
       A: { totalKgs: '', totalPrice: '' },
       B: { totalKgs: '', totalPrice: '' }
@@ -401,7 +402,11 @@ const PurchaseForm = () => {
 
   useEffect(() => {
     fetchSiteCollections(formData.cwsId);
+    // Set default date to today, but make it editable
+    const today = new Date().toISOString().split('T')[0];
+    setFormData(prev => ({ ...prev, purchaseDate: today }));
   }, []);
+
 
   const fetchSiteCollections = async (cwsId) => {
     try {
@@ -487,7 +492,8 @@ const PurchaseForm = () => {
               deliveryType: formData.deliveryType,
               totalKgs: parseFloat(data.totalKgs),
               totalPrice: parseFloat(data.totalPrice),
-              grade: grade
+              grade: grade,
+              purchaseDate: formData.purchaseDate
             });
           }
         });
@@ -502,7 +508,8 @@ const PurchaseForm = () => {
                 totalKgs: parseFloat(data.totalKgs),
                 totalPrice: parseFloat(data.totalPrice),
                 grade: grade,
-                siteCollectionId: parseInt(site.siteCollectionId, 10)
+                siteCollectionId: parseInt(site.siteCollectionId, 10),
+                purchaseDate: formData.purchaseDate
               });
             }
           });
@@ -540,6 +547,17 @@ const PurchaseForm = () => {
               )}
               
               <form onSubmit={handleSubmit} className="needs-validation" noValidate>
+                <div className="mb-4">
+                  <label className="form-label" style={{ color: theme.text }}>Purchase Date</label>
+                  <input
+                    type="date"
+                    className="form-control border-0"
+                    style={{ backgroundColor: theme.lightBg }}
+                    value={formData.purchaseDate}
+                    onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
+                    required
+                  />
+                </div>
                 <div className="mb-4">
                   <label className="form-label" style={{ color: theme.text }}>Delivery Type</label>
                   <select
