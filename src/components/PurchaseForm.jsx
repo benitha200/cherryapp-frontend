@@ -589,7 +589,7 @@ const PurchaseForm = () => {
                         <h6 className="mb-3" style={{ color: theme.primary }}>Grade {grade}</h6>
                         
                         <div className="mb-3">
-                          <label className="form-label" style={{ color: theme.text }}>KGs</label>
+                          <label className="form-label" style={{ color: theme.text }}>Total KGs</label>
                           <input
                             type="number"
                             step="0.01"
@@ -601,7 +601,7 @@ const PurchaseForm = () => {
                         </div>
 
                         <div className="mb-3">
-                          <label className="form-label" style={{ color: theme.text }}>Price</label>
+                          <label className="form-label" style={{ color: theme.text }}>Total Price</label>
                           <input
                             type="number"
                             step="0.01"
@@ -658,7 +658,7 @@ const PurchaseForm = () => {
                           <div key={grade}>
                             <h6 className="mb-3" style={{ color: theme.secondary }}>Grade {grade}</h6>
                             <div className="mb-3">
-                              <label className="form-label" style={{ color: theme.text }}>KGs</label>
+                              <label className="form-label" style={{ color: theme.text }}>Total KGs</label>
                               <input
                                 type="number"
                                 step="0.01"
@@ -670,7 +670,7 @@ const PurchaseForm = () => {
                             </div>
 
                             <div className="mb-3">
-                              <label className="form-label" style={{ color: theme.text }}>Price</label>
+                              <label className="form-label" style={{ color: theme.text }}>Total Price</label>
                               <input
                                 type="number"
                                 step="0.01"
