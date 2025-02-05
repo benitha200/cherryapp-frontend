@@ -11,7 +11,9 @@
   --danger-color: #dc3545;
   --light-gray: #f8f9fa;
   --border-color: #dee2e6;
+  --sucafina-color: #008080;
 }
+
 
 /* Layout */
 .container {
@@ -95,6 +97,30 @@
   background-color: var(--primary-color);
   color: white;
 }
+
+.bg-sucafina{
+  background-color: var(--sucafina-color) !important;
+  color: white !important;
+}
+.btn-sucafina{
+  background-color: var(--sucafina-color) !important;
+  color: white !important;
+}
+
+.text-sucafina{
+  color: var(--sucafina-color) !important;
+}
+.btn-outline-sucafina{
+  background-color: transparent !important;
+  color: var(--sucafina-color) !important;
+  border: 1px solid var(--sucafina-color) !important;
+}
+
+.btn-outline-sucafina:hover{
+  background-color: var(--sucafina-color) !important;
+  color: white !important;
+}
+
 
 .btn-primary:hover {
   background-color: #0b5ed7;

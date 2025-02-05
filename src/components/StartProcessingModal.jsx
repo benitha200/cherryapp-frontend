@@ -70,7 +70,7 @@ const StartProcessingModal = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Cancel
+            <Cancel></Cancel>
           </Button>
           <Button variant="primary" onClick={handleSubmit}>
             Start

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../constants/Constants';
 
 const SiteCollectionList = () => {
   const [siteCollections, setSiteCollections] = useState([]);
@@ -14,7 +15,7 @@ const SiteCollectionList = () => {
 
   const fetchSiteCollections = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/site-collections', {
+      const response = await axios.get(`${API_URL}/site-collections`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSiteCollections(response.data);
@@ -45,12 +46,12 @@ const SiteCollectionList = () => {
   return (
     <div className="container-fluid py-4">
       <div className="card border-0 shadow-sm">
-        <div className="card-header bg-info bg-opacity-10 py-3">
+        <div className="card-header bg-light bg-opacity-10 py-3">
           <div className="d-flex justify-content-between align-items-center">
-            <h2 className="card-title h4 mb-0 text-info">Site Collections</h2>
+            <h2 className="card-title h4 mb-0 text-sucafina">Site Collections</h2>
             <Link
               to="/site-collections/new"
-              className="btn btn-info text-white"
+              className="btn btn-sucafina text-white"
             >
               <i className="bi bi-plus-lg me-2"></i>
               New Site Collection
