@@ -104,7 +104,7 @@ const ProcessingList = () => {
 
   const fetchPurchases = async () => {
     try {
-      const res = await axios.get(`${API_URL}/purchases``);
+      const res = await axios.get(`${API_URL}/purchases`);
       setPurchases(res.data);
       setLoading(false);
     } catch {
