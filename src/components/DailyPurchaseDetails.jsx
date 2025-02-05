@@ -136,7 +136,7 @@ const DailyPurchaseDetails = () => {
                   <th className="px-4 py-3">CWS</th>
                   <th className="px-4 py-3">Delivery Type</th>
                   <th className="px-4 py-3">Total KGs</th>
-                  <th className="px-4 py-3">Total Price (RWF)</th>
+                  <th className="px-4 py-3">Amount (RWF)</th>
                   <th className="px-4 py-3">Grade</th>
                   <th className="px-4 py-3">Site Collection</th>
                 </tr>

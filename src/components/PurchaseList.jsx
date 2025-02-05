@@ -173,7 +173,7 @@ const PurchaseList = () => {
                   <th>Date</th>
                   <th>Total</th>
                   <th>KGs</th>
-                  <th>Price (RWF)</th>
+                  <th>Amount (RWF)</th>
                   <th>Delivery</th>
                   <th>Actions</th>
                 </tr>
