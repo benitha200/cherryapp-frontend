@@ -122,8 +122,29 @@
 }
 
 
+/* CustomPills.css */
+.nav-pills{
+  background-color: whitesmoke !important;
+}
+.nav-pills:hover{
+  background-color: whitesmoke !important;
+  color: #4FB3B3;
+}
+.nav-pills .nav-link {
+  color: #008080; /* Text color */
+  border: 1px solid transparent; /* Optional: Add border */
+  background-color: transparent; /* Background color */
+}
+
+.nav-pills .nav-link.active {
+  background-color:white  !important; /* Active tab background */
+  color: #008080 !important; /* Active tab text color */
+}
+
+
 .btn-primary:hover {
-  background-color: #0b5ed7;
+  background-color: #4FB3B3;
+  color: white !important;
 }
 
 .btn-danger {

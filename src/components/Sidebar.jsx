@@ -173,7 +173,7 @@ const Sidebar = () => {
   const menuItems = [
     { path: '/', icon: 'house-door', text: 'Dashboard' },
     { path: '/purchases', icon: 'cart', text: 'Purchases' },
-    { path: '/processing', icon: 'gear', text: 'Processing' },
+    { path: '/processing', icon: 'gear', text: 'Bagging Off' },
     { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
   ];
 
