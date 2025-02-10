@@ -165,6 +165,11 @@ const Sidebar = () => {
     color: 'white',
     borderRadius: '8px',
     transition: 'all 0.3s ease',
+    padding: '10px 15px',
+    marginBottom: '8px',
+    textDecoration: 'none',
+    display: 'flex',
+    alignItems: 'center',
     ':hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
     }
@@ -174,7 +179,7 @@ const Sidebar = () => {
     { path: '/', icon: 'house-door', text: 'Dashboard' },
     { path: '/purchases', icon: 'cart', text: 'Purchases' },
     { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
-    // { path: '/transfer', icon: 'truck', text: 'Transfer' },
+    { path: '/transfer', icon: 'truck', text: 'Transfer' },
     { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
   ];
 
@@ -185,7 +190,8 @@ const Sidebar = () => {
         width: '10%',
         minWidth: '250px',
         maxWidth: '350px',
-        backgroundColor: theme.primary
+        backgroundColor: theme.primary,
+        boxShadow: '2px 0 10px rgba(0, 0, 0, 0.1)'
       }}
     >
       {/* Header */}
@@ -202,7 +208,7 @@ const Sidebar = () => {
             <Link
               key={path}
               to={path}
-              className="list-group-item list-group-item-action border-0 mb-2"
+              className="list-group-item list-group-item-action border-0"
               style={getLinkStyle(path)}
             >
               <i className={`bi bi-${icon} me-3`}></i>
@@ -230,6 +236,8 @@ const Sidebar = () => {
               borderColor: theme.danger,
               color: 'white',
               transition: 'all 0.3s ease',
+              padding: '5px 10px',
+              borderRadius: '6px',
               ':hover': {
                 backgroundColor: theme.dangerLight,
                 borderColor: theme.dangerLight

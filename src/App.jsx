@@ -1,6 +1,6 @@
 // import React from 'react';
 // import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-// import Navbar from './components/Navbar.jsx';
+// import 'bootstrap/dist/css/bootstrap.min.css';
 // import Login from './components/Login.jsx';
 // import Dashboard from './components/Dashboard.jsx';
 // import PurchaseForm from './components/PurchaseForm.jsx';
@@ -11,99 +11,57 @@
 // import ProcessingList from './components/ProcessingList.jsx';
 // import DailyPurchaseDetails from './components/DailyPurchaseDetails.jsx';
 // import Sidebar from './components/Sidebar.jsx';
-
-// // with navbar
-// // const AppContent = () => {
-// //   const location = useLocation();
-// //   const isLoginPage = location.pathname === '/login';
-
-// //   return (
-// //     <div className="min-h-screen bg-gray-50">
-// //       {!isLoginPage && <Navbar />}
-// //       <div className="container mx-auto px-4 py-8">
-// //         <Routes>
-// //           <Route path="/login" element={<Login />} />
-// //           <Route path="/" element={
-// //             <PrivateRoute>
-// //               <Dashboard />
-// //             </PrivateRoute>
-// //           } />
-// //           <Route path="/purchases/new" element={
-// //             <PrivateRoute>
-// //               <PurchaseForm />
-// //             </PrivateRoute>
-// //           } />
-// //           <Route path="/purchases" element={
-// //             <PrivateRoute>
-// //               <PurchaseList />
-// //             </PrivateRoute>
-// //           } />
-// //           <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />
-// //           <Route path="/processing" element={
-// //             <PrivateRoute>
-// //               <ProcessingList />
-// //             </PrivateRoute>
-// //           } />
-// //           <Route path="/site-collections/new" element={
-// //             <PrivateRoute>
-// //               <SiteCollectionForm />
-// //             </PrivateRoute>
-// //           } />
-// //           <Route path="/site-collections" element={
-// //             <PrivateRoute>
-// //               <SiteCollectionList />
-// //             </PrivateRoute>
-// //           } />
-// //         </Routes>
-// //       </div>
-// //     </div>
-// //   );
-// // };
-
-// // with sidebar
+// import Transfer from './components/Transfer.jsx';
 
 // const AppContent = () => {
 //   const location = useLocation();
 //   const isLoginPage = location.pathname === '/login';
 
 //   return (
-//     <div className="min-h-screen bg-gray-50 flex">
+//     <div className="d-flex min-vh-100">
 //       {!isLoginPage && <Sidebar />}
-//       <div className="flex-1 container mx-auto px-4 py-8">
-//         <Routes>
-//           <Route path="/login" element={<Login />} />
-//           <Route path="/" element={
-//             <PrivateRoute>
-//               <Dashboard />
-//             </PrivateRoute>
-//           } />
-//           <Route path="/purchases/new" element={
-//             <PrivateRoute>
-//               <PurchaseForm />
-//             </PrivateRoute>
-//           } />
-//           <Route path="/purchases" element={
-//             <PrivateRoute>
-//               <PurchaseList />
-//             </PrivateRoute>
-//           } />
-//           <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />
-//           <Route path="/processing" element={
-//             <PrivateRoute>
-//               <ProcessingList />
-//             </PrivateRoute>
-//           } />
-//           <Route path="/site-collections/new" element={
-//             <PrivateRoute>
-//               <SiteCollectionForm />
-//             </PrivateRoute>
-//           } />
-//           <Route path="/site-collections" element={
-//             <PrivateRoute>
-//               <SiteCollectionList />
-//             </PrivateRoute>
-//           } />
-//         </Routes>
+//       <div className="flex-grow-1 bg-light">
+//         <div className="container-fluid p-4">
+//           <Routes>
+//             <Route path="/login" element={<Login />} />
+//             <Route path="/" element={
+//               <PrivateRoute>
+//                 <Dashboard />
+//               </PrivateRoute>
+//             } />
+//             <Route path="/purchases/new" element={
+//               <PrivateRoute>
+//                 <PurchaseForm />
+//               </PrivateRoute>
+//             } />
+//             <Route path="/purchases" element={
+//               <PrivateRoute>
+//                 <PurchaseList />
+//               </PrivateRoute>
+//             } />
+//             <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />
+//             <Route path="/processing" element={
+//               <PrivateRoute>
+//                 <ProcessingList />
+//               </PrivateRoute>
+//             } />
+//             <Route path="/transfer" element={
+//               <PrivateRoute>
+//                 <Transfer />
+//               </PrivateRoute>
+//             } />
+//             <Route path="/site-collections/new" element={
+//               <PrivateRoute>
+//                 <SiteCollectionForm />
+//               </PrivateRoute>
+//             } />
+//             <Route path="/site-collections" element={
+//               <PrivateRoute>
+//                 <SiteCollectionList />
+//               </PrivateRoute>
+//             } />
+//           </Routes>
+//         </div>
 //       </div>
 //     </div>
 //   );
@@ -132,15 +90,26 @@ import SiteCollectionList from './components/SiteCollectionList.jsx';
 import ProcessingList from './components/ProcessingList.jsx';
 import DailyPurchaseDetails from './components/DailyPurchaseDetails.jsx';
 import Sidebar from './components/Sidebar.jsx';
+import Transfer from './components/Transfer.jsx';
 
 const AppContent = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
 
   return (
-    <div className="d-flex min-vh-100">
-      {!isLoginPage && <Sidebar />}
-      <div className="flex-grow-1 bg-light">
+    <div className="d-flex min-vh-100" style={{ fontFamily: 'Inter, sans-serif', fontSize:"14px" }}>
+      {!isLoginPage && (
+        <div className="position-fixed h-100" style={{ width: '250px' }}>
+          <Sidebar />
+        </div>
+      )}
+      <div 
+        className="flex-grow-1 bg-light overflow-auto" 
+        style={{ 
+          marginLeft: isLoginPage ? '0' : '250px',
+          height: '100vh'
+        }}
+      >
         <div className="container-fluid p-4">
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -163,6 +132,11 @@ const AppContent = () => {
             <Route path="/processing" element={
               <PrivateRoute>
                 <ProcessingList />
+              </PrivateRoute>
+            } />
+            <Route path="/transfer" element={
+              <PrivateRoute>
+                <Transfer />
               </PrivateRoute>
             } />
             <Route path="/site-collections/new" element={

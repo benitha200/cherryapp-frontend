@@ -690,11 +690,39 @@ const theme = {
   centralStation: '#008080'
 };
 
+// Skeleton loading row component
+const SkeletonRow = ({ cols }) => (
+  <tr>
+    {Array(cols).fill(0).map((_, index) => (
+      <td key={index}>
+        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+      </td>
+    ))}
+  </tr>
+);
+
+// Empty state component
+const EmptyState = ({ message = "No records found" }) => (
+  <tr>
+    <td colSpan="100%" className="text-center py-8">
+      <div className="flex flex-col items-center justify-center space-y-2">
+        <i className="bi bi-inbox text-4xl text-gray-400"></i>
+        <p className="text-gray-500">{message}</p>
+      </div>
+    </td>
+  </tr>
+);
+
 const PurchaseList = () => {
   const [purchases, setPurchases] = useState([]);
   const [siteCollections, setSiteCollections] = useState([]);
   const [processingEntries, setProcessingEntries] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState({
+    purchases: true,
+    siteCollections: true,
+    processingEntries: true
+  });
   const [prices, setPrices] = useState({
     A: 800,
     B: 700
@@ -732,16 +760,7 @@ const PurchaseList = () => {
   }, []);
 
 
-  const fetchProcessingEntries = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/processing/cws/${userInfo.cwsId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setProcessingEntries(response.data);
-    } catch (error) {
-      console.error('Error fetching processing entries:', error);
-    }
-  };
+
 
   useEffect(() => {
     if (newPurchase.totalKgs && newPurchase.grade) {
@@ -755,23 +774,43 @@ const PurchaseList = () => {
 
   const fetchPurchases = async () => {
     try {
+      setIsLoading(prev => ({ ...prev, purchases: true }));
       const response = await axios.get(`${API_URL}/purchases`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setPurchases(response.data);
     } catch (error) {
       console.error('Error fetching purchases:', error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, purchases: false }));
     }
   };
 
   const fetchSiteCollections = async () => {
     try {
+      setIsLoading(prev => ({ ...prev, siteCollections: true }));
       const response = await axios.get(`${API_URL}/site-collections/cws/${userInfo.cwsId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSiteCollections(response.data);
     } catch (error) {
       console.error('Error fetching site collections:', error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, siteCollections: false }));
+    }
+  };
+
+  const fetchProcessingEntries = async () => {
+    try {
+      setIsLoading(prev => ({ ...prev, processingEntries: true }));
+      const response = await axios.get(`${API_URL}/processing/cws/${userInfo.cwsId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setProcessingEntries(response.data);
+    } catch (error) {
+      console.error('Error fetching processing entries:', error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, processingEntries: false }));
     }
   };
 
@@ -962,12 +1001,12 @@ const PurchaseList = () => {
   };
 
   return (
-    <div className="container-fluid py-4">
+    <div className="container-fluid py-1">
       <div className="card">
         <div className="card-header">
-          <h5 className="card-title mb-0" style={{ color: theme.primary }}>
+          <span className="card-title mb-0 h5" style={{ color: theme.primary }}>
             Cherry Purchases & Processing
-          </h5>
+          </span>
         </div>
 
         <div className="card-body">
@@ -1018,8 +1057,8 @@ const PurchaseList = () => {
           {/* New Purchase Form */}
           <div className="card border-0 shadow-sm mb-4">
             <div className="card-body">
-              <h6 className="card-title mb-4">New Purchase ({yesterdayString})</h6>
-              <form onSubmit={handleSubmit} className="row g-3">
+              <span className="card-title mb-3 h5" style={{ color: theme.primary }}>New Purchase ({yesterdayString})</span>
+              <form onSubmit={handleSubmit} className="row g-3 mt-3">
                 <div className="col-md-2">
                   <label className="form-label">Delivery Type</label>
                   <select
@@ -1101,21 +1140,6 @@ const PurchaseList = () => {
                     Add Purchase
                   </button>
                 </div>
-                {/* <div className="col-12">
-                  <button
-                    type="submit"
-                    className="btn btn-primary float-end"
-                    disabled={loading}
-                    style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                  >
-                    {loading ? (
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    ) : (
-                      <i className="bi bi-plus-lg me-2"></i>
-                    )}
-                    Add Purchase
-                  </button>
-                </div> */}
               </form>
             </div>
           </div>
@@ -1134,31 +1158,40 @@ const PurchaseList = () => {
                 </tr>
               </thead>
               <tbody>
-                {getYesterdayPurchases().map((purchase) => (
-                  <tr key={purchase.id}>
-                    <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
-                    <td>{purchase.siteCollection?.name || 'Direct'}</td>
-                    <td>
-                      <span
-                        className="badge"
-                        style={{
-                          backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY'
-                            ? theme.directDelivery
-                            : theme.centralStation
-                        }}
-                      >
-                        {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' : 'Site'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge bg-secondary">
-                        Grade {purchase.grade}
-                      </span>
-                    </td>
-                    <td>{purchase.totalKgs.toLocaleString()}</td>
-                    <td>{purchase.totalPrice.toLocaleString()}</td>
-                  </tr>
-                ))}
+                {isLoading.purchases ? (
+                  // Show 5 skeleton rows while loading
+                  Array(5).fill(0).map((_, index) => (
+                    <SkeletonRow key={index} cols={6} />
+                  ))
+                ) : getYesterdayPurchases().length > 0 ? (
+                  getYesterdayPurchases().map((purchase) => (
+                    <tr key={purchase.id}>
+                      <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+                      <td>{purchase.siteCollection?.name || 'Direct'}</td>
+                      <td>
+                        <span
+                          className="badge"
+                          style={{
+                            backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY'
+                              ? theme.directDelivery
+                              : theme.centralStation
+                          }}
+                        >
+                          {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' : 'Site'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="badge bg-secondary">
+                          Grade {purchase.grade}
+                        </span>
+                      </td>
+                      <td>{purchase.totalKgs.toLocaleString()}</td>
+                      <td>{purchase.totalPrice.toLocaleString()}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <EmptyState message="No purchases recorded for yesterday" />
+                )}
               </tbody>
             </table>
           </div>
@@ -1166,8 +1199,8 @@ const PurchaseList = () => {
           {/* Batches Section */}
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h6 className="card-title mb-4">Batches</h6>
-              <div className="table-responsive">
+            <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
+              <div className="table-responsive mt-2">
                 <table className="table table-hover">
                   <thead>
                     <tr style={{ backgroundColor: theme.neutral }}>
@@ -1179,7 +1212,7 @@ const PurchaseList = () => {
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  {/* <tbody>
                     {getBatchesByGrade().map((batch, index) => (
                       <tr key={index}>
                         <td>{batch.batchNo}</td>
@@ -1201,6 +1234,38 @@ const PurchaseList = () => {
                         </td>
                       </tr>
                     ))}
+                  </tbody> */}
+                  <tbody>
+                    {isLoading.processingEntries ? (
+                      // Show 3 skeleton rows while loading
+                      Array(3).fill(0).map((_, index) => (
+                        <SkeletonRow key={index} cols={6} />
+                      ))
+                    ) : getBatchesByGrade().length > 0 ? (
+                      getBatchesByGrade().map((batch, index) => (
+                        <tr key={index}>
+                          <td>{batch.batchNo}</td>
+                          <td>Grade {batch.grade}</td>
+                          <td>{batch.totalKgs.toLocaleString()}</td>
+                          <td>{batch.totalPrice.toLocaleString()}</td>
+                          <td>
+                            {renderProcessingStatusBadge(batch.processingStatus)}
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-primary btn-sm"
+                              onClick={() => handleStartProcessing(batch)}
+                              style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
+                              disabled={batch.processingStatus === 'IN_PROGRESS'}
+                            >
+                              Start Processing
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <EmptyState message="No batches available for processing" />
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1237,19 +1302,6 @@ const PurchaseList = () => {
                         )}
                       </select>
                     </div>
-                    {/* <div className="mb-3">
-                      <label className="form-label">Batch Details</label>
-                      <ul className="list-group">
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          Grade
-                          <span className="badge bg-secondary">Grade {selectedBatch.grade}</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          Total KGs
-                          <span>{selectedBatch.totalKgs.toLocaleString()}</span>
-                        </li>
-                      </ul>
-                    </div> */}
                   </div>
                   <div className="modal-footer">
                     <button
