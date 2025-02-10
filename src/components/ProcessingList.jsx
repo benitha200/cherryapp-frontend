@@ -444,24 +444,45 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit }) => {
         setOutputKgs(prev => ({ ...prev, [key]: value }));
     };
 
+    // const handleSubmit = () => {
+    //     const requiredInputs = ['A0', 'A1', 'A2', 'A3'];
+    //     const filledInputs = requiredInputs.every(input =>
+    //         outputKgs[input] && parseFloat(outputKgs[input]) > 0
+    //     );
+
+    //     if (!filledInputs) {
+    //         alert('Please fill in all required fields');
+    //         return;
+    //     }
+
+    //     const submissionData = {
+    //         date: selectedDate,
+    //         outputKgs,
+    //         existingProcessing,
+    //         batches
+    //     };
+
+    //     onSubmit(submissionData);
+    //     handleClose();
+    // };
+
     const handleSubmit = () => {
         const requiredInputs = ['A0', 'A1', 'A2', 'A3'];
-        const filledInputs = requiredInputs.every(input =>
-            outputKgs[input] && parseFloat(outputKgs[input]) > 0
-        );
-
-        if (!filledInputs) {
-            alert('Please fill in all required fields');
-            return;
-        }
-
+        
+        // Initialize any unfilled inputs with 0
+        requiredInputs.forEach(input => {
+            if (!outputKgs[input] || parseFloat(outputKgs[input]) <= 0) {
+                outputKgs[input] = '0';
+            }
+        });
+    
         const submissionData = {
             date: selectedDate,
             outputKgs,
             existingProcessing,
             batches
         };
-
+    
         onSubmit(submissionData);
         handleClose();
     };
