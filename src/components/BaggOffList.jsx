@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Table, Badge } from 'react-bootstrap';
+import API_URL from '../constants/Constants';
 
 const BaggingOffList = () => {
   const [baggingOffRecords, setBaggingOffRecords] = useState([]);
@@ -10,7 +11,7 @@ const BaggingOffList = () => {
   useEffect(() => {
     const fetchBaggingOffRecords = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/bagging-off');
+        const response = await axios.get(`${API_URL}/bagging-off`);
         setBaggingOffRecords(response.data);
         setLoading(false);
       } catch (err) {
