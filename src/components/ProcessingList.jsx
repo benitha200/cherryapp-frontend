@@ -762,7 +762,7 @@ const ProcessingList = () => {
 
             <Card>
                 <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-                    <h2 style={{ color: processingTheme.primary }}>Processing Batches</h2>
+                    <span className='h5' style={{ color: processingTheme.primary }}>Processing Batches</span>
                 </Card.Header>
                 <Card.Body className="p-0">
                     <div className="table-responsive">
