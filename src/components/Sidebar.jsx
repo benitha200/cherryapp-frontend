@@ -180,7 +180,7 @@ const Sidebar = () => {
     { path: '/purchases', icon: 'cart', text: 'Purchases' },
     { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
     { path: '/transfer', icon: 'truck', text: 'Transfer' },
-    { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
+    // { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
   ];
 
   return (

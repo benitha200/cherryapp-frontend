@@ -724,8 +724,8 @@ const PurchaseList = () => {
     processingEntries: true
   });
   const [prices, setPrices] = useState({
-    A: 800,
-    B: 700
+    A: 750,
+    B: 400
   });
   const [editingPrice, setEditingPrice] = useState({
     A: false,
@@ -826,24 +826,33 @@ const PurchaseList = () => {
   };
 
   const handlePriceEdit = (grade) => {
-    setEditingPrice(prev => ({
-      ...prev,
-      [grade]: true
-    }));
+    // Only allow editing for grade A
+    if (grade === 'A') {
+      setEditingPrice(prev => ({
+        ...prev,
+        [grade]: true
+      }));
+    }
   };
 
   const handlePriceChange = (grade, value) => {
-    setPrices(prev => ({
-      ...prev,
-      [grade]: parseFloat(value) || 0
-    }));
+    // Only allow changes for grade A
+    if (grade === 'A') {
+      setPrices(prev => ({
+        ...prev,
+        [grade]: parseFloat(value) || 0
+      }));
+    }
   };
 
   const handlePriceSave = (grade) => {
-    setEditingPrice(prev => ({
-      ...prev,
-      [grade]: false
-    }));
+    // Only allow saving for grade A
+    if (grade === 'A') {
+      setEditingPrice(prev => ({
+        ...prev,
+        [grade]: false
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -1000,6 +1009,53 @@ const PurchaseList = () => {
     );
   };
 
+  const renderPriceCard = (grade) => {
+    const isGradeA = grade === 'A';
+    
+    return (
+      <div key={grade} className="col-md-6">
+        <div className="card border-0 shadow-sm">
+          <div className="card-body">
+            <h6 className="card-title mb-4">Cherry Grade {grade}</h6>
+            <div className="d-flex justify-content-between align-items-center">
+              {editingPrice[grade] && isGradeA ? (
+                <div className="input-group">
+                  <span className="input-group-text">RWF</span>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={prices[grade]}
+                    onChange={(e) => handlePriceChange(grade, e.target.value)}
+                  />
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handlePriceSave(grade)}
+                    style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className="h4 mb-0">{prices[grade]} RWF</span>
+                  {isGradeA && (
+                    <button
+                      className="btn btn-outline-primary"
+                      onClick={() => handlePriceEdit(grade)}
+                      style={{ color: theme.primary, borderColor: theme.primary }}
+                    >
+                      Edit
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="container-fluid py-1">
       <div className="card">
@@ -1012,6 +1068,9 @@ const PurchaseList = () => {
         <div className="card-body">
           {/* Price Management Section */}
           <div className="row g-4 mb-4">
+            {['A', 'B'].map(grade => renderPriceCard(grade))}
+          </div>
+          {/* <div className="row g-4 mb-4">
             {['A', 'B'].map(grade => (
               <div key={grade} className="col-md-6">
                 <div className="card border-0 shadow-sm">
@@ -1052,7 +1111,7 @@ const PurchaseList = () => {
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
 
           {/* New Purchase Form */}
           <div className="card border-0 shadow-sm mb-4">
