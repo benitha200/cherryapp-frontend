@@ -180,8 +180,13 @@ const Sidebar = () => {
     { path: '/purchases', icon: 'cart', text: 'Purchases' },
     { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
     { path: '/transfer', icon: 'truck', text: 'Transfer' },
-    // { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
+    { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
   ];
+
+  // Add admin menu item if user is admin
+  if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+    menuItems.push({ path: '/admin', icon: 'gear', text: 'Admin Panel' });
+  }
 
   return (
     <div

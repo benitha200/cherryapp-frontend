@@ -687,7 +687,8 @@ const theme = {
   neutral: '#E6F3F3',
   tableHover: '#F8FAFA',
   directDelivery: '#4FB3B3',
-  centralStation: '#008080'
+  centralStation: '#008080',
+  supplier: '#FFA500',
 };
 
 // Skeleton loading row component
@@ -718,6 +719,10 @@ const PurchaseList = () => {
   const [siteCollections, setSiteCollections] = useState([]);
   const [processingEntries, setProcessingEntries] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState(null);
+  const [editingInline, setEditingInline] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+  const [validationError, setValidationError] = useState('');
   const [isLoading, setIsLoading] = useState({
     purchases: true,
     siteCollections: true,
@@ -759,6 +764,48 @@ const PurchaseList = () => {
     fetchProcessingEntries();
   }, []);
 
+  const validatePurchase = (purchaseData, existingPurchases) => {
+    const todayPurchases = existingPurchases.filter(p => 
+      new Date(p.purchaseDate).toISOString().split('T')[0] === yesterdayString &&
+      (editingPurchase ? p.id !== editingPurchase.id : true)
+    );
+
+    // Direct Delivery validation - only one entry per grade per day
+    if (purchaseData.deliveryType === 'DIRECT_DELIVERY') {
+      const existingDirect = todayPurchases.find(p => 
+        p.deliveryType === 'DIRECT_DELIVERY' && 
+        p.grade === purchaseData.grade
+      );
+      if (existingDirect) {
+        return 'Direct delivery already exists for this grade today';
+      }
+    }
+
+    // Site Collection validation - unique combination of site, grade, and date
+    if (purchaseData.deliveryType === 'SITE_COLLECTION') {
+      const existingSite = todayPurchases.find(p => 
+        p.deliveryType === 'SITE_COLLECTION' && 
+        p.grade === purchaseData.grade &&
+        p.siteCollectionId === purchaseData.siteCollectionId
+      );
+      if (existingSite) {
+        return 'Purchase already exists for this site and grade today';
+      }
+    }
+
+    // Supplier validation - unique combination of grade and date
+    if (purchaseData.deliveryType === 'SUPPLIER') {
+      const existingSupplier = todayPurchases.find(p => 
+        p.deliveryType === 'SUPPLIER' && 
+        p.grade === purchaseData.grade
+      );
+      if (existingSupplier) {
+        return 'Supplier purchase already exists for this grade today';
+      }
+    }
+
+    return '';
+  };
 
 
 
@@ -855,9 +902,49 @@ const PurchaseList = () => {
     }
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+
+  //   try {
+  //     const formattedPurchase = {
+  //       ...newPurchase,
+  //       totalKgs: parseFloat(newPurchase.totalKgs),
+  //       totalPrice: parseFloat(newPurchase.totalPrice),
+  //       cwsId: parseInt(newPurchase.cwsId, 10),
+  //       siteCollectionId: newPurchase.siteCollectionId ? parseInt(newPurchase.siteCollectionId, 10) : null,
+  //       purchaseDate: yesterdayString // Always use yesterday's date
+  //     };
+
+  //     if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY' || formattedPurchase.deliveryType === 'SUPPLIER') {
+  //       delete formattedPurchase.siteCollectionId;
+  //     }
+
+  //     const response = await axios.post(`${API_URL}/purchases`, formattedPurchase, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${localStorage.getItem('token')}`
+  //       }
+  //     });
+
+  //     setPurchases([response.data, ...purchases]);
+  //     setNewPurchase(prev => ({
+  //       ...prev,
+  //       totalKgs: '',
+  //       totalPrice: '',
+  //       batchNo: yesterdayString
+  //     }));
+  //   } catch (error) {
+  //     console.error('Error adding purchase:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setValidationError('');
 
     try {
       const formattedPurchase = {
@@ -866,10 +953,18 @@ const PurchaseList = () => {
         totalPrice: parseFloat(newPurchase.totalPrice),
         cwsId: parseInt(newPurchase.cwsId, 10),
         siteCollectionId: newPurchase.siteCollectionId ? parseInt(newPurchase.siteCollectionId, 10) : null,
-        purchaseDate: yesterdayString // Always use yesterday's date
+        purchaseDate: yesterdayString
       };
 
-      if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY') {
+      // Validate purchase
+      const error = validatePurchase(formattedPurchase, purchases);
+      if (error) {
+        setValidationError(error);
+        setLoading(false);
+        return;
+      }
+
+      if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY' || formattedPurchase.deliveryType === 'SUPPLIER') {
         delete formattedPurchase.siteCollectionId;
       }
 
@@ -889,9 +984,213 @@ const PurchaseList = () => {
       }));
     } catch (error) {
       console.error('Error adding purchase:', error);
+      setValidationError(error.response?.data?.message || 'Error adding purchase');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditInline = (purchase) => {
+    setEditingInline(purchase.id);
+    setEditFormData({
+      ...purchase,
+      totalKgs: purchase.totalKgs.toString(),
+      totalPrice: purchase.totalPrice.toString(),
+    });
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'totalKgs' && {
+        totalPrice: (parseFloat(value || 0) * prices[prev.grade]).toString()
+      })
+    }));
+  };
+
+  const handleCancelEdit = () => {
+    setEditingInline(null);
+    setEditFormData({});
+  };
+
+  const handleUpdateInline = async (e, purchaseId) => {
+    e.preventDefault();
+    setLoading(true);
+    setValidationError('');
+
+    try {
+      const formattedPurchase = {
+        ...editFormData,
+        totalKgs: parseFloat(editFormData.totalKgs),
+        totalPrice: parseFloat(editFormData.totalPrice),
+        cwsId: parseInt(editFormData.cwsId, 10),
+        siteCollectionId: editFormData.siteCollectionId ? parseInt(editFormData.siteCollectionId, 10) : null,
+        purchaseDate: yesterdayString
+      };
+
+      // Validate update
+      const error = validatePurchase(formattedPurchase, purchases.filter(p => p.id !== purchaseId));
+      if (error) {
+        setValidationError(error);
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.put(`${API_URL}/purchases/${purchaseId}`, formattedPurchase, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      setPurchases(purchases.map(p => 
+        p.id === purchaseId ? response.data : p
+      ));
+
+      setEditingInline(null);
+      setEditFormData({});
+    } catch (error) {
+      console.error('Error updating purchase:', error);
+      setValidationError(error.response?.data?.message || 'Error updating purchase');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderPurchaseRow = (purchase) => {
+    if (editingInline === purchase.id) {
+      return (
+        <tr key={purchase.id}>
+          <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+          <td>
+            {purchase.deliveryType === 'SITE_COLLECTION' ? (
+              <select
+                name="siteCollectionId"
+                className="form-select form-select-sm"
+                value={editFormData.siteCollectionId || ''}
+                onChange={handleEditChange}
+              >
+                {siteCollections.map(site => (
+                  <option key={site.id} value={site.id}>{site.name}</option>
+                ))}
+              </select>
+            ) : (
+              purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct'
+            )}
+          </td>
+          <td>
+            {purchase.deliveryType === 'SITE_COLLECTION' ? (
+              <select
+                name="deliveryType"
+                className="form-select form-select-sm"
+                value={editFormData.deliveryType}
+                onChange={handleEditChange}
+              >
+                <option value="SITE_COLLECTION">Site</option>
+              </select>
+            ) : (
+              <span
+                className="badge"
+                style={{
+                  backgroundColor:
+                    purchase.deliveryType === 'DIRECT_DELIVERY'
+                      ? theme.directDelivery
+                      : theme.supplier
+                }}
+              >
+                {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' : 'Supplier'}
+              </span>
+            )}
+          </td>
+          <td>
+            <select
+              name="grade"
+              className="form-select form-select-sm"
+              value={editFormData.grade}
+              onChange={handleEditChange}
+            >
+              <option value="A">A</option>
+              <option value="B">B</option>
+            </select>
+          </td>
+          <td>
+            <input
+              type="number"
+              className="form-control form-control-sm"
+              name="totalKgs"
+              value={editFormData.totalKgs}
+              onChange={handleEditChange}
+            />
+          </td>
+          <td>{parseFloat(editFormData.totalPrice).toLocaleString()}</td>
+          <td>
+            <div className="btn-group">
+              <button
+                className="btn btn-sm btn-sucafina"
+                onClick={(e) => handleUpdateInline(e, purchase.id)}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                ) : (
+                  'Save'
+                )}
+              </button>
+              <button
+                className="btn btn-sm btn-light"
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </button>
+            </div>
+          </td>
+        </tr>
+      );
+    }
+
+    return (
+      <tr key={purchase.id}>
+        <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+        <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
+        <td>
+          <span
+            className="badge"
+            style={{
+              backgroundColor:
+                purchase.deliveryType === 'DIRECT_DELIVERY'
+                  ? theme.directDelivery
+                  : purchase.deliveryType === 'SUPPLIER'
+                    ? theme.supplier
+                    : theme.centralStation
+            }}
+          >
+            {purchase.deliveryType === 'DIRECT_DELIVERY'
+              ? 'Direct'
+              : purchase.deliveryType === 'SUPPLIER'
+                ? 'Supplier'
+                : 'Site'}
+          </span>
+        </td>
+        <td>
+          <span className="badge bg-secondary">
+            Grade {purchase.grade}
+          </span>
+        </td>
+        <td>{purchase.totalKgs.toLocaleString()}</td>
+        <td>{purchase.totalPrice.toLocaleString()}</td>
+        <td>
+          <button
+            className="btn btn-sm btn-outline-sucafina"
+            onClick={() => handleEditInline(purchase)}
+            style={{ color: theme.primary, borderColor: theme.primary }}
+          >
+            Edit
+          </button>
+        </td>
+      </tr>
+    );
   };
 
   const handleStartProcessing = async (batch) => {
@@ -1009,9 +1308,48 @@ const PurchaseList = () => {
     );
   };
 
+  const renderPurchaseTable = () => (
+    <>
+      {validationError && (
+        <div className="alert alert-warning" role="alert">
+          {validationError}
+        </div>
+      )}
+      <div className="table-responsive mt-4">
+        <table className="table table-hover">
+          <thead>
+            <tr style={{ backgroundColor: theme.neutral }}>
+              <th>Time</th>
+              <th>Site</th>
+              <th>Delivery Type</th>
+              <th>Grade</th>
+              <th>Total KGs</th>
+              <th>Price (RWF)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading.purchases ? (
+              Array(5).fill(0).map((_, index) => (
+                <SkeletonRow key={index} cols={7} />
+              ))
+            ) : getYesterdayPurchases().length > 0 ? (
+              getYesterdayPurchases().map((purchase) => renderPurchaseRow(purchase))
+            ) : (
+              <EmptyState message="No purchases recorded for yesterday" />
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+
+
+
+
   const renderPriceCard = (grade) => {
     const isGradeA = grade === 'A';
-    
+
     return (
       <div key={grade} className="col-md-6">
         <div className="card border-0 shadow-sm">
@@ -1129,6 +1467,8 @@ const PurchaseList = () => {
                   >
                     <option value="DIRECT_DELIVERY">Direct</option>
                     <option value="SITE_COLLECTION">Site</option>
+                    <option value="SUPPLIER">Supplier</option>
+
                   </select>
                 </div>
                 {newPurchase.deliveryType === 'SITE_COLLECTION' && (
@@ -1204,7 +1544,7 @@ const PurchaseList = () => {
           </div>
 
           {/* Yesterday's Purchases Table */}
-          <div className="table-responsive mt-4">
+          {/* <div className="table-responsive mt-4">
             <table className="table table-hover">
               <thead>
                 <tr style={{ backgroundColor: theme.neutral }}>
@@ -1226,17 +1566,24 @@ const PurchaseList = () => {
                   getYesterdayPurchases().map((purchase) => (
                     <tr key={purchase.id}>
                       <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
-                      <td>{purchase.siteCollection?.name || 'Direct'}</td>
+                      <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
                       <td>
                         <span
                           className="badge"
                           style={{
-                            backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY'
-                              ? theme.directDelivery
-                              : theme.centralStation
+                            backgroundColor:
+                              purchase.deliveryType === 'DIRECT_DELIVERY'
+                                ? theme.directDelivery
+                                : purchase.deliveryType === 'SUPPLIER'
+                                  ? theme.supplier
+                                  : theme.centralStation
                           }}
                         >
-                          {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' : 'Site'}
+                          {purchase.deliveryType === 'DIRECT_DELIVERY'
+                            ? 'Direct'
+                            : purchase.deliveryType === 'SUPPLIER'
+                              ? 'Supplier'
+                              : 'Site'}
                         </span>
                       </td>
                       <td>
@@ -1253,12 +1600,13 @@ const PurchaseList = () => {
                 )}
               </tbody>
             </table>
-          </div>
+          </div> */}
+          {renderPurchaseTable()}
 
           {/* Batches Section */}
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-            <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
+              <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
               <div className="table-responsive mt-2">
                 <table className="table table-hover">
                   <thead>

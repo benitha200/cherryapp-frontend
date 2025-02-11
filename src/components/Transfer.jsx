@@ -448,7 +448,8 @@ const Transfer = () => {
         try {
             const response = await axios.get(`${API_URL}/bagging-off`);
             // Filter out records that have already been transferred
-            const untransferred = response.data.filter(record => record.transfer === null);
+            // const untransferred = response.data.filter(record => record.transfer === null);
+            const untransferred = response.data.filter(record => record.transfers.length === 0);
             setUntransferredRecords(untransferred);
             setLoading(false);
         } catch (error) {
@@ -592,7 +593,8 @@ const Transfer = () => {
                             <p>Are you sure you want to transfer batch {selectedRecord.batchNo}?</p>
                             <p><strong>Processing Type:</strong> {selectedRecord.processing.processingType}</p>
                             <p><strong>Total KGs:</strong> {selectedRecord.processing.totalKgs.toFixed(2)} kg</p>
-                            <p><strong>CWS:</strong> {selectedRecord.processing.cws.name}</p>
+                            <p><strong>FROM: </strong> {selectedRecord.processing.cws.name}</p>
+                            <p><strong>TO: </strong> RWACOF HQ</p>
                         </div>
                     )}
                 </Modal.Body>

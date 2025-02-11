@@ -91,21 +91,22 @@ import ProcessingList from './components/ProcessingList.jsx';
 import DailyPurchaseDetails from './components/DailyPurchaseDetails.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Transfer from './components/Transfer.jsx';
+import AdminDashboard from './components/Admin/AdminDashboard.jsx';
 
 const AppContent = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
 
   return (
-    <div className="d-flex min-vh-100" style={{ fontFamily: 'Inter, sans-serif', fontSize:"14px" }}>
+    <div className="d-flex min-vh-100" style={{ fontFamily: 'Inter, sans-serif', fontSize: "14px" }}>
       {!isLoginPage && (
         <div className="position-fixed h-100" style={{ width: '250px' }}>
           <Sidebar />
         </div>
       )}
-      <div 
-        className="flex-grow-1 bg-light overflow-auto" 
-        style={{ 
+      <div
+        className="flex-grow-1 bg-light overflow-auto"
+        style={{
           marginLeft: isLoginPage ? '0' : '250px',
           height: '100vh'
         }}
@@ -149,7 +150,16 @@ const AppContent = () => {
                 <SiteCollectionList />
               </PrivateRoute>
             } />
+            <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
           </Routes>
+          
         </div>
       </div>
     </div>
