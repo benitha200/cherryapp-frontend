@@ -277,7 +277,7 @@ const PricingManagement = () => {
             <div className="card-body">
                 <div className="row">
                     <div className="col-md-6">
-                        <h3 className="h5">Commission Fee (%)</h3>
+                        <h3 className="h5">Commission Fee</h3>
                         {editingGlobal ? (
                             <input
                                 type="number"
@@ -289,7 +289,7 @@ const PricingManagement = () => {
                                 step="0.1"
                             />
                         ) : (
-                            <p className="h4">{globalFees.commissionFee}%</p>
+                            <p className="h4">{globalFees.commissionFee}</p>
                         )}
                         <small className="text-muted">Applies to all site collections</small>
                     </div>
