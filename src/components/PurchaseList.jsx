@@ -1,681 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-// import axios from 'axios';
-// import API_URL from '../constants/Constants';
-
-// const theme = {
-//   primary: '#008080',    // Sucafina teal
-//   secondary: '#4FB3B3',  // Lighter teal
-//   accent: '#D95032',     // Complementary orange
-//   neutral: '#E6F3F3',    // Very light teal
-//   tableHover: '#F8FAFA', // Ultra light teal for table hover
-//   directDelivery: '#4FB3B3', // Lighter teal for direct delivery badge
-//   centralStation: '#008080'  // Main teal for central station badge
-// };
-
-
-// const PurchaseList = () => {
-//   const [purchases, setPurchases] = useState([]);
-//   const [siteCollections, setSiteCollections] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [prices, setPrices] = useState({
-//     A: 800,
-//     B: 700
-//   });
-//   const [editingPrice, setEditingPrice] = useState({
-//     A: false,
-//     B: false
-//   });
-//   const userInfo = JSON.parse(localStorage.getItem('user'));
-
-//   const [newPurchase, setNewPurchase] = useState({
-//     cwsId: userInfo.cwsId,
-//     deliveryType: 'DIRECT_DELIVERY',
-//     totalKgs: '',
-//     totalPrice: '',
-//     grade: 'A',
-//     purchaseDate: new Date().toISOString().split('T')[0],
-//     siteCollectionId: '',
-//     batchNo: ''
-//   });
-
-//   useEffect(() => {
-//     fetchPurchases();
-//     fetchSiteCollections();
-//   }, []);
-
-//   useEffect(() => {
-//     if (newPurchase.totalKgs && newPurchase.grade) {
-//       const price = prices[newPurchase.grade];
-//       setNewPurchase(prev => ({
-//         ...prev,
-//         totalPrice: (parseFloat(prev.totalKgs) * price).toString()
-//       }));
-//     }
-//   }, [newPurchase.totalKgs, newPurchase.grade, prices]);
-
-//   const fetchPurchases = async () => {
-//     try {
-//       const response = await axios.get(`${API_URL}/purchases`, {
-//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//       });
-//       setPurchases(response.data);
-//     } catch (error) {
-//       console.error('Error fetching purchases:', error);
-//     }
-//   };
-
-//   const fetchSiteCollections = async () => {
-//     try {
-//       const response = await axios.get(`${API_URL}/site-collections/cws/${userInfo.cwsId}`, {
-//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//       });
-//       setSiteCollections(response.data);
-//     } catch (error) {
-//       console.error('Error fetching site collections:', error);
-//     }
-//   };
-
-//   const handleNewPurchaseChange = (e) => {
-//     const { name, value } = e.target;
-//     setNewPurchase(prev => ({
-//       ...prev,
-//       [name]: value,
-//       ...(name === 'totalKgs' && {
-//         totalPrice: (parseFloat(value || 0) * prices[prev.grade]).toString()
-//       })
-//     }));
-//   };
-
-//   const handlePriceEdit = (grade) => {
-//     setEditingPrice(prev => ({
-//       ...prev,
-//       [grade]: true
-//     }));
-//   };
-
-//   const handlePriceChange = (grade, value) => {
-//     setPrices(prev => ({
-//       ...prev,
-//       [grade]: parseFloat(value) || 0
-//     }));
-//   };
-
-//   const handlePriceSave = (grade) => {
-//     setEditingPrice(prev => ({
-//       ...prev,
-//       [grade]: false
-//     }));
-//     // Here you would typically save the price to your backend
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-
-//     try {
-//       const formattedPurchase = {
-//         ...newPurchase,
-//         totalKgs: parseFloat(newPurchase.totalKgs),
-//         totalPrice: parseFloat(newPurchase.totalPrice),
-//         cwsId: parseInt(newPurchase.cwsId, 10),
-//         siteCollectionId: newPurchase.siteCollectionId ? parseInt(newPurchase.siteCollectionId, 10) : null,
-//         purchaseDate: new Date(newPurchase.purchaseDate)
-//       };
-
-//       if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY') {
-//         delete formattedPurchase.siteCollectionId;
-//       }
-
-//       const response = await axios.post(`${API_URL}/purchases`, formattedPurchase, {
-//         headers: {
-//           'Content-Type': 'application/json',
-//           Authorization: `Bearer ${localStorage.getItem('token')}`
-//         }
-//       });
-
-//       setPurchases([response.data, ...purchases]);
-//       setNewPurchase({
-//         cwsId: userInfo.cwsId,
-//         deliveryType: 'DIRECT_DELIVERY',
-//         totalKgs: '',
-//         totalPrice: '',
-//         grade: 'A',
-//         purchaseDate: new Date().toISOString().split('T')[0],
-//         siteCollectionId: '',
-//         batchNo: ''
-//       });
-//     } catch (error) {
-//       console.error('Error adding purchase:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const [filters, setFilters] = useState({
-//     startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0],
-//     endDate: new Date().toISOString().split('T')[0],
-//     grade: 'ALL',
-//     deliveryType: 'ALL',
-//     siteId: 'ALL',
-//     batchNo: ''
-//   });
-
-//   const [groupBy, setGroupBy] = useState('date');
-//   const [viewMode, setViewMode] = useState('table'); // 'table' or 'chart'
-
-//   // Function to filter purchases based on current filters
-//   const getFilteredPurchases = () => {
-//     return purchases.filter(purchase => {
-//       const purchaseDate = new Date(purchase.purchaseDate);
-//       const startDate = new Date(filters.startDate);
-//       const endDate = new Date(filters.endDate);
-
-//       return (
-//         purchaseDate >= startDate &&
-//         purchaseDate <= endDate &&
-//         (filters.grade === 'ALL' || purchase.grade === filters.grade) &&
-//         (filters.deliveryType === 'ALL' || purchase.deliveryType === filters.deliveryType) &&
-//         (filters.siteId === 'ALL' || purchase.siteCollection?.id === filters.siteId) &&
-//         (filters.batchNo === '' || purchase.batchNo?.includes(filters.batchNo))
-//       );
-//     });
-//   };
-
-//   // Function to group purchases based on selected grouping
-//   const getGroupedPurchases = () => {
-//     const filtered = getFilteredPurchases();
-//     const grouped = {};
-
-//     filtered.forEach(purchase => {
-//       let key;
-//       switch (groupBy) {
-//         case 'date':
-//           key = new Date(purchase.purchaseDate).toLocaleDateString();
-//           break;
-//         case 'grade':
-//           key = purchase.grade;
-//           break;
-//         case 'deliveryType':
-//           key = purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' : 'Site';
-//           break;
-//         case 'site':
-//           key = purchase.siteCollection?.name || 'Direct Delivery';
-//           break;
-//         case 'batchNo':
-//           key = purchase.batchNo || 'No Batch';
-//           break;
-//         default:
-//           key = 'Other';
-//       }
-
-//       if (!grouped[key]) {
-//         grouped[key] = {
-//           totalKgs: 0,
-//           totalPrice: 0,
-//           count: 0
-//         };
-//       }
-
-//       grouped[key].totalKgs += purchase.totalKgs;
-//       grouped[key].totalPrice += purchase.totalPrice;
-//       grouped[key].count += 1;
-//     });
-
-//     return Object.entries(grouped).map(([key, value]) => ({
-//       name: key,
-//       ...value
-//     }));
-//   };
-
-//   return (
-//     <div className="container-fluid py-4">
-//       <div className="card">
-//         <div className="card-header">
-//           <h5 className="card-title mb-0" style={{ color: theme.primary }}>
-//             Cherry Purchases Analysis
-//           </h5>
-//         </div>
-
-//         <div className="card-body">
-//           {/* Summary Cards */}
-//           <div className="row mb-4">
-//             {[
-//               { label: 'Total Purchases', value: getFilteredPurchases().length, icon: 'bi-cart-check' },
-//               { label: 'Total KGs', value: getFilteredPurchases().reduce((sum, p) => sum + p.totalKgs, 0).toLocaleString(), icon: 'bi-box-seam' },
-//               { label: 'Total Price (RWF)', value: getFilteredPurchases().reduce((sum, p) => sum + p.totalPrice, 0).toLocaleString(), icon: 'bi-currency-dollar' },
-//               {
-//                 label: 'Avg. Price/KG', value: (getFilteredPurchases().reduce((sum, p) => sum + p.totalPrice, 0) /
-//                   getFilteredPurchases().reduce((sum, p) => sum + p.totalKgs, 0) || 0).toLocaleString(), icon: 'bi-calculator'
-//               }
-//             ].map((stat, index) => (
-//               <div key={index} className="col-md-3">
-//                 <div className="card border-0 shadow-sm">
-//                   <div className="card-body">
-//                     <div className="d-flex align-items-center">
-//                       <div className="rounded-circle p-3 me-3" style={{ backgroundColor: theme.neutral }}>
-//                         <i className={`bi ${stat.icon} fs-4`} style={{ color: theme.primary }}></i>
-//                       </div>
-//                       <div>
-//                         <div className="text-muted small">{stat.label}</div>
-//                         <div className="h4 mb-0" style={{ color: theme.primary }}>{stat.value}</div>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-//             ))}
-//           </div>
-
-//           {/* Tabs Navigation */}
-//           <ul className="nav nav-tabs" role="tablist">
-//             <li className="nav-item">
-//               <button
-//                 className="nav-link active"
-//                 data-bs-toggle="tab"
-//                 data-bs-target="#filters"
-//                 type="button"
-//                 role="tab"
-//                 style={{ color: theme.primary }}
-//               >
-//                 <i className="bi bi-funnel me-2"></i>
-//                 Filters & Analysis
-//               </button>
-//             </li>
-//             <li className="nav-item">
-//               <button
-//                 className="nav-link"
-//                 data-bs-toggle="tab"
-//                 data-bs-target="#records"
-//                 type="button"
-//                 role="tab"
-//                 style={{ color: theme.primary }}
-//               >
-//                 <i className="bi bi-clipboard-data me-2"></i>
-//                 Purchases & Pricing
-//               </button>
-//             </li>
-//           </ul>
-
-//           {/* Tabs Content */}
-//           <div className="tab-content pt-4">
-//             {/* Filters Tab */}
-//             <div className="tab-pane fade show active" id="filters" role="tabpanel">
-//               <div className="row g-3 mb-4">
-//                 <div className="col-md-4">
-//                   <div className="card border-0 shadow-sm h-100">
-//                     <div className="card-body">
-//                       <h6 className="card-title mb-3">
-//                         <i className="bi bi-calendar-range me-2"></i>
-//                         Date Range
-//                       </h6>
-//                       <div className="input-group">
-//                         <span className="input-group-text">From</span>
-//                         <input
-//                           type="date"
-//                           className="form-control"
-//                           value={filters.startDate}
-//                           onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
-//                         />
-//                       </div>
-//                       <div className="input-group mt-2">
-//                         <span className="input-group-text">To</span>
-//                         <input
-//                           type="date"
-//                           className="form-control"
-//                           value={filters.endDate}
-//                           onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
-//                         />
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </div>
-
-//                 <div className="col-md-8">
-//                   <div className="card border-0 shadow-sm h-100">
-//                     <div className="card-body">
-//                       <h6 className="card-title mb-3">
-//                         <i className="bi bi-filter me-2"></i>
-//                         Filter Options
-//                       </h6>
-//                       <div className="row g-3">
-//                         <div className="col-md-3">
-//                           <label className="form-label">Grade</label>
-//                           <select
-//                             className="form-select"
-//                             value={filters.grade}
-//                             onChange={(e) => setFilters(prev => ({ ...prev, grade: e.target.value }))}
-//                           >
-//                             <option value="ALL">All Grades</option>
-//                             <option value="A">Grade A</option>
-//                             <option value="B">Grade B</option>
-//                           </select>
-//                         </div>
-//                         <div className="col-md-3">
-//                           <label className="form-label">Delivery Type</label>
-//                           <select
-//                             className="form-select"
-//                             value={filters.deliveryType}
-//                             onChange={(e) => setFilters(prev => ({ ...prev, deliveryType: e.target.value }))}
-//                           >
-//                             <option value="ALL">All Types</option>
-//                             <option value="DIRECT_DELIVERY">Direct</option>
-//                             <option value="SITE_COLLECTION">Site</option>
-//                           </select>
-//                         </div>
-//                         <div className="col-md-3">
-//                           <label className="form-label">Site</label>
-//                           <select
-//                             className="form-select"
-//                             value={filters.siteId}
-//                             onChange={(e) => setFilters(prev => ({ ...prev, siteId: e.target.value }))}
-//                           >
-//                             <option value="ALL">All Sites</option>
-//                             {siteCollections.map(site => (
-//                               <option key={site.id} value={site.id}>{site.name}</option>
-//                             ))}
-//                           </select>
-//                         </div>
-//                         <div className="col-md-3">
-//                           <label className="form-label">Group By</label>
-//                           <select
-//                             className="form-select"
-//                             value={groupBy}
-//                             onChange={(e) => setGroupBy(e.target.value)}
-//                           >
-//                             <option value="date">Date</option>
-//                             <option value="grade">Grade</option>
-//                             <option value="deliveryType">Delivery Type</option>
-//                             <option value="site">Site</option>
-//                             <option value="batchNo">Batch No</option>
-//                           </select>
-//                         </div>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-
-//               <div className="card border-0 shadow-sm">
-//                 <div className="card-body">
-//                   <div className="d-flex justify-content-between align-items-center mb-4">
-//                     <h6 className="card-title mb-0">Analysis Results</h6>
-//                     <div className="btn-group">
-//                       <button
-//                         className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
-//                         onClick={() => setViewMode('table')}
-//                       >
-//                         <i className="bi bi-table me-2"></i>
-//                         Table
-//                       </button>
-//                       <button
-//                         className={`btn ${viewMode === 'chart' ? 'btn-primary' : 'btn-outline-primary'}`}
-//                         onClick={() => setViewMode('chart')}
-//                       >
-//                         <i className="bi bi-bar-chart-fill me-2"></i>
-//                         Chart
-//                       </button>
-//                     </div>
-//                   </div>
-
-//                   {viewMode === 'chart' ? (
-//                     <div style={{ height: '400px' }}>
-//                       <ResponsiveContainer width="100%" height="100%">
-//                         <BarChart data={getGroupedPurchases()}>
-//                           <XAxis dataKey="name" />
-//                           <YAxis yAxisId="left" orientation="left" stroke={theme.primary} />
-//                           <YAxis yAxisId="right" orientation="right" stroke={theme.secondary} />
-//                           <Tooltip />
-//                           <Legend />
-//                           <Bar yAxisId="left" dataKey="totalKgs" name="Total KGs" fill={theme.primary} />
-//                           <Bar yAxisId="right" dataKey="totalPrice" name="Total Price" fill={theme.secondary} />
-//                         </BarChart>
-//                       </ResponsiveContainer>
-//                     </div>
-//                   ) : (
-//                     <div className="table-responsive">
-//                       <table className="table table-hover">
-//                         <thead>
-//                           <tr style={{ backgroundColor: theme.neutral }}>
-//                             <th>{groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</th>
-//                             <th>Total Purchases</th>
-//                             <th>Total KGs</th>
-//                             <th>Total Price (RWF)</th>
-//                             <th>Avg. Price/KG</th>
-//                             {groupBy === 'batchNo' && <th>Actions</th>}
-//                           </tr>
-//                         </thead>
-//                         <tbody>
-//                           {getGroupedPurchases().map((group, index) => (
-//                             <tr key={index}>
-//                               <td>{group.name}</td>
-//                               <td>{group.count}</td>
-//                               <td>{group.totalKgs.toLocaleString()}</td>
-//                               <td>{group.totalPrice.toLocaleString()}</td>
-//                               <td>{(group.totalPrice / group.totalKgs).toLocaleString()}</td>
-//                               {groupBy === 'batchNo' && (
-//                                 <td>
-//                                   <button
-//                                     className="btn btn-success btn-sm"
-//                                     onClick={() => {/* Handle processing start */ }}
-//                                   >
-//                                     <i className="bi bi-play-fill me-1"></i>
-//                                     Start Processing
-//                                   </button>
-//                                 </td>
-//                               )}
-//                             </tr>
-//                           ))}
-//                         </tbody>
-//                       </table>
-//                     </div>
-//                   )}
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Prices Tab */}
-//             <div className="tab-pane fade" id="records" role="tabpanel">
-//               {/* Price Management Section */}
-//               <div className="row g-4 mb-4">
-//                 {['A', 'B'].map(grade => (
-//                   <div key={grade} className="col-md-6">
-//                     <div className="card border-0 shadow-sm">
-//                       <div className="card-body">
-//                         <h6 className="card-title mb-4">Cherry Grade {grade}</h6>
-//                         <div className="d-flex justify-content-between align-items-center">
-//                           {editingPrice[grade] ? (
-//                             <div className="input-group">
-//                               <span className="input-group-text">RWF</span>
-//                               <input
-//                                 type="number"
-//                                 className="form-control"
-//                                 value={prices[grade]}
-//                                 onChange={(e) => handlePriceChange(grade, e.target.value)}
-//                               />
-//                               <button 
-//                                 className="btn btn-primary"
-//                                 onClick={() => handlePriceSave(grade)}
-//                                 style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-//                               >
-//                                 <i className="bi bi-check-lg me-1"></i>
-//                                 Save
-//                               </button>
-//                             </div>
-//                           ) : (
-//                             <>
-//                               <span className="h4 mb-0">{prices[grade]} RWF</span>
-//                               <button 
-//                                 className="btn btn-outline-primary"
-//                                 onClick={() => handlePriceEdit(grade)}
-//                                 style={{ color: theme.primary, borderColor: theme.primary }}
-//                               >
-//                                 <i className="bi bi-pencil me-1"></i>
-//                                 Edit
-//                               </button>
-//                             </>
-//                           )}
-//                         </div>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-
-//               {/* Purchase Records Section */}
-//               <div className="card border-0 shadow-sm">
-//                 <div className="card-body">
-//                   <h6 className="card-title mb-4">New Purchase</h6>
-//                   <form onSubmit={handleSubmit} className="row g-3 mb-4">
-//                     <div className="col-md-2">
-//                       <label className="form-label">Date</label>
-//                       <input
-//                         type="date"
-//                         className="form-control"
-//                         name="purchaseDate"
-//                         value={newPurchase.purchaseDate}
-//                         onChange={handleNewPurchaseChange}
-//                         required
-//                       />
-//                     </div>
-//                     <div className="col-md-2">
-//                       <label className="form-label">Delivery Type</label>
-//                       <select
-//                         name="deliveryType"
-//                         className="form-select"
-//                         value={newPurchase.deliveryType}
-//                         onChange={handleNewPurchaseChange}
-//                         required
-//                       >
-//                         <option value="DIRECT_DELIVERY">Direct</option>
-//                         <option value="SITE_COLLECTION">Site</option>
-//                       </select>
-//                     </div>
-//                     {newPurchase.deliveryType === 'SITE_COLLECTION' && (
-//                       <div className="col-md-2">
-//                         <label className="form-label">Site</label>
-//                         <select
-//                           name="siteCollectionId"
-//                           className="form-select"
-//                           value={newPurchase.siteCollectionId}
-//                           onChange={handleNewPurchaseChange}
-//                           required
-//                         >
-//                           <option value="">Select Site</option>
-//                           {siteCollections.map(site => (
-//                             <option key={site.id} value={site.id}>{site.name}</option>
-//                           ))}
-//                         </select>
-//                       </div>
-//                     )}
-//                     <div className="col-md-2">
-//                       <label className="form-label">Grade</label>
-//                       <select
-//                         name="grade"
-//                         className="form-select"
-//                         value={newPurchase.grade}
-//                         onChange={handleNewPurchaseChange}
-//                         required
-//                       >
-//                         <option value="A">A</option>
-//                         <option value="B">B</option>
-//                       </select>
-//                     </div>
-//                     <div className="col-md-2">
-//                       <label className="form-label">Total KGs</label>
-//                       <input
-//                         type="number"
-//                         className="form-control"
-//                         name="totalKgs"
-//                         value={newPurchase.totalKgs}
-//                         onChange={handleNewPurchaseChange}
-//                         placeholder="Enter KGs"
-//                         required
-//                       />
-//                     </div>
-//                     <div className="col-md-2">
-//                       <label className="form-label">Total Price</label>
-//                       <input
-//                         type="number"
-//                         className="form-control"
-//                         name="totalPrice"
-//                         value={newPurchase.totalPrice}
-//                         readOnly
-//                         placeholder="Calculated"
-//                       />
-//                     </div>
-//                     <div className="col-12">
-//                       <button
-//                         type="submit"
-//                         className="btn btn-primary float-end"
-//                         disabled={loading}
-//                         style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-//                       >
-//                         {loading ? (
-//                           <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-//                         ) : (
-//                           <i className="bi bi-plus-lg me-2"></i>
-//                         )}
-//                         Add Purchase
-//                       </button>
-//                     </div>
-//                   </form>
-
-//                   <div className="table-responsive mt-4">
-//                     <table className="table table-hover">
-//                       <thead>
-//                         <tr style={{ backgroundColor: theme.neutral }}>
-//                           <th>Date</th>
-//                           <th>Site</th>
-//                           <th>Delivery Type</th>
-//                           <th>Grade</th>
-//                           <th>Total KGs</th>
-//                           <th>Price (RWF)</th>
-//                           <th>Batch No</th>
-//                         </tr>
-//                       </thead>
-//                       <tbody>
-//                         {purchases.map((purchase) => (
-//                           <tr key={purchase.id}>
-//                             <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
-//                             <td>{purchase.siteCollection?.name || 'Direct'}</td>
-//                             <td>
-//                               <span 
-//                                 className="badge"
-//                                 style={{ 
-//                                   backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' 
-//                                     ? theme.directDelivery 
-//                                     : theme.centralStation 
-//                                 }}
-//                               >
-//                                 {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' : 'Site'}
-//                               </span>
-//                             </td>
-//                             <td>
-//                               <span className="badge bg-secondary">
-//                                 Grade {purchase.grade}
-//                               </span>
-//                             </td>
-//                             <td>{purchase.totalKgs.toLocaleString()}</td>
-//                             <td>{purchase.totalPrice.toLocaleString()}</td>
-//                             <td>{purchase.batchNo || '-'}</td>
-//                           </tr>
-//                         ))}
-//                       </tbody>
-//                     </table>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default PurchaseList;
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../constants/Constants';
@@ -717,12 +39,17 @@ const EmptyState = ({ message = "No records found" }) => (
 const PurchaseList = () => {
   const [purchases, setPurchases] = useState([]);
   const [siteCollections, setSiteCollections] = useState([]);
+  const [globalFees, setGlobalFees] = useState({ commissionFee: 0, transportFee: 0 });
+  const [siteCollectionFees, setSiteCollectionFees] = useState([]);
   const [processingEntries, setProcessingEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingPurchase, setEditingPurchase] = useState(null);
   const [editingInline, setEditingInline] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [validationError, setValidationError] = useState('');
+  const [siteSpecificFees, setSiteSpecificFees] = useState({});
+  const [cwsPricing, setCwsPricing] = useState(null);
+  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState({
     purchases: true,
     siteCollections: true,
@@ -730,7 +57,7 @@ const PurchaseList = () => {
   });
   const [prices, setPrices] = useState({
     A: 750,
-    B: 400
+    B: 200
   });
   const [editingPrice, setEditingPrice] = useState({
     A: false,
@@ -764,16 +91,124 @@ const PurchaseList = () => {
     fetchProcessingEntries();
   }, []);
 
+  // Fetch global fees
+  const fetchGlobalFees = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/pricing/global`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setGlobalFees(response.data || { commissionFee: 0, transportFee: 0 });
+    } catch (err) {
+      setError('Error fetching global fees');
+    }
+  };
+
+  // Fetch site collection fees
+  const fetchSiteCollectionFees = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/pricing/site-fees`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSiteCollectionFees(response.data || []);
+    } catch (err) {
+      setError('Error fetching site fees');
+    }
+  };
+
+
+
+  const calculatePrices = (data) => {
+    const { deliveryType, siteCollectionId, grade, totalKgs } = data;
+    let transportFee = 0;
+    let cherryPrice = 0;
+    let commissionFee = 0;
+    
+    // Get base cherry price from CWS pricing for all delivery types
+    const baseCherryPrice = grade === 'A' ? 
+      (cwsPricing ? cwsPricing.gradeAPrice : 750) : 
+      (cwsPricing ? cwsPricing.gradeBPrice : 200);
+  
+    if (deliveryType === 'SITE_COLLECTION' && siteCollectionId) {
+      const siteFee = siteSpecificFees[siteCollectionId];
+      transportFee = siteFee !== undefined ? siteFee : globalFees.transportFee;
+      commissionFee = globalFees.commissionFee;
+    } else {
+      // For DIRECT_DELIVERY and SUPPLIER, use CWS pricing
+      transportFee = cwsPricing ? cwsPricing.transportFee : 0;
+    }
+  
+    cherryPrice = baseCherryPrice - transportFee;
+    const totalPrice = cherryPrice * parseFloat(totalKgs || 0);
+    const commissionAmount = deliveryType === 'SITE_COLLECTION' ? 
+      (parseFloat(totalKgs || 0) * commissionFee) : 0;
+  
+    return {
+      cherryPrice,
+      transportFee,
+      commissionFee,
+      totalPrice,
+      commissionAmount
+    };
+  };
+
+
+  useEffect(() => {
+    const fetchAllSiteFees = async () => {
+      if (siteCollections.length > 0) {
+        for (const site of siteCollections) {
+          await fetchSiteSpecificFee(site.id);
+        }
+      }
+    };
+    fetchAllSiteFees();
+  }, [siteCollections]);
+
+   // Add this new function to fetch site-specific fees
+   const fetchSiteSpecificFee = async (siteId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/pricing/site-fees/${siteId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSiteSpecificFees(prev => ({
+        ...prev,
+        [siteId]: response.data.transportFee
+      }));
+      return response.data.transportFee;
+    } catch (err) {
+      console.error(`Error fetching site fee for site ${siteId}:`, err);
+      return null;
+    }
+  }; 
+
+  // Modify the calculateTransportFee function
+  const calculateTransportFee = (purchase) => {
+    if (purchase.deliveryType === 'SITE_COLLECTION' && purchase.siteCollectionId) {
+      const siteFee = siteSpecificFees[purchase.siteCollectionId];
+      if (siteFee !== undefined) {
+        return siteFee * purchase.totalKgs;
+      } else {
+        // Fetch the site-specific fee if we don't have it
+        fetchSiteSpecificFee(purchase.siteCollectionId);
+        return globalFees.transportFee * purchase.totalKgs; // Use global fee as fallback
+      }
+    }
+    return globalFees.transportFee * purchase.totalKgs;
+  };
+
+
   const validatePurchase = (purchaseData, existingPurchases) => {
-    const todayPurchases = existingPurchases.filter(p => 
+    const todayPurchases = existingPurchases.filter(p =>
       new Date(p.purchaseDate).toISOString().split('T')[0] === yesterdayString &&
       (editingPurchase ? p.id !== editingPurchase.id : true)
     );
 
     // Direct Delivery validation - only one entry per grade per day
     if (purchaseData.deliveryType === 'DIRECT_DELIVERY') {
-      const existingDirect = todayPurchases.find(p => 
-        p.deliveryType === 'DIRECT_DELIVERY' && 
+      const existingDirect = todayPurchases.find(p =>
+        p.deliveryType === 'DIRECT_DELIVERY' &&
         p.grade === purchaseData.grade
       );
       if (existingDirect) {
@@ -783,8 +218,8 @@ const PurchaseList = () => {
 
     // Site Collection validation - unique combination of site, grade, and date
     if (purchaseData.deliveryType === 'SITE_COLLECTION') {
-      const existingSite = todayPurchases.find(p => 
-        p.deliveryType === 'SITE_COLLECTION' && 
+      const existingSite = todayPurchases.find(p =>
+        p.deliveryType === 'SITE_COLLECTION' &&
         p.grade === purchaseData.grade &&
         p.siteCollectionId === purchaseData.siteCollectionId
       );
@@ -795,8 +230,8 @@ const PurchaseList = () => {
 
     // Supplier validation - unique combination of grade and date
     if (purchaseData.deliveryType === 'SUPPLIER') {
-      const existingSupplier = todayPurchases.find(p => 
-        p.deliveryType === 'SUPPLIER' && 
+      const existingSupplier = todayPurchases.find(p =>
+        p.deliveryType === 'SUPPLIER' &&
         p.grade === purchaseData.grade
       );
       if (existingSupplier) {
@@ -861,8 +296,41 @@ const PurchaseList = () => {
     }
   };
 
-  const handleNewPurchaseChange = (e) => {
+  const fetchCWSPricing = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/pricing/cws-pricing/${userInfo.cwsId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCwsPricing(response.data);
+    } catch (err) {
+      console.error('Error fetching CWS pricing:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCWSPricing();
+  }, []);
+
+  const handleNewPurchaseChange = async (e) => {
     const { name, value } = e.target;
+    
+    if (name === 'siteCollectionId' && value) {
+      const siteFee = await fetchSiteSpecificFee(value);
+      if (siteFee !== null) {
+        const updatedPurchase = {
+          ...newPurchase,
+          [name]: value
+        };
+        const prices = calculatePrices(updatedPurchase);
+        setNewPurchase({
+          ...updatedPurchase,
+          ...prices
+        });
+        return;
+      }
+    }
+
     setNewPurchase(prev => ({
       ...prev,
       [name]: value,
@@ -902,19 +370,56 @@ const PurchaseList = () => {
     }
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const updatedPurchase = {
+      ...newPurchase,
+      [name]: value
+    };
+
+    const prices = calculatePrices(updatedPurchase);
+    setNewPurchase({
+      ...updatedPurchase,
+      ...prices
+    });
+  };
+
+  
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
   //   setLoading(true);
+  //   setValidationError('');
 
   //   try {
+  //     // const formattedPurchase = {
+  //     //   ...newPurchase,
+  //     //   totalKgs: parseFloat(newPurchase.totalKgs),
+  //     //   totalPrice: parseFloat(newPurchase.totalPrice),
+  //     //   cwsId: parseInt(newPurchase.cwsId, 10),
+  //     //   siteCollectionId: newPurchase.siteCollectionId ? parseInt(newPurchase.siteCollectionId, 10) : null,
+  //     //   purchaseDate: yesterdayString
+  //     // };
   //     const formattedPurchase = {
   //       ...newPurchase,
   //       totalKgs: parseFloat(newPurchase.totalKgs),
   //       totalPrice: parseFloat(newPurchase.totalPrice),
+  //       cherryPrice: parseFloat(newPurchase.cherryPrice),
+  //       transportFee: parseFloat(newPurchase.transportFee),
+  //       commissionFee: newPurchase.deliveryType === 'SITE_COLLECTION' ? 
+  //         parseFloat(newPurchase.commissionFee) : 0,
   //       cwsId: parseInt(newPurchase.cwsId, 10),
-  //       siteCollectionId: newPurchase.siteCollectionId ? parseInt(newPurchase.siteCollectionId, 10) : null,
-  //       purchaseDate: yesterdayString // Always use yesterday's date
-  //     };
+  //       siteCollectionId: newPurchase.siteCollectionId ? 
+  //         parseInt(newPurchase.siteCollectionId, 10) : null,
+  //       purchaseDate: yesterdayString
+  //     }; 
+
+  //     // Validate purchase
+  //     const error = validatePurchase(formattedPurchase, purchases);
+  //     if (error) {
+  //       setValidationError(error);
+  //       setLoading(false);
+  //       return;
+  //     }
 
   //     if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY' || formattedPurchase.deliveryType === 'SUPPLIER') {
   //       delete formattedPurchase.siteCollectionId;
@@ -936,6 +441,7 @@ const PurchaseList = () => {
   //     }));
   //   } catch (error) {
   //     console.error('Error adding purchase:', error);
+  //     setValidationError(error.response?.data?.message || 'Error adding purchase');
   //   } finally {
   //     setLoading(false);
   //   }
@@ -945,17 +451,28 @@ const PurchaseList = () => {
     e.preventDefault();
     setLoading(true);
     setValidationError('');
-
+  
     try {
+      const prices = calculatePrices(newPurchase);
+      
       const formattedPurchase = {
         ...newPurchase,
         totalKgs: parseFloat(newPurchase.totalKgs),
-        totalPrice: parseFloat(newPurchase.totalPrice),
+        totalPrice: prices.totalPrice,
+        cherryPrice: prices.cherryPrice,
+        transportFee: prices.transportFee,
+        commissionFee: prices.commissionFee,
         cwsId: parseInt(newPurchase.cwsId, 10),
-        siteCollectionId: newPurchase.siteCollectionId ? parseInt(newPurchase.siteCollectionId, 10) : null,
-        purchaseDate: yesterdayString
+        siteCollectionId: newPurchase.siteCollectionId ? 
+          parseInt(newPurchase.siteCollectionId, 10) : null,
+        purchaseDate: yesterdayString,
+        cws: {
+          connect: {
+            id: parseInt(newPurchase.cwsId, 10)
+          }
+        }
       };
-
+  
       // Validate purchase
       const error = validatePurchase(formattedPurchase, purchases);
       if (error) {
@@ -963,18 +480,19 @@ const PurchaseList = () => {
         setLoading(false);
         return;
       }
-
-      if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY' || formattedPurchase.deliveryType === 'SUPPLIER') {
+  
+      if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY' || 
+          formattedPurchase.deliveryType === 'SUPPLIER') {
         delete formattedPurchase.siteCollectionId;
       }
-
+  
       const response = await axios.post(`${API_URL}/purchases`, formattedPurchase, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-
+  
       setPurchases([response.data, ...purchases]);
       setNewPurchase(prev => ({
         ...prev,
@@ -999,8 +517,28 @@ const PurchaseList = () => {
     });
   };
 
-  const handleEditChange = (e) => {
+ 
+
+
+  const handleEditChange = async (e) => {
     const { name, value } = e.target;
+    
+    if (name === 'siteCollectionId' && value) {
+      const siteFee = await fetchSiteSpecificFee(value);
+      if (siteFee !== null) {
+        const updatedForm = {
+          ...editFormData,
+          [name]: value
+        };
+        const prices = calculatePrices(updatedForm);
+        setEditFormData({
+          ...updatedForm,
+          ...prices
+        });
+        return;
+      }
+    }
+
     setEditFormData(prev => ({
       ...prev,
       [name]: value,
@@ -1019,15 +557,26 @@ const PurchaseList = () => {
     e.preventDefault();
     setLoading(true);
     setValidationError('');
-
+  
     try {
+      const prices = calculatePrices(editFormData);
+      
       const formattedPurchase = {
         ...editFormData,
         totalKgs: parseFloat(editFormData.totalKgs),
-        totalPrice: parseFloat(editFormData.totalPrice),
+        totalPrice: prices.totalPrice,
+        cherryPrice: prices.cherryPrice,
+        transportFee: prices.transportFee,
+        commissionFee: prices.commissionFee,
         cwsId: parseInt(editFormData.cwsId, 10),
-        siteCollectionId: editFormData.siteCollectionId ? parseInt(editFormData.siteCollectionId, 10) : null,
-        purchaseDate: yesterdayString
+        siteCollectionId: editFormData.siteCollectionId ? 
+          parseInt(editFormData.siteCollectionId, 10) : null,
+        purchaseDate: yesterdayString,
+        cws: {
+          connect: {
+            id: parseInt(editFormData.cwsId, 10)
+          }
+        }
       };
 
       // Validate update
@@ -1045,7 +594,7 @@ const PurchaseList = () => {
         }
       });
 
-      setPurchases(purchases.map(p => 
+      setPurchases(purchases.map(p =>
         p.id === purchaseId ? response.data : p
       ));
 
@@ -1308,43 +857,206 @@ const PurchaseList = () => {
     );
   };
 
-  const renderPurchaseTable = () => (
-    <>
-      {validationError && (
-        <div className="alert alert-warning" role="alert">
-          {validationError}
-        </div>
-      )}
-      <div className="table-responsive mt-4">
-        <table className="table table-hover">
-          <thead>
-            <tr style={{ backgroundColor: theme.neutral }}>
-              <th>Time</th>
-              <th>Site</th>
-              <th>Delivery Type</th>
-              <th>Grade</th>
-              <th>Total KGs</th>
-              <th>Price (RWF)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading.purchases ? (
-              Array(5).fill(0).map((_, index) => (
-                <SkeletonRow key={index} cols={7} />
-              ))
-            ) : getYesterdayPurchases().length > 0 ? (
-              getYesterdayPurchases().map((purchase) => renderPurchaseRow(purchase))
-            ) : (
-              <EmptyState message="No purchases recorded for yesterday" />
+  
+  const renderPurchaseTable = () => {
+    const calculateTransportFee = (purchase) => {
+      if (purchase.deliveryType === 'SITE_COLLECTION' && purchase.siteCollectionId) {
+        const siteFee = siteSpecificFees[purchase.siteCollectionId];
+        if (siteFee !== undefined) {
+          return siteFee * purchase.totalKgs;
+        } else {
+          fetchSiteSpecificFee(purchase.siteCollectionId);
+          return globalFees.transportFee * purchase.totalKgs;
+        }
+      } else {
+        // For DIRECT_DELIVERY and SUPPLIER, use CWS pricing
+        return cwsPricing ? cwsPricing.transportFee * purchase.totalKgs : 0;
+      }
+    };
+
+    const calculateCommissionFee = (purchase) => {
+      if (purchase.deliveryType === 'SITE_COLLECTION') {
+        return globalFees.commissionFee * purchase.totalKgs;
+      }
+      // Return 0 for DIRECT_DELIVERY and SUPPLIER
+      return 0;
+    };
+  
+
+    const calculateCherryAmount = (purchase, transportFee) => {
+      return purchase.totalPrice - transportFee; // Add back transport fee to get original cherry amount
+    };
+
+    return (
+      <>
+        {validationError && (
+          <div className="alert alert-warning" role="alert">
+            {validationError}
+          </div>
+        )}
+        <div className="table-responsive mt-4">
+          <table className="table table-hover">
+            <thead>
+              <tr style={{ backgroundColor: theme.neutral }}>
+                <th>Date</th>
+                <th>Site</th>
+                <th>Delivery Type</th>
+                <th>Grade</th>
+                <th>Total KGs</th>
+                <th>Transport Fees (RWF)</th>
+                <th>Commision Fees (RWF)</th>
+                <th>Cherry Amount (RWF)</th>
+                <th>Final Price (RWF)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading.purchases ? (
+                Array(5).fill(0).map((_, index) => (
+                  <SkeletonRow key={index} cols={9} />
+                ))
+              ) : getYesterdayPurchases().length > 0 ? (
+                getYesterdayPurchases().map((purchase) => {
+                  const transportFee = calculateTransportFee(purchase);
+                  const commissionFee = calculateCommissionFee(purchase);
+                  const cherryAmount = calculateCherryAmount(purchase, transportFee);
+
+                  if (editingInline === purchase.id) {
+                    // Editing row logic remains the same but with new columns
+                    return (
+                      <tr key={purchase.id}>
+                        <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+                        <td>
+                          {purchase.deliveryType === 'SITE_COLLECTION' ? (
+                            <select
+                              name="siteCollectionId"
+                              className="form-select form-select-sm"
+                              value={editFormData.siteCollectionId || ''}
+                              onChange={handleEditChange}
+                            >
+                              {siteCollections.map(site => (
+                                <option key={site.id} value={site.id}>{site.name}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct'
+                          )}
+                        </td>
+                        <td>
+                          <span className="badge" style={{
+                            backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' ? theme.directDelivery :
+                              purchase.deliveryType === 'SUPPLIER' ? theme.supplier : theme.centralStation
+                          }}>
+                            {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' :
+                              purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Site'}
+                          </span>
+                        </td>
+                        <td>
+                          <select
+                            name="grade"
+                            className="form-select form-select-sm"
+                            value={editFormData.grade}
+                            onChange={handleEditChange}
+                          >
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control form-control-sm"
+                            name="totalKgs"
+                            value={editFormData.totalKgs}
+                            onChange={handleEditChange}
+                          />
+                        </td>
+                        <td>{transportFee.toLocaleString()}</td>
+                        <td>{commissionFee.toLocaleString()}</td>
+                        <td>{cherryAmount.toLocaleString()}</td>
+                        <td>{parseFloat(editFormData.totalPrice).toLocaleString()}</td>
+                        <td>
+                          <div className="btn-group">
+                            <button
+                              className="btn btn-sm btn-sucafina"
+                              onClick={(e) => handleUpdateInline(e, purchase.id)}
+                              disabled={loading}
+                            >
+                              {loading ? (
+                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                              ) : (
+                                'Save'
+                              )}
+                            </button>
+                            <button
+                              className="btn btn-sm btn-light"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  // Regular row display
+                  return (
+                    <tr key={purchase.id}>
+                      <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+                      <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
+                      <td>
+                        <span className="badge" style={{
+                          backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' ? theme.directDelivery :
+                            purchase.deliveryType === 'SUPPLIER' ? theme.supplier : theme.centralStation
+                        }}>
+                          {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' :
+                            purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Site'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="badge bg-secondary">
+                          Grade {purchase.grade}
+                        </span>
+                      </td>
+                      <td>{purchase.totalKgs.toLocaleString()}</td>
+                      <td>{transportFee.toLocaleString()}</td>
+                      <td>{commissionFee.toLocaleString()}</td>
+                      <td>{cherryAmount.toLocaleString()}</td>
+                      <td>{purchase.totalPrice.toLocaleString()}</td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-outline-sucafina"
+                          onClick={() => handleEditInline(purchase)}
+                          style={{ color: theme.primary, borderColor: theme.primary }}
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <EmptyState message="No purchases recorded for yesterday" />
+              )}
+            </tbody>
+            {getYesterdayPurchases().length > 0 && (
+              <tfoot>
+                <tr style={{ backgroundColor: theme.neutral }}>
+                  <td colSpan="4"><strong>Totals</strong></td>
+                  <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + p.totalKgs, 0).toLocaleString()}</strong></td>
+                  <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + calculateTransportFee(p), 0).toLocaleString()}</strong></td>
+                  <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + calculateCherryAmount(p, calculateTransportFee(p)), 0).toLocaleString()}</strong></td>
+                  <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + p.totalPrice, 0).toLocaleString()}</strong></td>
+                  <td></td>
+                </tr>
+              </tfoot>
             )}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-
-
+          </table>
+        </div>
+      </>
+    );
+  };
 
 
   const renderPriceCard = (grade) => {
@@ -1393,6 +1105,10 @@ const PurchaseList = () => {
       </div>
     );
   };
+  useEffect(() => {
+    fetchGlobalFees();
+    fetchSiteCollectionFees();
+  }, []);
 
   return (
     <div className="container-fluid py-1">
@@ -1408,55 +1124,14 @@ const PurchaseList = () => {
           <div className="row g-4 mb-4">
             {['A', 'B'].map(grade => renderPriceCard(grade))}
           </div>
-          {/* <div className="row g-4 mb-4">
-            {['A', 'B'].map(grade => (
-              <div key={grade} className="col-md-6">
-                <div className="card border-0 shadow-sm">
-                  <div className="card-body">
-                    <h6 className="card-title mb-4">Cherry Grade {grade}</h6>
-                    <div className="d-flex justify-content-between align-items-center">
-                      {editingPrice[grade] ? (
-                        <div className="input-group">
-                          <span className="input-group-text">RWF</span>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={prices[grade]}
-                            onChange={(e) => handlePriceChange(grade, e.target.value)}
-                          />
-                          <button
-                            className="btn btn-primary"
-                            onClick={() => handlePriceSave(grade)}
-                            style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                          >
-                            Save
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="h4 mb-0">{prices[grade]} RWF</span>
-                          <button
-                            className="btn btn-outline-primary"
-                            onClick={() => handlePriceEdit(grade)}
-                            style={{ color: theme.primary, borderColor: theme.primary }}
-                          >
-                            Edit
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div> */}
 
           {/* New Purchase Form */}
+
           <div className="card border-0 shadow-sm mb-4">
             <div className="card-body">
               <span className="card-title mb-3 h5" style={{ color: theme.primary }}>New Purchase ({yesterdayString})</span>
-              <form onSubmit={handleSubmit} className="row g-3 mt-3">
-                <div className="col-md-2">
+              <form onSubmit={handleSubmit} className="row g-3 mt-3 align-items-end">
+                <div className="col-md-2 col-sm-6">
                   <label className="form-label">Delivery Type</label>
                   <select
                     name="deliveryType"
@@ -1468,17 +1143,17 @@ const PurchaseList = () => {
                     <option value="DIRECT_DELIVERY">Direct</option>
                     <option value="SITE_COLLECTION">Site</option>
                     <option value="SUPPLIER">Supplier</option>
-
                   </select>
                 </div>
-                {newPurchase.deliveryType === 'SITE_COLLECTION' && (
-                  <div className="col-md-2">
+
+                {newPurchase.deliveryType === 'SITE_COLLECTION' ? (
+                  <div className="col-md-2 col-sm-6">
                     <label className="form-label">Site</label>
                     <select
                       name="siteCollectionId"
                       className="form-select"
                       value={newPurchase.siteCollectionId}
-                      onChange={handleNewPurchaseChange}
+                      onChange={handleInputChange}
                       required
                     >
                       <option value="">Select Site</option>
@@ -1487,8 +1162,13 @@ const PurchaseList = () => {
                       ))}
                     </select>
                   </div>
+                ) : (
+                  <div className="col-md-2 col-sm-6 d-none d-md-block">
+                    {/* Empty div to maintain grid spacing when site selection is hidden */}
+                  </div>
                 )}
-                <div className="col-md-2">
+
+                <div className="col-md-2 col-sm-6">
                   <label className="form-label">Grade</label>
                   <select
                     name="grade"
@@ -1501,7 +1181,8 @@ const PurchaseList = () => {
                     <option value="B">B</option>
                   </select>
                 </div>
-                <div className="col-md-2">
+
+                <div className="col-md-2 col-sm-6">
                   <label className="form-label">Total KGs</label>
                   <input
                     type="number"
@@ -1513,21 +1194,23 @@ const PurchaseList = () => {
                     required
                   />
                 </div>
-                <div className="col-md-2">
-                  <label className="form-label">Total Price</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="totalPrice"
-                    value={newPurchase.totalPrice}
-                    readOnly
-                    placeholder="Calculated"
-                  />
+
+                <div className="col-md-2 col-sm-6">
+                  <label className="form-label">Cherry Price (RWF/kg)</label>
+                  <div className="d-flex align-items-center">
+                    <span className="form-control-plaintext">
+                      <strong>{newPurchase.cherryPrice}</strong>
+                      <small className="text-muted ms-2">
+                        ({newPurchase.grade === 'A' ? '750' : '200'} - {newPurchase.transportFee})
+                      </small>
+                    </span>
+                  </div>
                 </div>
-                <div className="col-md-2">
+
+                <div className="col-md-2 col-sm-6">
                   <button
                     type="submit"
-                    className="btn btn-primary float-end mt-4 p-2"
+                    className="btn btn-primary w-100"
                     disabled={loading}
                     style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
                   >
@@ -1542,197 +1225,122 @@ const PurchaseList = () => {
               </form>
             </div>
           </div>
+          
 
-          {/* Yesterday's Purchases Table */}
-          {/* <div className="table-responsive mt-4">
-            <table className="table table-hover">
-              <thead>
-                <tr style={{ backgroundColor: theme.neutral }}>
-                  <th>Time</th>
-                  <th>Site</th>
-                  <th>Delivery Type</th>
-                  <th>Grade</th>
-                  <th>Total KGs</th>
-                  <th>Price (RWF)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading.purchases ? (
-                  // Show 5 skeleton rows while loading
-                  Array(5).fill(0).map((_, index) => (
-                    <SkeletonRow key={index} cols={6} />
-                  ))
-                ) : getYesterdayPurchases().length > 0 ? (
-                  getYesterdayPurchases().map((purchase) => (
-                    <tr key={purchase.id}>
-                      <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
-                      <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
-                      <td>
-                        <span
-                          className="badge"
-                          style={{
-                            backgroundColor:
-                              purchase.deliveryType === 'DIRECT_DELIVERY'
-                                ? theme.directDelivery
-                                : purchase.deliveryType === 'SUPPLIER'
-                                  ? theme.supplier
-                                  : theme.centralStation
-                          }}
-                        >
-                          {purchase.deliveryType === 'DIRECT_DELIVERY'
-                            ? 'Direct'
-                            : purchase.deliveryType === 'SUPPLIER'
-                              ? 'Supplier'
-                              : 'Site'}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="badge bg-secondary">
-                          Grade {purchase.grade}
-                        </span>
-                      </td>
-                      <td>{purchase.totalKgs.toLocaleString()}</td>
-                      <td>{purchase.totalPrice.toLocaleString()}</td>
-                    </tr>
-                  ))
+{/* Yesterday's Purchases Table */ }
+
+{ renderPurchaseTable() }
+
+{/* Batches Section */ }
+<div className="card border-0 shadow-sm">
+  <div className="card-body">
+    <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
+    <div className="table-responsive mt-2">
+      <table className="table table-hover">
+        <thead>
+          <tr style={{ backgroundColor: theme.neutral }}>
+            <th>Batch Date</th>
+            <th>Grade</th>
+            <th>Total KGs</th>
+            <th>Total Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        
+        <tbody>
+          {isLoading.processingEntries ? (
+            // Show 3 skeleton rows while loading
+            Array(3).fill(0).map((_, index) => (
+              <SkeletonRow key={index} cols={6} />
+            ))
+          ) : getBatchesByGrade().length > 0 ? (
+            getBatchesByGrade().map((batch, index) => (
+              <tr key={index}>
+                <td>{batch.batchNo}</td>
+                <td>Grade {batch.grade}</td>
+                <td>{batch.totalKgs.toLocaleString()}</td>
+                <td>{batch.totalPrice.toLocaleString()}</td>
+                <td>
+                  {renderProcessingStatusBadge(batch.processingStatus)}
+                </td>
+                <td>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleStartProcessing(batch)}
+                    style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
+                    disabled={batch.processingStatus === 'IN_PROGRESS'}
+                  >
+                    Start Processing
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <EmptyState message="No batches available for processing" />
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{/* Processing Modal */ }
+{
+  selectedBatch && (
+    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <div className="modal-dialog">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">Start Processing - Batch {selectedBatch.batchNo}</h5>
+            <button type="button" className="btn-close" onClick={() => setSelectedBatch(null)}></button>
+          </div>
+          <div className="modal-body">
+            <div className="mb-3">
+              <label className="form-label">Processing Type</label>
+              <select
+                className="form-select"
+                value={processingType}
+                onChange={(e) => setProcessingType(e.target.value)}
+                required
+              >
+                <option value="">Select Processing Type</option>
+                {selectedBatch.grade === 'A' ? (
+                  <>
+                    <option value="FULLY_WASHED">Fully Washed</option>
+                    <option value="NATURAL">Natural</option>
+                    <option value="HONEY">Honey</option>
+                  </>
                 ) : (
-                  <EmptyState message="No purchases recorded for yesterday" />
+                  <option value="FULLY_WASHED">Fully Washed</option>
                 )}
-              </tbody>
-            </table>
-          </div> */}
-          {renderPurchaseTable()}
-
-          {/* Batches Section */}
-          <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
-              <div className="table-responsive mt-2">
-                <table className="table table-hover">
-                  <thead>
-                    <tr style={{ backgroundColor: theme.neutral }}>
-                      <th>Batch Date</th>
-                      <th>Grade</th>
-                      <th>Total KGs</th>
-                      <th>Total Price</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  {/* <tbody>
-                    {getBatchesByGrade().map((batch, index) => (
-                      <tr key={index}>
-                        <td>{batch.batchNo}</td>
-                        <td>Grade {batch.grade}</td>
-                        <td>{batch.totalKgs.toLocaleString()}</td>
-                        <td>{batch.totalPrice.toLocaleString()}</td>
-                        <td>
-                          {renderProcessingStatusBadge(batch.processingStatus)}
-                        </td>
-                        <td>
-                          <button
-                            className="btn btn-primary btn-sm"
-                            onClick={() => handleStartProcessing(batch)}
-                            style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                            disabled={batch.processingStatus === 'IN_PROGRESS'}
-                          >
-                            Start Processing
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody> */}
-                  <tbody>
-                    {isLoading.processingEntries ? (
-                      // Show 3 skeleton rows while loading
-                      Array(3).fill(0).map((_, index) => (
-                        <SkeletonRow key={index} cols={6} />
-                      ))
-                    ) : getBatchesByGrade().length > 0 ? (
-                      getBatchesByGrade().map((batch, index) => (
-                        <tr key={index}>
-                          <td>{batch.batchNo}</td>
-                          <td>Grade {batch.grade}</td>
-                          <td>{batch.totalKgs.toLocaleString()}</td>
-                          <td>{batch.totalPrice.toLocaleString()}</td>
-                          <td>
-                            {renderProcessingStatusBadge(batch.processingStatus)}
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-primary btn-sm"
-                              onClick={() => handleStartProcessing(batch)}
-                              style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                              disabled={batch.processingStatus === 'IN_PROGRESS'}
-                            >
-                              Start Processing
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <EmptyState message="No batches available for processing" />
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              </select>
             </div>
           </div>
-
-          {/* Processing Modal */}
-          {selectedBatch && (
-            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-              <div className="modal-dialog">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h5 className="modal-title">Start Processing - Batch {selectedBatch.batchNo}</h5>
-                    <button type="button" className="btn-close" onClick={() => setSelectedBatch(null)}></button>
-                  </div>
-                  <div className="modal-body">
-                    <div className="mb-3">
-                      <label className="form-label">Processing Type</label>
-                      <select
-                        className="form-select"
-                        value={processingType}
-                        onChange={(e) => setProcessingType(e.target.value)}
-                        required
-                      >
-                        <option value="">Select Processing Type</option>
-                        {selectedBatch.grade === 'A' ? (
-                          <>
-                            <option value="FULLY_WASHED">Fully Washed</option>
-                            <option value="NATURAL">Natural</option>
-                            <option value="HONEY">Honey</option>
-                          </>
-                        ) : (
-                          <option value="FULLY_WASHED">Fully Washed</option>
-                        )}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => setSelectedBatch(null)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={handleProcessingSubmit}
-                      disabled={!processingType}
-                      style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                    >
-                      Start Processing
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="modal-footer">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setSelectedBatch(null)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleProcessingSubmit}
+              disabled={!processingType}
+              style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
+            >
+              Start Processing
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
+  )
+}
+        </div >
       </div >
     </div >
   );

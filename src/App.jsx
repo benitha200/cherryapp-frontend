@@ -92,6 +92,9 @@ import DailyPurchaseDetails from './components/DailyPurchaseDetails.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Transfer from './components/Transfer.jsx';
 import AdminDashboard from './components/Admin/AdminDashboard.jsx';
+import PricingManagement from './components/Admin/PricingManagement.jsx';
+import Users from './components/Admin/Users.jsx';
+// import Users from './components/Admin/AdminDashboard.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -151,10 +154,18 @@ const AppContent = () => {
               </PrivateRoute>
             } />
             <Route
-            path="/admin"
+            path="/users"
             element={
               <PrivateRoute>
-                <AdminDashboard />
+                <Users />
+              </PrivateRoute>
+            }
+          />
+            <Route
+            path="/pricing"
+            element={
+              <PrivateRoute>
+                <PricingManagement />
               </PrivateRoute>
             }
           />
