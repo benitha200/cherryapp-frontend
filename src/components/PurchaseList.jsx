@@ -105,17 +105,17 @@ const PurchaseList = () => {
   };
 
   // Fetch site collection fees
-  const fetchSiteCollectionFees = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/pricing/site-fees`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSiteCollectionFees(response.data || []);
-    } catch (err) {
-      setError('Error fetching site fees');
-    }
-  };
+  // const fetchSiteCollectionFees = async () => {
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     const response = await axios.get(`${API_URL}/pricing/site-fees`, {
+  //       headers: { Authorization: `Bearer ${token}` }
+  //     });
+  //     setSiteCollectionFees(response.data || []);
+  //   } catch (err) {
+  //     setError('Error fetching site fees');
+  //   }
+  // };
 
 
 
@@ -1107,7 +1107,7 @@ const PurchaseList = () => {
   };
   useEffect(() => {
     fetchGlobalFees();
-    fetchSiteCollectionFees();
+    // fetchSiteCollectionFees();
   }, []);
 
   return (
