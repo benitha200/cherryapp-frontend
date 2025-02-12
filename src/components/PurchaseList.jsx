@@ -1201,7 +1201,7 @@ const PurchaseList = () => {
                     <span className="form-control-plaintext">
                       <strong>{newPurchase.cherryPrice}</strong>
                       <small className="text-muted ms-2">
-                        ({newPurchase.grade === 'A' ? '750' : '200'} - {newPurchase.transportFee})
+                        ({newPurchase.grade === 'A' ? '750' : '200'} - {newPurchase?.transportFee})
                       </small>
                     </span>
                   </div>

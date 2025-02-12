@@ -204,9 +204,11 @@ const Sidebar = () => {
   if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
     menuItems = [
       ...menuItems,
-      { path: '/users', icon: 'people', text: 'Users' },
       { path: '/pricing', icon: 'cash', text: 'Pricing' },
-      { path: '/site-collections', icon: 'collection', text: 'Site Collections' }
+      { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
+      { path: '/cws', icon: 'journal', text: 'CWS' },
+      { path: '/users', icon: 'people', text: 'Users' },
+      
     ];
   }
 

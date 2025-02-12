@@ -94,6 +94,8 @@ import Transfer from './components/Transfer.jsx';
 import AdminDashboard from './components/Admin/AdminDashboard.jsx';
 import PricingManagement from './components/Admin/PricingManagement.jsx';
 import Users from './components/Admin/Users.jsx';
+import CwsList from './components/Admin/Cws/CwsList.jsx';
+import CwsForm from './components/Admin/Cws/CwsForm.jsx';
 // import Users from './components/Admin/AdminDashboard.jsx';
 
 const AppContent = () => {
@@ -166,6 +168,22 @@ const AppContent = () => {
             element={
               <PrivateRoute>
                 <PricingManagement />
+              </PrivateRoute>
+            }
+          />
+            <Route
+            path="/cws"
+            element={
+              <PrivateRoute>
+                <CwsList />
+              </PrivateRoute>
+            }
+          />
+            <Route
+            path="/cws/new"
+            element={
+              <PrivateRoute>
+                <CwsForm />
               </PrivateRoute>
             }
           />
