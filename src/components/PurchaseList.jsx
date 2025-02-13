@@ -606,7 +606,7 @@ const PurchaseList = () => {
       // Handle the specific error: "That batch is already in processing, you can't add other purchases"
       if (error.response?.data?.error === "That batch is already in processing, you can't add other purchases") {
         setValidationError(
-          <div className="alert alert-danger" role="alert">
+          <div className="alert alert-warning" role="alert">
             <i className="bi bi-x-circle me-2"></i>
             <strong>Cannot add purchase.</strong>
             <div className="mt-1">
