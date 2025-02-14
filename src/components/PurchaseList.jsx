@@ -128,7 +128,7 @@ const PurchaseList = () => {
   
     cherryPrice = baseCherryPrice - (transportFee + commissionFee);
     // Calculate total price: (cherryPrice + transportFee) * totalKgs
-    const totalPrice = (cherryPrice + transportFee) * parseFloat(totalKgs || 0);
+    const totalPrice = (cherryPrice + transportFee + commissionFee) * parseFloat(totalKgs || 0);
     const commissionAmount = deliveryType === 'SITE_COLLECTION' ?
       (parseFloat(totalKgs || 0) * commissionFee) : 0;
   
