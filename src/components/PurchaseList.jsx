@@ -104,33 +104,34 @@ const PurchaseList = () => {
     }
   };
 
-
   const calculatePrices = (data) => {
     const { deliveryType, siteCollectionId, grade, totalKgs } = data;
     let transportFee = 0;
     let cherryPrice = 0;
     let commissionFee = 0;
-
+  
     // Get base cherry price based on grade
     let baseCherryPrice = grade === 'A' ?
       (cwsPricing ? cwsPricing.gradeAPrice : 750) :
       200; // Grade B fixed price is 200
-
+  
     if (deliveryType === 'SITE_COLLECTION' && siteCollectionId) {
+      // Only apply transport fee for site collections
       const siteFee = siteSpecificFees[siteCollectionId];
       transportFee = siteFee !== undefined ? siteFee : globalFees.transportFee;
       commissionFee = globalFees.commissionFee;
     } else {
-      // For DIRECT_DELIVERY and SUPPLIER, use CWS pricing
-      transportFee = cwsPricing ? cwsPricing.transportFee : 50; // Default transport fee if no CWS pricing
+      // For DIRECT_DELIVERY and SUPPLIER, set transport fee to 0
+      transportFee = 0;
+      commissionFee = 0;
     }
-
-    cherryPrice = baseCherryPrice;
+  
+    cherryPrice = baseCherryPrice - (transportFee + commissionFee);
     // Calculate total price: (cherryPrice + transportFee) * totalKgs
     const totalPrice = (cherryPrice + transportFee) * parseFloat(totalKgs || 0);
     const commissionAmount = deliveryType === 'SITE_COLLECTION' ?
       (parseFloat(totalKgs || 0) * commissionFee) : 0;
-
+  
     return {
       cherryPrice,
       transportFee,
@@ -220,22 +221,6 @@ const PurchaseList = () => {
     }
   };
 
-  // Modify the calculateTransportFee function
-  const calculateTransportFee = (purchase) => {
-    if (purchase.deliveryType === 'SITE_COLLECTION' && purchase.siteCollectionId) {
-      const siteFee = siteSpecificFees[purchase.siteCollectionId];
-      if (siteFee !== undefined) {
-        return siteFee * purchase.totalKgs;
-      } else {
-        // Fetch the site-specific fee if we don't have it
-        fetchSiteSpecificFee(purchase.siteCollectionId);
-        return globalFees.transportFee * purchase.totalKgs; // Use global fee as fallback
-      }
-    }
-    return globalFees.transportFee * purchase.totalKgs;
-  };
-
-
   const validatePurchase = (purchaseData, existingPurchases) => {
     const todayPurchases = existingPurchases.filter(p =>
       new Date(p.purchaseDate).toISOString().split('T')[0] === yesterdayString &&
@@ -278,38 +263,6 @@ const PurchaseList = () => {
 
     return '';
   };
-
-  // const isGradeProcessing = (grade, date) => {
-  //   if (!date || !grade || !Array.isArray(processingEntries)) return false;
-    
-  //   // Generate expected batch number format based on date and grade
-  //   const targetDate = new Date(date);
-  //   if (isNaN(targetDate.getTime())) return false;
-    
-  //   // Extract year and format date parts
-  //   const year = targetDate.getFullYear().toString().slice(2);
-  //   const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-  //   const day = String(targetDate.getDate()).padStart(2, '0');
-    
-  //   // Assuming batch number format is like "25MSH1202A" where "25" is year, "12" is month, "02" is day
-  //   // This would need to be adapted to match your actual batch number format
-    
-  //   return processingEntries.some(entry => 
-  //     entry.grade === grade && 
-  //     ['IN_PROGRESS', 'COMPLETED'].includes(entry.status) &&
-  //     entry.batchNo.includes(`${year}${month}${day}`)
-  //   );
-  // };
-
-  // const isGradeProcessing = (grade, date, batchNo) => {
-  //   if (!Array.isArray(processingEntries)) return false;
-    
-  //   return processingEntries.some(entry => 
-  //     entry.batchNo === batchNo &&
-  //     entry.grade === grade && 
-  //     ['IN_PROGRESS', 'COMPLETED'].includes(entry.status)
-  //   );
-  // };
 
   const isGradeProcessing = (grade, date, batchNo) => {
     if (!Array.isArray(processingEntries)) return false;
@@ -630,88 +583,6 @@ const PurchaseList = () => {
       setLoading(false);
     }
   };
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-  //   setValidationError('');
-
-  //   try {
-  //     if (hasGradeStartedProcessing(processingEntries, newPurchase.grade, yesterdayString)) {
-  //       const processingTime = getProcessingStartTime(newPurchase.grade, yesterdayString);
-  //       setValidationError(
-  //         <div className="alert alert-warning" role="alert">
-  //           <i className="bi bi-exclamation-triangle me-2"></i>
-  //           <strong>Cannot add purchase for Grade {newPurchase.grade}.</strong>
-  //           <div className="mt-1">
-  //             Processing for Grade {newPurchase.grade} cherries from yesterday has already started
-  //             {processingTime ? ` at ${processingTime}` : ''}.
-  //             Please contact your supervisor if you need to add more purchases for this grade.
-  //           </div>
-  //         </div>
-  //       );
-  //       setLoading(false);
-  //       return;
-  //     }
-
-  //     const prices = calculatePrices(newPurchase);
-
-  //     const formattedPurchase = {
-  //       cwsId: parseInt(newPurchase.cwsId, 10),
-  //       deliveryType: newPurchase.deliveryType,
-  //       totalKgs: parseFloat(newPurchase.totalKgs),
-  //       totalPrice: prices.totalPrice,
-  //       cherryPrice: prices.cherryPrice,
-  //       transportFee: prices.transportFee,
-  //       commissionFee: prices.commissionFee,
-  //       grade: newPurchase.grade,
-  //       purchaseDate: yesterdayString,
-  //       batchNo: yesterdayString,
-  //       siteCollectionId: newPurchase.siteCollectionId ?
-  //         parseInt(newPurchase.siteCollectionId, 10) : null
-  //     };
-
-  //     // Validate purchase
-  //     const error = validatePurchase(formattedPurchase, purchases);
-  //     if (error) {
-  //       setValidationError(error);
-  //       setLoading(false);
-  //       return;
-  //     }
-
-  //     if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY' ||
-  //       formattedPurchase.deliveryType === 'SUPPLIER') {
-  //       delete formattedPurchase.siteCollectionId;
-  //     }
-
-  //     const response = await axios.post(`${API_URL}/purchases`, formattedPurchase, {
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         Authorization: `Bearer ${localStorage.getItem('token')}`
-  //       }
-  //     });
-
-  //     setPurchases([response.data, ...purchases]);
-  //     setNewPurchase(prev => ({
-  //       ...prev,
-  //       totalKgs: '',
-  //       totalPrice: '',
-  //       batchNo: yesterdayString
-  //     }));
-  //   }  catch (error) {
-  //     console.error('Error adding purchase:', error);
-  //     setValidationError(
-  //       <div className="alert alert-danger" role="alert">
-  //         <i className="bi bi-x-circle me-2"></i>
-  //         <strong>Error adding purchase:</strong>
-  //         <div className="mt-1">
-  //           {error.response?.data?.message || 'An unexpected error occurred. Please try again.'}
-  //         </div>
-  //       </div>
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleEditInline = (purchase) => {
     setEditingInline(purchase.id);
@@ -956,55 +827,12 @@ const PurchaseList = () => {
 
 
   const renderPurchaseTable = () => {
-    const calculateTransportFee = (purchase) => {
-      if (purchase.deliveryType === 'SITE_COLLECTION' && purchase.siteCollectionId) {
-        const siteFee = siteSpecificFees[purchase.siteCollectionId];
-        if (siteFee !== undefined) {
-          return siteFee * purchase.totalKgs;
-        } else {
-          fetchSiteSpecificFee(purchase.siteCollectionId);
-          return globalFees.transportFee * purchase.totalKgs;
-        }
-      } else {
-        // For DIRECT_DELIVERY and SUPPLIER, use CWS pricing
-        return cwsPricing ? cwsPricing.transportFee * purchase.totalKgs : 0;
-      }
-    };
-
-    const calculateCommissionFee = (purchase) => {
-      if (purchase.deliveryType === 'SITE_COLLECTION') {
-        return globalFees.commissionFee * purchase.totalKgs;
-      }
-      // Return 0 for DIRECT_DELIVERY and SUPPLIER
-      return 0;
-    };
-
-
-    const calculateCherryAmount = (purchase, transportFee) => {
-      return purchase.totalPrice - transportFee; // Add back transport fee to get original cherry amount
-    };
-
     const hasProcessingStarted = () => {
       const yesterdayPurchases = purchases.filter(purchase => {
         const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
         return purchaseDate === yesterdayString;
       });
-  
-      // Get distinct batches that have started processing
-      const processingBatches = new Set(
-        processingEntries
-          .filter(entry => {
-            const entryBatch = yesterdayPurchases.find(purchase => 
-              purchase.batchNo === entry.batchNo && 
-              purchase.grade === entry.grade
-            );
-            return entryBatch && ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
-          })
-          .map(entry => `${entry.batchNo}-${entry.grade}`)
-      );
-  
-      return processingBatches.size >= 2;
-    };
+    }
 
     return (
       <>
@@ -1023,7 +851,7 @@ const PurchaseList = () => {
                 <th>Grade</th>
                 <th>Total KGs</th>
                 <th>Transport Fees (RWF)</th>
-                <th>Commision Fees (RWF)</th>
+                <th>Commission Fees (RWF)</th>
                 <th>Cherry Amount (RWF)</th>
                 <th>Final Price (RWF)</th>
                 <th>Actions</th>
@@ -1034,7 +862,7 @@ const PurchaseList = () => {
                 Array(5).fill(0).map((_, index) => (
                   <SkeletonRow key={index} cols={9} />
                 ))
-              )  : hasProcessingStarted() ? (
+              ) : hasProcessingStarted() ? (
                 <tr>
                   <td colSpan="10" className="text-center py-4">
                     <EmptyState message="Yesterday's data processing has already started. You cannot enter new purchases." />
@@ -1042,12 +870,12 @@ const PurchaseList = () => {
                 </tr>
               ) : getYesterdayPurchases().length > 0 ? (
                 getYesterdayPurchases().map((purchase) => {
-                  const transportFee = calculateTransportFee(purchase);
-                  const commissionFee = calculateCommissionFee(purchase);
-                  const cherryAmount = calculateCherryAmount(purchase, transportFee);
-
+                  // Calculate cherry amount using values from API
+                  const totalTransportFees = purchase.transportFee * purchase.totalKgs;
+                  const totalCommissionFees = purchase.commissionFee * purchase.totalKgs;
+                  const cherryAmount = purchase.cherryPrice * purchase.totalKgs;
+  
                   if (editingInline === purchase.id) {
-                    // Editing row logic remains the same but with new columns
                     return (
                       <tr key={purchase.id}>
                         <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
@@ -1096,10 +924,10 @@ const PurchaseList = () => {
                             onChange={handleEditChange}
                           />
                         </td>
-                        <td>{transportFee.toLocaleString()}</td>
-                        <td>{commissionFee.toLocaleString()}</td>
+                        <td>{totalTransportFees.toLocaleString()}</td>
+                        <td>{totalCommissionFees.toLocaleString()}</td>
                         <td>{cherryAmount.toLocaleString()}</td>
-                        <td>{parseFloat(editFormData.totalPrice).toLocaleString()}</td>
+                        <td>{purchase.totalPrice.toLocaleString()}</td>
                         <td>
                           <div className="btn-group">
                             <button
@@ -1124,7 +952,7 @@ const PurchaseList = () => {
                       </tr>
                     );
                   }
-
+  
                   // Regular row display
                   return (
                     <tr key={purchase.id}>
@@ -1145,8 +973,8 @@ const PurchaseList = () => {
                         </span>
                       </td>
                       <td>{purchase.totalKgs.toLocaleString()}</td>
-                      <td>{transportFee.toLocaleString()}</td>
-                      <td>{commissionFee.toLocaleString()}</td>
+                      <td>{totalTransportFees.toLocaleString()}</td>
+                      <td>{totalCommissionFees.toLocaleString()}</td>
                       <td>{cherryAmount.toLocaleString()}</td>
                       <td>{purchase.totalPrice.toLocaleString()}</td>
                       <td>
@@ -1169,10 +997,39 @@ const PurchaseList = () => {
               <tfoot>
                 <tr style={{ backgroundColor: theme.neutral }}>
                   <td colSpan="4"><strong>Totals</strong></td>
-                  <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + p.totalKgs, 0).toLocaleString()}</strong></td>
-                  <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + calculateTransportFee(p), 0).toLocaleString()}</strong></td>
-                  <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + calculateCherryAmount(p, calculateTransportFee(p)), 0).toLocaleString()}</strong></td>
-                  <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + p.totalPrice, 0).toLocaleString()}</strong></td>
+                  <td>
+                    <strong>
+                      {getYesterdayPurchases().reduce((sum, p) => sum + p.totalKgs, 0).toLocaleString()}
+                    </strong>
+                  </td>
+                  <td>
+                    <strong>
+                      {getYesterdayPurchases()
+                        .reduce((sum, p) => sum + (p.transportFee * p.totalKgs), 0)
+                        .toLocaleString()}
+                    </strong>
+                  </td>
+                  <td>
+                    <strong>
+                      {getYesterdayPurchases()
+                        .reduce((sum, p) => sum + (p.commissionFee * p.totalKgs), 0)
+                        .toLocaleString()}
+                    </strong>
+                  </td>
+                  <td>
+                    <strong>
+                      {getYesterdayPurchases()
+                        .reduce((sum, p) => sum + (p.cherryPrice * p.totalKgs), 0)
+                        .toLocaleString()}
+                    </strong>
+                  </td>
+                  <td>
+                    <strong>
+                      {getYesterdayPurchases()
+                        .reduce((sum, p) => sum + p.totalPrice, 0)
+                        .toLocaleString()}
+                    </strong>
+                  </td>
                   <td></td>
                 </tr>
               </tfoot>
@@ -1182,10 +1039,238 @@ const PurchaseList = () => {
       </>
     );
   };
+  // const renderPurchaseTable = () => {
+  //   const calculateTransportFee = (purchase) => {
+  //     if (purchase.deliveryType === 'SITE_COLLECTION' && purchase.siteCollectionId) {
+  //       const siteFee = siteSpecificFees[purchase.siteCollectionId];
+  //       if (siteFee !== undefined) {
+  //         return siteFee * purchase.totalKgs;
+  //       } else {
+  //         fetchSiteSpecificFee(purchase.siteCollectionId);
+  //         return globalFees.transportFee * purchase.totalKgs;
+  //       }
+  //     } else {
+  //       // For DIRECT_DELIVERY and SUPPLIER, use CWS pricing
+  //       return cwsPricing ? cwsPricing.transportFee * purchase.totalKgs : 0;
+  //     }
+  //   };
+
+  //   const calculateCommissionFee = (purchase) => {
+  //     if (purchase.deliveryType === 'SITE_COLLECTION') {
+  //       return globalFees.commissionFee * purchase.totalKgs;
+  //     }
+  //     // Return 0 for DIRECT_DELIVERY and SUPPLIER
+  //     return 0;
+  //   };
+
+
+  //   const calculateCherryAmount = (purchase, transportFee) => {
+  //     return purchase.totalPrice - transportFee; // Add back transport fee to get original cherry amount
+  //   };
+
+    // const hasProcessingStarted = () => {
+    //   const yesterdayPurchases = purchases.filter(purchase => {
+    //     const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+    //     return purchaseDate === yesterdayString;
+    //   });
+  
+  //     // Get distinct batches that have started processing
+  //     const processingBatches = new Set(
+  //       processingEntries
+  //         .filter(entry => {
+  //           const entryBatch = yesterdayPurchases.find(purchase => 
+  //             purchase.batchNo === entry.batchNo && 
+  //             purchase.grade === entry.grade
+  //           );
+  //           return entryBatch && ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
+  //         })
+  //         .map(entry => `${entry.batchNo}-${entry.grade}`)
+  //     );
+  
+  //     return processingBatches.size >= 2;
+  //   };
+
+  //   return (
+  //     <>
+  //       {validationError && (
+  //         <div className="alert alert-warning" role="alert">
+  //           {validationError}
+  //         </div>
+  //       )}
+  //       <div className="table-responsive mt-4">
+  //         <table className="table table-hover">
+  //           <thead>
+  //             <tr style={{ backgroundColor: theme.neutral }}>
+  //               <th>Date</th>
+  //               <th>Site</th>
+  //               <th>Delivery Type</th>
+  //               <th>Grade</th>
+  //               <th>Total KGs</th>
+  //               <th>Transport Fees (RWF)</th>
+  //               <th>Commision Fees (RWF)</th>
+  //               <th>Cherry Amount (RWF)</th>
+  //               <th>Final Price (RWF)</th>
+  //               <th>Actions</th>
+  //             </tr>
+  //           </thead>
+  //           <tbody>
+  //             {isLoading.purchases ? (
+  //               Array(5).fill(0).map((_, index) => (
+  //                 <SkeletonRow key={index} cols={9} />
+  //               ))
+  //             )  : hasProcessingStarted() ? (
+  //               <tr>
+  //                 <td colSpan="10" className="text-center py-4">
+  //                   <EmptyState message="Yesterday's data processing has already started. You cannot enter new purchases." />
+  //                 </td>
+  //               </tr>
+  //             ) : getYesterdayPurchases().length > 0 ? (
+  //               getYesterdayPurchases().map((purchase) => {
+  //                 const transportFee = calculateTransportFee(purchase);
+  //                 const commissionFee = calculateCommissionFee(purchase);
+  //                 const cherryAmount = calculateCherryAmount(purchase, transportFee);
+
+  //                 if (editingInline === purchase.id) {
+  //                   // Editing row logic remains the same but with new columns
+  //                   return (
+  //                     <tr key={purchase.id}>
+  //                       <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+  //                       <td>
+  //                         {purchase.deliveryType === 'SITE_COLLECTION' ? (
+  //                           <select
+  //                             name="siteCollectionId"
+  //                             className="form-select form-select-sm"
+  //                             value={editFormData.siteCollectionId || ''}
+  //                             onChange={handleEditChange}
+  //                           >
+  //                             {siteCollections.map(site => (
+  //                               <option key={site.id} value={site.id}>{site.name}</option>
+  //                             ))}
+  //                           </select>
+  //                         ) : (
+  //                           purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct'
+  //                         )}
+  //                       </td>
+  //                       <td>
+  //                         <span className="badge" style={{
+  //                           backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' ? theme.directDelivery :
+  //                             purchase.deliveryType === 'SUPPLIER' ? theme.supplier : theme.centralStation
+  //                         }}>
+  //                           {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' :
+  //                             purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Site'}
+  //                         </span>
+  //                       </td>
+  //                       <td>
+  //                         <select
+  //                           name="grade"
+  //                           className="form-select form-select-sm"
+  //                           value={editFormData.grade}
+  //                           onChange={handleEditChange}
+  //                         >
+  //                           <option value="A">A</option>
+  //                           <option value="B">B</option>
+  //                         </select>
+  //                       </td>
+  //                       <td>
+  //                         <input
+  //                           type="number"
+  //                           className="form-control form-control-sm"
+  //                           name="totalKgs"
+  //                           value={editFormData.totalKgs}
+  //                           onChange={handleEditChange}
+  //                         />
+  //                       </td>
+  //                       <td>{transportFee.toLocaleString()}</td>
+  //                       <td>{commissionFee.toLocaleString()}</td>
+  //                       <td>{cherryAmount.toLocaleString()}</td>
+  //                       <td>{parseFloat(editFormData.totalPrice).toLocaleString()}</td>
+  //                       <td>
+  //                         <div className="btn-group">
+  //                           <button
+  //                             className="btn btn-sm btn-sucafina"
+  //                             onClick={(e) => handleUpdateInline(e, purchase.id)}
+  //                             disabled={loading}
+  //                           >
+  //                             {loading ? (
+  //                               <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+  //                             ) : (
+  //                               'Save'
+  //                             )}
+  //                           </button>
+  //                           <button
+  //                             className="btn btn-sm btn-light"
+  //                             onClick={handleCancelEdit}
+  //                           >
+  //                             Cancel
+  //                           </button>
+  //                         </div>
+  //                       </td>
+  //                     </tr>
+  //                   );
+  //                 }
+
+  //                 // Regular row display
+  //                 return (
+  //                   <tr key={purchase.id}>
+  //                     <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+  //                     <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
+  //                     <td>
+  //                       <span className="badge" style={{
+  //                         backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' ? theme.directDelivery :
+  //                           purchase.deliveryType === 'SUPPLIER' ? theme.supplier : theme.centralStation
+  //                       }}>
+  //                         {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' :
+  //                           purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Site'}
+  //                       </span>
+  //                     </td>
+  //                     <td>
+  //                       <span className="badge bg-secondary">
+  //                         Grade {purchase.grade}
+  //                       </span>
+  //                     </td>
+  //                     <td>{purchase.totalKgs.toLocaleString()}</td>
+  //                     <td>{transportFee.toLocaleString()}</td>
+  //                     <td>{commissionFee.toLocaleString()}</td>
+  //                     <td>{cherryAmount.toLocaleString()}</td>
+  //                     <td>{purchase.totalPrice.toLocaleString()}</td>
+  //                     <td>
+  //                       <button
+  //                         className="btn btn-sm btn-outline-sucafina"
+  //                         onClick={() => handleEditInline(purchase)}
+  //                         style={{ color: theme.primary, borderColor: theme.primary }}
+  //                       >
+  //                         Edit
+  //                       </button>
+  //                     </td>
+  //                   </tr>
+  //                 );
+  //               })
+  //             ) : (
+  //               <EmptyState message="No purchases recorded for yesterday" />
+  //             )}
+  //           </tbody>
+  //           {getYesterdayPurchases().length > 0 && (
+  //             <tfoot>
+  //               <tr style={{ backgroundColor: theme.neutral }}>
+  //                 <td colSpan="4"><strong>Totals</strong></td>
+  //                 <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + p.totalKgs, 0).toLocaleString()}</strong></td>
+  //                 <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + calculateTransportFee(p), 0).toLocaleString()}</strong></td>
+  //                 <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + calculateCherryAmount(p, calculateTransportFee(p)), 0).toLocaleString()}</strong></td>
+  //                 <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + p.totalPrice, 0).toLocaleString()}</strong></td>
+  //                 <td></td>
+  //               </tr>
+  //             </tfoot>
+  //           )}
+  //         </table>
+  //       </div>
+  //     </>
+  //   );
+  // };
 
 
   const renderPriceCard = (grade) => {
     const isGradeA = grade === 'A';
+
 
     return (
       <div key={grade} className="col-md-6">
