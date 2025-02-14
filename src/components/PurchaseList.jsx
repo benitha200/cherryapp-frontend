@@ -66,6 +66,7 @@ const PurchaseList = () => {
   const [processingType, setProcessingType] = useState('');
   const [selectedBatch, setSelectedBatch] = useState(null);
   const userInfo = JSON.parse(localStorage.getItem('user'));
+  const cwsInfo = JSON.parse(localStorage.getItem('cws'));
 
   // Set today's date and yesterday's date
   const today = new Date();
@@ -109,12 +110,12 @@ const PurchaseList = () => {
     let transportFee = 0;
     let cherryPrice = 0;
     let commissionFee = 0;
-  
+
     // Get base cherry price based on grade
     let baseCherryPrice = grade === 'A' ?
       (cwsPricing ? cwsPricing.gradeAPrice : 750) :
       200; // Grade B fixed price is 200
-  
+
     if (deliveryType === 'SITE_COLLECTION' && siteCollectionId) {
       // Only apply transport fee for site collections
       const siteFee = siteSpecificFees[siteCollectionId];
@@ -125,13 +126,13 @@ const PurchaseList = () => {
       transportFee = 0;
       commissionFee = 0;
     }
-  
+
     cherryPrice = baseCherryPrice - (transportFee + commissionFee);
     // Calculate total price: (cherryPrice + transportFee) * totalKgs
     const totalPrice = (cherryPrice + transportFee + commissionFee) * parseFloat(totalKgs || 0);
     const commissionAmount = deliveryType === 'SITE_COLLECTION' ?
       (parseFloat(totalKgs || 0) * commissionFee) : 0;
-  
+
     return {
       cherryPrice,
       transportFee,
@@ -143,22 +144,22 @@ const PurchaseList = () => {
 
   const hasGradeStartedProcessing = (processingEntries, grade, date) => {
     if (!date || !grade || !Array.isArray(processingEntries)) return false;
-    
+
     try {
       const targetDate = new Date(date);
       // Check if date is valid
       if (isNaN(targetDate.getTime())) return false;
-      
+
       const targetDateString = targetDate.toISOString().split('T')[0];
-      
+
       return processingEntries.some(entry => {
         if (!entry.batchNo) return false;
-        
+
         try {
           const entryDate = new Date(entry.batchNo);
           // Check if entry date is valid
           if (isNaN(entryDate.getTime())) return false;
-          
+
           return entryDate.toISOString().split('T')[0] === targetDateString &&
             entry.grade === grade &&
             ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
@@ -172,7 +173,7 @@ const PurchaseList = () => {
       return false;
     }
   };
-  
+
 
   const getAvailableGrades = () => {
     const grades = ['A', 'B'];
@@ -182,13 +183,13 @@ const PurchaseList = () => {
   const getYesterdayPurchases = () => {
     // Get a list of all batch numbers currently in processing
     const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
-    
+
     return purchases.filter(purchase => {
       const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
       // Only show purchases that haven't started processing and their batch is not in processing
       return purchaseDate === yesterdayString &&
-             !isGradeProcessing(purchase.grade, yesterdayString) &&
-             !processingBatchNumbers.includes(purchase.batchNo);
+        !isGradeProcessing(purchase.grade, yesterdayString) &&
+        !processingBatchNumbers.includes(purchase.batchNo);
     });
   };
 
@@ -266,24 +267,24 @@ const PurchaseList = () => {
 
   const isGradeProcessing = (grade, date, batchNo) => {
     if (!Array.isArray(processingEntries)) return false;
-    
+
     return processingEntries.some(entry => {
       // If we have a specific batch number, use exact matching
       if (batchNo) {
-        return entry.batchNo === batchNo && 
-               entry.grade === grade && 
-               ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
+        return entry.batchNo === batchNo &&
+          entry.grade === grade &&
+          ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
       }
-      
+
       // For date-based checks, extract the date portion from the batch number
       // Assuming batch numbers are in format "YYMSHMMDDx" where x is the grade
       const dateFromBatch = entry.batchNo.substring(5, 9); // Extract MMDD
       const targetDate = new Date(date);
       const targetMMDD = `${String(targetDate.getMonth() + 1).padStart(2, '0')}${String(targetDate.getDate()).padStart(2, '0')}`;
-      
+
       return dateFromBatch === targetMMDD &&
-             entry.grade === grade && 
-             ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
+        entry.grade === grade &&
+        ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
     });
   };
 
@@ -453,15 +454,15 @@ const PurchaseList = () => {
     e.preventDefault();
     setLoading(true);
     setValidationError('');
-  
+
     try {
       // First check: Has any processing started for this batch/grade
       const isBatchProcessing = processingEntries.some(entry => {
-        return entry.batchNo === yesterdayString && 
-               entry.grade === newPurchase.grade && 
-               ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
+        return entry.batchNo === yesterdayString &&
+          entry.grade === newPurchase.grade &&
+          ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
       });
-  
+
       if (isBatchProcessing) {
         const processingTime = getProcessingStartTime(newPurchase.grade, yesterdayString);
         setValidationError(
@@ -478,17 +479,17 @@ const PurchaseList = () => {
         setLoading(false);
         return;
       }
-  
+
       // Second check: Has processing started for any other grade (which locks all entries)
       const hasAnyProcessingStarted = processingEntries.some(entry => {
         const entryDate = entry.batchNo.substring(5, 9); // Extract MMDD from batch
         const targetDate = new Date(yesterdayString);
         const targetMMDD = `${String(targetDate.getMonth() + 1).padStart(2, '0')}${String(targetDate.getDate()).padStart(2, '0')}`;
-        
-        return entryDate === targetMMDD && 
-               ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
+
+        return entryDate === targetMMDD &&
+          ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
       });
-  
+
       if (hasAnyProcessingStarted) {
         setValidationError(
           <div className="alert alert-danger" role="alert">
@@ -503,9 +504,9 @@ const PurchaseList = () => {
         setLoading(false);
         return;
       }
-  
+
       const prices = calculatePrices(newPurchase);
-  
+
       const formattedPurchase = {
         cwsId: parseInt(newPurchase.cwsId, 10),
         deliveryType: newPurchase.deliveryType,
@@ -520,7 +521,7 @@ const PurchaseList = () => {
         siteCollectionId: newPurchase.siteCollectionId ?
           parseInt(newPurchase.siteCollectionId, 10) : null
       };
-  
+
       // Existing purchase validation
       const error = validatePurchase(formattedPurchase, purchases);
       if (error) {
@@ -533,19 +534,19 @@ const PurchaseList = () => {
         setLoading(false);
         return;
       }
-  
+
       if (formattedPurchase.deliveryType === 'DIRECT_DELIVERY' ||
-          formattedPurchase.deliveryType === 'SUPPLIER') {
+        formattedPurchase.deliveryType === 'SUPPLIER') {
         delete formattedPurchase.siteCollectionId;
       }
-  
+
       const response = await axios.post(`${API_URL}/purchases`, formattedPurchase, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-  
+
       setPurchases([response.data, ...purchases]);
       setNewPurchase(prev => ({
         ...prev,
@@ -555,7 +556,7 @@ const PurchaseList = () => {
       }));
     } catch (error) {
       console.error('Error adding purchase:', error);
-  
+
       // Handle the specific error: "That batch is already in processing, you can't add other purchases"
       if (error.response?.data?.error === "That batch is already in processing, you can't add other purchases") {
         setValidationError(
@@ -781,26 +782,26 @@ const PurchaseList = () => {
       const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
       return purchaseDate === yesterdayString;
     });
-  
+
     // If there are no yesterday purchases at all
     if (yesterdayPurchases.length === 0) {
       return "No purchases recorded for yesterday";
     }
-  
+
     // Check if any batches from yesterday have started processing
     const hasStartedProcessing = processingEntries.some(entry => {
-      const entryBatch = yesterdayPurchases.find(purchase => 
-        purchase.batchNo === entry.batchNo && 
+      const entryBatch = yesterdayPurchases.find(purchase =>
+        purchase.batchNo === entry.batchNo &&
         purchase.grade === entry.grade
       );
       return entryBatch && ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
     });
-  
+
     // Return appropriate message
     if (hasStartedProcessing) {
       return "Batches from yesterday have started processing";
     }
-    
+
     return "No batches available for processing";
   };
 
@@ -874,7 +875,7 @@ const PurchaseList = () => {
                   const totalTransportFees = purchase.transportFee * purchase.totalKgs;
                   const totalCommissionFees = purchase.commissionFee * purchase.totalKgs;
                   const cherryAmount = purchase.cherryPrice * purchase.totalKgs;
-  
+
                   if (editingInline === purchase.id) {
                     return (
                       <tr key={purchase.id}>
@@ -952,7 +953,7 @@ const PurchaseList = () => {
                       </tr>
                     );
                   }
-  
+
                   // Regular row display
                   return (
                     <tr key={purchase.id}>
@@ -1039,233 +1040,6 @@ const PurchaseList = () => {
       </>
     );
   };
-  // const renderPurchaseTable = () => {
-  //   const calculateTransportFee = (purchase) => {
-  //     if (purchase.deliveryType === 'SITE_COLLECTION' && purchase.siteCollectionId) {
-  //       const siteFee = siteSpecificFees[purchase.siteCollectionId];
-  //       if (siteFee !== undefined) {
-  //         return siteFee * purchase.totalKgs;
-  //       } else {
-  //         fetchSiteSpecificFee(purchase.siteCollectionId);
-  //         return globalFees.transportFee * purchase.totalKgs;
-  //       }
-  //     } else {
-  //       // For DIRECT_DELIVERY and SUPPLIER, use CWS pricing
-  //       return cwsPricing ? cwsPricing.transportFee * purchase.totalKgs : 0;
-  //     }
-  //   };
-
-  //   const calculateCommissionFee = (purchase) => {
-  //     if (purchase.deliveryType === 'SITE_COLLECTION') {
-  //       return globalFees.commissionFee * purchase.totalKgs;
-  //     }
-  //     // Return 0 for DIRECT_DELIVERY and SUPPLIER
-  //     return 0;
-  //   };
-
-
-  //   const calculateCherryAmount = (purchase, transportFee) => {
-  //     return purchase.totalPrice - transportFee; // Add back transport fee to get original cherry amount
-  //   };
-
-    // const hasProcessingStarted = () => {
-    //   const yesterdayPurchases = purchases.filter(purchase => {
-    //     const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
-    //     return purchaseDate === yesterdayString;
-    //   });
-  
-  //     // Get distinct batches that have started processing
-  //     const processingBatches = new Set(
-  //       processingEntries
-  //         .filter(entry => {
-  //           const entryBatch = yesterdayPurchases.find(purchase => 
-  //             purchase.batchNo === entry.batchNo && 
-  //             purchase.grade === entry.grade
-  //           );
-  //           return entryBatch && ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
-  //         })
-  //         .map(entry => `${entry.batchNo}-${entry.grade}`)
-  //     );
-  
-  //     return processingBatches.size >= 2;
-  //   };
-
-  //   return (
-  //     <>
-  //       {validationError && (
-  //         <div className="alert alert-warning" role="alert">
-  //           {validationError}
-  //         </div>
-  //       )}
-  //       <div className="table-responsive mt-4">
-  //         <table className="table table-hover">
-  //           <thead>
-  //             <tr style={{ backgroundColor: theme.neutral }}>
-  //               <th>Date</th>
-  //               <th>Site</th>
-  //               <th>Delivery Type</th>
-  //               <th>Grade</th>
-  //               <th>Total KGs</th>
-  //               <th>Transport Fees (RWF)</th>
-  //               <th>Commision Fees (RWF)</th>
-  //               <th>Cherry Amount (RWF)</th>
-  //               <th>Final Price (RWF)</th>
-  //               <th>Actions</th>
-  //             </tr>
-  //           </thead>
-  //           <tbody>
-  //             {isLoading.purchases ? (
-  //               Array(5).fill(0).map((_, index) => (
-  //                 <SkeletonRow key={index} cols={9} />
-  //               ))
-  //             )  : hasProcessingStarted() ? (
-  //               <tr>
-  //                 <td colSpan="10" className="text-center py-4">
-  //                   <EmptyState message="Yesterday's data processing has already started. You cannot enter new purchases." />
-  //                 </td>
-  //               </tr>
-  //             ) : getYesterdayPurchases().length > 0 ? (
-  //               getYesterdayPurchases().map((purchase) => {
-  //                 const transportFee = calculateTransportFee(purchase);
-  //                 const commissionFee = calculateCommissionFee(purchase);
-  //                 const cherryAmount = calculateCherryAmount(purchase, transportFee);
-
-  //                 if (editingInline === purchase.id) {
-  //                   // Editing row logic remains the same but with new columns
-  //                   return (
-  //                     <tr key={purchase.id}>
-  //                       <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
-  //                       <td>
-  //                         {purchase.deliveryType === 'SITE_COLLECTION' ? (
-  //                           <select
-  //                             name="siteCollectionId"
-  //                             className="form-select form-select-sm"
-  //                             value={editFormData.siteCollectionId || ''}
-  //                             onChange={handleEditChange}
-  //                           >
-  //                             {siteCollections.map(site => (
-  //                               <option key={site.id} value={site.id}>{site.name}</option>
-  //                             ))}
-  //                           </select>
-  //                         ) : (
-  //                           purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct'
-  //                         )}
-  //                       </td>
-  //                       <td>
-  //                         <span className="badge" style={{
-  //                           backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' ? theme.directDelivery :
-  //                             purchase.deliveryType === 'SUPPLIER' ? theme.supplier : theme.centralStation
-  //                         }}>
-  //                           {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' :
-  //                             purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Site'}
-  //                         </span>
-  //                       </td>
-  //                       <td>
-  //                         <select
-  //                           name="grade"
-  //                           className="form-select form-select-sm"
-  //                           value={editFormData.grade}
-  //                           onChange={handleEditChange}
-  //                         >
-  //                           <option value="A">A</option>
-  //                           <option value="B">B</option>
-  //                         </select>
-  //                       </td>
-  //                       <td>
-  //                         <input
-  //                           type="number"
-  //                           className="form-control form-control-sm"
-  //                           name="totalKgs"
-  //                           value={editFormData.totalKgs}
-  //                           onChange={handleEditChange}
-  //                         />
-  //                       </td>
-  //                       <td>{transportFee.toLocaleString()}</td>
-  //                       <td>{commissionFee.toLocaleString()}</td>
-  //                       <td>{cherryAmount.toLocaleString()}</td>
-  //                       <td>{parseFloat(editFormData.totalPrice).toLocaleString()}</td>
-  //                       <td>
-  //                         <div className="btn-group">
-  //                           <button
-  //                             className="btn btn-sm btn-sucafina"
-  //                             onClick={(e) => handleUpdateInline(e, purchase.id)}
-  //                             disabled={loading}
-  //                           >
-  //                             {loading ? (
-  //                               <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-  //                             ) : (
-  //                               'Save'
-  //                             )}
-  //                           </button>
-  //                           <button
-  //                             className="btn btn-sm btn-light"
-  //                             onClick={handleCancelEdit}
-  //                           >
-  //                             Cancel
-  //                           </button>
-  //                         </div>
-  //                       </td>
-  //                     </tr>
-  //                   );
-  //                 }
-
-  //                 // Regular row display
-  //                 return (
-  //                   <tr key={purchase.id}>
-  //                     <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
-  //                     <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
-  //                     <td>
-  //                       <span className="badge" style={{
-  //                         backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' ? theme.directDelivery :
-  //                           purchase.deliveryType === 'SUPPLIER' ? theme.supplier : theme.centralStation
-  //                       }}>
-  //                         {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' :
-  //                           purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Site'}
-  //                       </span>
-  //                     </td>
-  //                     <td>
-  //                       <span className="badge bg-secondary">
-  //                         Grade {purchase.grade}
-  //                       </span>
-  //                     </td>
-  //                     <td>{purchase.totalKgs.toLocaleString()}</td>
-  //                     <td>{transportFee.toLocaleString()}</td>
-  //                     <td>{commissionFee.toLocaleString()}</td>
-  //                     <td>{cherryAmount.toLocaleString()}</td>
-  //                     <td>{purchase.totalPrice.toLocaleString()}</td>
-  //                     <td>
-  //                       <button
-  //                         className="btn btn-sm btn-outline-sucafina"
-  //                         onClick={() => handleEditInline(purchase)}
-  //                         style={{ color: theme.primary, borderColor: theme.primary }}
-  //                       >
-  //                         Edit
-  //                       </button>
-  //                     </td>
-  //                   </tr>
-  //                 );
-  //               })
-  //             ) : (
-  //               <EmptyState message="No purchases recorded for yesterday" />
-  //             )}
-  //           </tbody>
-  //           {getYesterdayPurchases().length > 0 && (
-  //             <tfoot>
-  //               <tr style={{ backgroundColor: theme.neutral }}>
-  //                 <td colSpan="4"><strong>Totals</strong></td>
-  //                 <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + p.totalKgs, 0).toLocaleString()}</strong></td>
-  //                 <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + calculateTransportFee(p), 0).toLocaleString()}</strong></td>
-  //                 <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + calculateCherryAmount(p, calculateTransportFee(p)), 0).toLocaleString()}</strong></td>
-  //                 <td><strong>{getYesterdayPurchases().reduce((sum, p) => sum + p.totalPrice, 0).toLocaleString()}</strong></td>
-  //                 <td></td>
-  //               </tr>
-  //             </tfoot>
-  //           )}
-  //         </table>
-  //       </div>
-  //     </>
-  //   );
-  // };
 
 
   const renderPriceCard = (grade) => {
@@ -1322,19 +1096,19 @@ const PurchaseList = () => {
 
   const getProcessingStartTime = (grade, date) => {
     if (!Array.isArray(processingEntries)) return null;
-    
+
     const entry = processingEntries.find(entry => {
       const dateFromBatch = entry.batchNo.substring(5, 9); // Extract MMDD
       const targetDate = new Date(date);
       const targetMMDD = `${String(targetDate.getMonth() + 1).padStart(2, '0')}${String(targetDate.getDate()).padStart(2, '0')}`;
-      
+
       return dateFromBatch === targetMMDD &&
-             entry.grade === grade && 
-             ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
+        entry.grade === grade &&
+        ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
     });
 
     return entry ? new Date(entry.createdAt).toLocaleTimeString() : null;
-  }; 
+  };
 
 
 
@@ -1369,7 +1143,7 @@ const PurchaseList = () => {
                 <option value="SUPPLIER">Supplier</option>
               </select>
             </div>
-  
+
             {newPurchase.deliveryType === 'SITE_COLLECTION' && (
               <div className="col-md-2 col-sm-6">
                 <label className="form-label">Site</label>
@@ -1387,7 +1161,7 @@ const PurchaseList = () => {
                 </select>
               </div>
             )}
-  
+
             <div className="col-md-2 col-sm-6">
               <label className="form-label">Grade</label>
               {getAvailableGrades().length > 0 ? (
@@ -1409,7 +1183,7 @@ const PurchaseList = () => {
                 </div>
               )}
             </div>
-  
+
             <div className="col-md-2 col-sm-6">
               <label className="form-label">Total KGs</label>
               <input
@@ -1423,7 +1197,7 @@ const PurchaseList = () => {
                 disabled={getAvailableGrades().length === 0}
               />
             </div>
-  
+
             <div className="col-md-2 col-sm-6">
               <label className="form-label">Cherry Price (RWF/kg)</label>
               <div className="d-flex align-items-center">
@@ -1435,7 +1209,7 @@ const PurchaseList = () => {
                 </span>
               </div>
             </div>
-  
+
             <div className="col-md-2 col-sm-6">
               <button
                 type="submit"
@@ -1486,122 +1260,6 @@ const PurchaseList = () => {
 
           {/* New Purchase Form */}
           {renderNewPurchaseForm()}
-
-          {/* <div className="card border-0 shadow-sm mb-4">
-            <div className="card-body">
-              <span className="card-title mb-3 h5" style={{ color: theme.primary }}>New Purchase ({yesterdayString})</span>
-              <form onSubmit={handleSubmit} className="row g-3 mt-3 align-items-end">
-                <div className="col-md-2 col-sm-6">
-                  <label className="form-label">Delivery Type</label>
-                  <select
-                    name="deliveryType"
-                    className="form-select"
-                    value={newPurchase.deliveryType}
-                    onChange={handleNewPurchaseChange}
-                    required
-                  >
-                    <option value="DIRECT_DELIVERY">Direct</option>
-                    <option value="SITE_COLLECTION">Site</option>
-                    <option value="SUPPLIER">Supplier</option>
-                  </select>
-                </div>
-
-                {newPurchase.deliveryType === 'SITE_COLLECTION' ? (
-                  <div className="col-md-2 col-sm-6">
-                    <label className="form-label">Site</label>
-                    <select
-                      name="siteCollectionId"
-                      className="form-select"
-                      value={newPurchase.siteCollectionId}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Select Site</option>
-                      {siteCollections.map(site => (
-                        <option key={site.id} value={site.id}>{site.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                ) : (
-                  <div className="col-md-2 col-sm-6 d-none d-md-block">
-                  </div>
-                )}
-
-                {/* <div className="col-md-2 col-sm-6">
-                  <label className="form-label">Grade</label>
-                  <select
-                    name="grade"
-                    className="form-select"
-                    value={newPurchase.grade}
-                    onChange={handleNewPurchaseChange}
-                    required
-                  >
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                  </select>
-                </div>
-
-                <div className="col-md-2 col-sm-6">
-                  <label className="form-label">Grade</label>
-                  <select
-                    name="grade"
-                    className="form-select"
-                    value={newPurchase.grade}
-                    onChange={handleNewPurchaseChange}
-                    required
-                  >
-                    {availableGrades.map(grade => (
-                      <option key={grade} value={grade}>
-                        {grade}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-md-2 col-sm-6">
-                  <label className="form-label">Total KGs</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="totalKgs"
-                    value={newPurchase.totalKgs}
-                    onChange={handleNewPurchaseChange}
-                    placeholder="Enter KGs"
-                    required
-                  />
-                </div>
-
-                <div className="col-md-2 col-sm-6">
-                  <label className="form-label">Cherry Price (RWF/kg)</label>
-                  <div className="d-flex align-items-center">
-                    <span className="form-control-plaintext">
-                      <strong>{newPurchase.cherryPrice}</strong>
-                      <small className="text-muted ms-2">
-                        ({newPurchase.grade === 'A' ? '750' : '200'} - {newPurchase?.transportFee})
-                      </small>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="col-md-2 col-sm-6">
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-100"
-                    disabled={loading}
-                    style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                  >
-                    {loading ? (
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    ) : (
-                      <i className="bi bi-plus-lg me-2"></i>
-                    )}
-                    Add Purchase
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div> */}
-
 
           {/* Yesterday's Purchases Table */}
 
@@ -1662,8 +1320,61 @@ const PurchaseList = () => {
           </div>
 
           {/* Processing Modal */}
-          {
-            selectedBatch && (
+
+          {selectedBatch && (
+            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Start Processing - Batch {selectedBatch.batchNo}</h5>
+                    <button type="button" className="btn-close" onClick={() => setSelectedBatch(null)}></button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="mb-3">
+                      <label className="form-label">Processing Type</label>
+                      <select
+                        className="form-select"
+                        value={processingType}
+                        onChange={(e) => setProcessingType(e.target.value)}
+                        required
+                      >
+                        <option value="">Select Processing Type</option>
+                        {selectedBatch.grade === 'A' && selectedBatch.cws?.havespeciality ? (
+                          <>
+                            <option value="FULLY_WASHED">Fully Washed</option>
+                            <option value="NATURAL">Natural</option>
+                            <option value="HONEY">Honey</option>
+                          </>
+                        ) : (
+                          <option value="FULLY_WASHED">Fully Washed</option>
+                        )}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setSelectedBatch(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={handleProcessingSubmit}
+                      disabled={!processingType}
+                      style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
+                    >
+                      Start Processing
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* {selectedBatch && (
               <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                 <div className="modal-dialog">
                   <div className="modal-content">
@@ -1715,7 +1426,7 @@ const PurchaseList = () => {
                 </div>
               </div>
             )
-          }
+          } */}
         </div >
       </div >
     </div >
