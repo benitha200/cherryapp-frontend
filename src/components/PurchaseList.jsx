@@ -301,7 +301,7 @@ const PurchaseList = () => {
   const fetchPurchases = async () => {
     try {
       setIsLoading(prev => ({ ...prev, purchases: true }));
-      const response = await axios.get(`${API_URL}/purchases`, {
+      const response = await axios.get(`${API_URL}/purchases/cws/${userInfo.cwsId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setPurchases(response.data);
