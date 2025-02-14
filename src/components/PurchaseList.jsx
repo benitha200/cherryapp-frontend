@@ -1339,7 +1339,7 @@ const PurchaseList = () => {
                         required
                       >
                         <option value="">Select Processing Type</option>
-                        {selectedBatch.grade === 'A' && selectedBatch.cws?.havespeciality ? (
+                        {selectedBatch.grade === 'A' && cwsInfo?.havespeciality ? (
                           <>
                             <option value="FULLY_WASHED">Fully Washed</option>
                             <option value="NATURAL">Natural</option>
