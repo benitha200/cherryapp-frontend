@@ -53,8 +53,8 @@
 //     { path: '/purchases', icon: 'cart', text: 'Purchases' },
 //     { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
 //     { path: '/transfer', icon: 'truck', text: 'Transfer' },
-   
-    
+
+
 //   ];
 
 //   // Add admin menu item if user is admin
@@ -208,7 +208,7 @@ const Sidebar = () => {
       { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
       { path: '/cws', icon: 'journal', text: 'CWS' },
       { path: '/users', icon: 'people', text: 'Users' },
-      
+
     ];
   }
 
@@ -248,18 +248,18 @@ const Sidebar = () => {
       </nav>
 
       {/* Logout Section */}
-      <div 
+      <div
         className="p-4 border-top border-opacity-25 mt-auto"
         style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
       >
         <div className="d-flex justify-content-between align-items-center">
-          <span className="text-light">
-            <i className="bi bi-person-circle me-2"></i>
-            {user.username}
+          <span className="text-light d-flex align-items-center text-truncate" style={{ maxWidth: '70%' }}>
+            <i className="bi bi-person-circle me-2 flex-shrink-0"></i>
+            <span className="text-truncate">{user.username}</span>
           </span>
           <button
             onClick={handleLogout}
-            className="btn btn-sm"
+            className="btn btn-sm ms-2 flex-shrink-0"
             style={{
               backgroundColor: theme.danger,
               borderColor: theme.danger,
