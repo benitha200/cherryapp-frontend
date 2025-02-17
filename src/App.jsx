@@ -77,7 +77,7 @@
 
 // export default App;
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Login from './components/Login.jsx';
@@ -99,7 +99,7 @@ import CwsForm from './components/Admin/Cws/CwsForm.jsx';
 
 const AppContent = () => {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/login';
+  const isLoginPage = location.pathname === '/login'; useState,useEffect
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
