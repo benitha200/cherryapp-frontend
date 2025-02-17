@@ -70,7 +70,7 @@
 //           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 //         }
 //       );
-      
+
 //       const updatedCollections = siteCollections.map((s) =>
 //         s.id === site.id ? {
 //           ...s,
@@ -95,7 +95,7 @@
 //       await axios.delete(`${API_URL}/site-collections/${siteId}`, {
 //         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 //       });
-      
+
 //       setSiteCollections(siteCollections.filter((site) => site.id !== siteId));
 //     } catch (error) {
 //       if (error.response?.status === 400) {
@@ -172,7 +172,7 @@
 //             </button>
 //           </div>
 //         </div>
-        
+
 //         <div className="card-body p-0">
 //           <div className="table-responsive">
 //             <table className="table table-hover mb-0">
@@ -370,7 +370,7 @@ const SiteCollectionList = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         }
       );
-      
+
       const updatedCollections = siteCollections.map((s) =>
         s.id === site.id ? {
           ...s,
@@ -395,7 +395,7 @@ const SiteCollectionList = () => {
       await axios.delete(`${API_URL}/site-collections/${siteId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      
+
       setSiteCollections(siteCollections.filter((site) => site.id !== siteId));
     } catch (error) {
       if (error.response?.status === 400) {
@@ -464,18 +464,26 @@ const SiteCollectionList = () => {
             <h2 className="h4 mb-0" style={{ color: theme.primary }}>
               Site Collections
             </h2>
-            <button 
+            {/* <button 
               className="btn d-flex align-items-center gap-2 text-white"
               style={{ backgroundColor: theme.primary }}
             >
               <i className="bi bi-plus-lg"></i>
               New Site Collection
-            </button>
+            </button> */}
+            <Link
+              to="/site-collections/new"
+              className="btn d-flex align-items-center gap-2 text-white"
+              style={{ backgroundColor: theme.primary }}
+            >
+              <i className="bi bi-plus-lg"></i>
+              New Site Collection
+            </Link>
           </div>
-          
+
           {/* Search Bar */}
           <div className="input-group">
-            <span 
+            <span
               className="input-group-text"
               style={{ backgroundColor: theme.neutral, border: `1px solid ${theme.secondary}` }}
             >
@@ -487,14 +495,14 @@ const SiteCollectionList = () => {
               placeholder="Search by name or CWS..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ 
+              style={{
                 backgroundColor: theme.neutral,
                 border: `1px solid ${theme.secondary}`
               }}
             />
           </div>
         </div>
-        
+
         <div className="card-body p-0">
           <div className="table-responsive">
             <table className="table table-hover table-sm mb-0">
@@ -587,7 +595,7 @@ const SiteCollectionList = () => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Pagination */}
           <div className="d-flex justify-content-between align-items-center px-4 py-3" style={{ backgroundColor: theme.neutral }}>
             <small style={{ color: theme.secondary }}>
@@ -605,7 +613,7 @@ const SiteCollectionList = () => {
                     <i className="bi bi-chevron-left"></i>
                   </button>
                 </li>
-                
+
                 {[...Array(totalPages)].map((_, index) => (
                   <li
                     key={index + 1}
@@ -624,7 +632,7 @@ const SiteCollectionList = () => {
                     </button>
                   </li>
                 ))}
-                
+
                 <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
                   <button
                     className="page-link"

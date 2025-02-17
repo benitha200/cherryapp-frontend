@@ -11,6 +11,13 @@ body {
   box-sizing: border-box;
 }
 
+/* Custom CSS for responsive behavior */
+@media (max-width: 767.98px) {
+  .sidebar {
+    width: 100% !important;
+  }
+}
+
 /* Global variables */
 :root {
   --primary-color: #0d6efd;
