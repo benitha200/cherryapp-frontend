@@ -196,7 +196,17 @@ const Sidebar = () => {
       { path: '/cws', icon: 'journal', text: 'CWS' },
       { path: '/users', icon: 'people', text: 'Users' },
     ];
-  } else {
+  }
+  if (user.role === 'SUPERVISOR') {
+    menuItems = [
+      ...menuItems,
+      { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
+      // { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
+      // { path: '/cws', icon: 'journal', text: 'CWS' },
+      // { path: '/users', icon: 'people', text: 'Users' },
+    ];
+  } 
+  else {
     menuItems = [
       ...menuItems,
       { path: '/purchases', icon: 'cart', text: 'Purchases' },

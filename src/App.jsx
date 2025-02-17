@@ -96,10 +96,11 @@ import PricingManagement from './components/Admin/PricingManagement.jsx';
 import Users from './components/Admin/Users.jsx';
 import CwsList from './components/Admin/Cws/CwsList.jsx';
 import CwsForm from './components/Admin/Cws/CwsForm.jsx';
+import PurchaseByStation from './components/Supervisor/PurchaseByStation.jsx';
 
 const AppContent = () => {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/login'; useState,useEffect
+  const isLoginPage = location.pathname === '/login';
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -142,6 +143,9 @@ const AppContent = () => {
               </PrivateRoute>
             } />
             <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />
+            <Route path="/purchase-by-station" element={<PurchaseByStation />} />
+
+            
             <Route path="/processing" element={
               <PrivateRoute>
                 <ProcessingList />

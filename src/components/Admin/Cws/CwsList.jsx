@@ -804,7 +804,6 @@ const CwsList = () => {
                       onClick={() => paginate(index + 1)}
                       style={{
                         backgroundColor: currentPage === index + 1 ? theme.primary : 'white',
-                        backgroundColor: currentPage === index + 1 ? theme.primary : 'white',
                         borderColor: theme.secondary,
                         color: currentPage === index + 1 ? 'white' : theme.primary
                       }}
