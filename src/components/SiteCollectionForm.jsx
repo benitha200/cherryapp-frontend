@@ -1,4 +1,4 @@
-// import React, { useState } from 'react';
+// import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import axios from 'axios';
 // import API_URL from '../constants/Constants';
@@ -6,14 +6,38 @@
 // const SiteCollectionForm = () => {
 //   const navigate = useNavigate();
 //   const userInfo = JSON.parse(localStorage.getItem('user'));
-  
+
 //   const [formData, setFormData] = useState({
 //     name: '',
-//     cwsId: userInfo?.cwsId || 1  // Use cwsId from user info directly
+//     cwsId: userInfo?.cwsId || ''
 //   });
-  
+
+//   const [cwsList, setCwsList] = useState([]);
 //   const [loading, setLoading] = useState(false);
 //   const [error, setError] = useState('');
+
+//   useEffect(() => {
+//     fetchCwsList();
+//   }, []);
+
+//   const fetchCwsList = async () => {
+//     try {
+//       const response = await axios.get(`${API_URL}/cws`, {
+//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+//       });
+//       setCwsList(response.data);
+      
+//       // If user doesn't have a cwsId, set the first CWS as default
+//       if (!userInfo?.cwsId && response.data.length > 0) {
+//         setFormData(prev => ({
+//           ...prev,
+//           cwsId: response.data[0].id
+//         }));
+//       }
+//     } catch (error) {
+//       setError('Error fetching CWS list');
+//     }
+//   };
 
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
@@ -21,7 +45,8 @@
 //     setError('');
 
 //     try {
-//       await axios.post(`${API_URL}/site-collections`, 
+//       await axios.post(
+//         `${API_URL}/site-collections`,
 //         {
 //           ...formData,
 //           cwsId: parseInt(formData.cwsId, 10)
@@ -52,8 +77,35 @@
 //                   {error}
 //                 </div>
 //               )}
-              
+
 //               <form onSubmit={handleSubmit} className="needs-validation" noValidate>
+
+//                 <div className="mb-4">
+//                   <label className="form-label text-secondary">CWS</label>
+//                   {userInfo?.cwsId ? (
+//                     <input
+//                       type="text"
+//                       className="form-control border-0 bg-light"
+//                       value={cwsList.find(cws => cws.id === userInfo.cwsId)?.name || ''}
+//                       readOnly
+//                     />
+//                   ) : (
+//                     <select
+//                       className="form-select border-0 bg-light"
+//                       value={formData.cwsId}
+//                       onChange={(e) => setFormData({ ...formData, cwsId: e.target.value })}
+//                       required
+//                     >
+//                       <option value="">Select CWS</option>
+//                       {cwsList.map(cws => (
+//                         <option key={cws.id} value={cws.id}>
+//                           {cws.name}
+//                         </option>
+//                       ))}
+//                     </select>
+//                   )}
+//                 </div>
+
 //                 <div className="mb-4">
 //                   <label className="form-label text-secondary">Name</label>
 //                   <input
@@ -65,15 +117,7 @@
 //                   />
 //                 </div>
 
-//                 <div className="mb-4">
-//                   <input 
-//                     type="text" 
-//                     className="form-control border-0 bg-light" 
-//                     value={userInfo?.cwsId} 
-//                     readOnly 
-//                     hidden
-//                   />
-//                 </div>
+                
 
 //                 <button
 //                   type="submit"
@@ -114,7 +158,8 @@ const SiteCollectionForm = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    cwsId: userInfo?.cwsId || ''
+    cwsId: userInfo?.cwsId || '',
+    transportFee: 0
   });
 
   const [cwsList, setCwsList] = useState([]);
@@ -132,7 +177,6 @@ const SiteCollectionForm = () => {
       });
       setCwsList(response.data);
       
-      // If user doesn't have a cwsId, set the first CWS as default
       if (!userInfo?.cwsId && response.data.length > 0) {
         setFormData(prev => ({
           ...prev,
@@ -150,16 +194,30 @@ const SiteCollectionForm = () => {
     setError('');
 
     try {
-      await axios.post(
+      // First create the site collection
+      const siteResponse = await axios.post(
         `${API_URL}/site-collections`,
         {
-          ...formData,
+          name: formData.name,
           cwsId: parseInt(formData.cwsId, 10)
         },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         }
       );
+
+      // Then set the site collection pricing
+      await axios.post(
+        `${API_URL}/pricing/site-fees`,
+        {
+          siteCollectionId: siteResponse.data.id,
+          transportFee: parseFloat(formData.transportFee)
+        },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
+
       navigate('/site-collections');
     } catch (error) {
       setError(error.response?.data?.error || 'Error creating site collection');
@@ -184,7 +242,6 @@ const SiteCollectionForm = () => {
               )}
 
               <form onSubmit={handleSubmit} className="needs-validation" noValidate>
-
                 <div className="mb-4">
                   <label className="form-label text-secondary">CWS</label>
                   {userInfo?.cwsId ? (
@@ -222,7 +279,21 @@ const SiteCollectionForm = () => {
                   />
                 </div>
 
-                
+                <div className="mb-4">
+                  <label className="form-label text-secondary">Transport Fee (RWF/kg)</label>
+                  <div className="input-group">
+                    <input
+                      type="number"
+                      className="form-control border-0 bg-light"
+                      value={formData.transportFee}
+                      onChange={(e) => setFormData({ ...formData, transportFee: parseFloat(e.target.value) || 0 })}
+                      min="0"
+                      step="0.1"
+                      required
+                    />
+                    <span className="input-group-text border-0 bg-light">RWF</span>
+                  </div>
+                </div>
 
                 <button
                   type="submit"
