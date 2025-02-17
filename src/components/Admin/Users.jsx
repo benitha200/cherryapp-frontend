@@ -412,7 +412,8 @@ const Users = () => {
                     >
                       <option value="CWS_MANAGER">CWS Manager</option>
                       <option value="ADMIN">Admin</option>
-                      <option value="SUPER_ADMIN">Super Admin</option>
+                      {/* <option value="SUPER_ADMIN">Super Admin</option> */}
+                      <option value="SUPERVISOR">Supervisor</option>
                     </select>
                   </div>
                   <div className="col-md-3 mb-3">
