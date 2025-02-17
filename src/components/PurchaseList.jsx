@@ -341,14 +341,26 @@ const PurchaseList = () => {
     }
   };
 
+  useEffect(() => {
+    fetchCWSPricing();
+  }, []);
+
   const fetchCWSPricing = async () => {
     try {
       const token = localStorage.getItem('token');
+      const userInfo = JSON.parse(localStorage.getItem('user'));
+      
       const response = await axios.get(`${API_URL}/pricing/cws-pricing/${userInfo.cwsId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
       setCwsPricing(response.data);
+      setPrices(prev => ({
+        ...prev,
+        A: response.data?.gradeAPrice || 750
+      }));
     } catch (err) {
+      setError('Error fetching CWS pricing');
       console.error('Error fetching CWS pricing:', err);
     }
   };
@@ -407,7 +419,6 @@ const PurchaseList = () => {
   };
 
   const handlePriceEdit = (grade) => {
-    // Only allow editing for grade A
     if (grade === 'A') {
       setEditingPrice(prev => ({
         ...prev,
@@ -417,7 +428,6 @@ const PurchaseList = () => {
   };
 
   const handlePriceChange = (grade, value) => {
-    // Only allow changes for grade A
     if (grade === 'A') {
       setPrices(prev => ({
         ...prev,
@@ -426,15 +436,65 @@ const PurchaseList = () => {
     }
   };
 
-  const handlePriceSave = (grade) => {
-    // Only allow saving for grade A
+  const handlePriceSave = async (grade) => {
     if (grade === 'A') {
-      setEditingPrice(prev => ({
-        ...prev,
-        [grade]: false
-      }));
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const userInfo = JSON.parse(localStorage.getItem('user'));
+
+        await axios.post(`${API_URL}/pricing/cws-pricing`, {
+          cwsId: userInfo.cwsId,
+          gradeAPrice: prices.A,
+          transportFee: cwsPricing?.transportFee || 0
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        setEditingPrice(prev => ({
+          ...prev,
+          [grade]: false
+        }));
+        
+        await fetchCWSPricing();
+      } catch (err) {
+        setError('Error updating cherry price');
+        console.error('Error updating cherry price:', err);
+      } finally {
+        setLoading(false);
+      }
     }
   };
+
+  // const handlePriceEdit = (grade) => {
+  //   // Only allow editing for grade A
+  //   if (grade === 'A') {
+  //     setEditingPrice(prev => ({
+  //       ...prev,
+  //       [grade]: true
+  //     }));
+  //   }
+  // };
+
+  // const handlePriceChange = (grade, value) => {
+  //   // Only allow changes for grade A
+  //   if (grade === 'A') {
+  //     setPrices(prev => ({
+  //       ...prev,
+  //       [grade]: parseFloat(value) || 0
+  //     }));
+  //   }
+  // };
+
+  // const handlePriceSave = (grade) => {
+  //   // Only allow saving for grade A
+  //   if (grade === 'A') {
+  //     setEditingPrice(prev => ({
+  //       ...prev,
+  //       [grade]: false
+  //     }));
+  //   }
+  // };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -1074,9 +1134,9 @@ const PurchaseList = () => {
                   <span className="h4 mb-0">{prices[grade]} RWF</span>
                   {isGradeA && (
                     <button
-                      className="btn btn-outline-primary"
+                      className="btn btn-outline-sucafina"
                       onClick={() => handlePriceEdit(grade)}
-                      style={{ color: theme.primary, borderColor: theme.primary }}
+                      // style={{ color: theme.primary, borderColor: theme.primary }}
                     >
                       Edit
                     </button>
@@ -1204,7 +1264,7 @@ const PurchaseList = () => {
                 <span className="form-control-plaintext">
                   <strong>{newPurchase.cherryPrice}</strong>
                   <small className="text-muted ms-2">
-                    ({newPurchase.grade === 'A' ? '750' : '200'} - {newPurchase?.transportFee})
+                    ({newPurchase.grade === 'A' ? '750' : '200'} - ({newPurchase?.transportFee}+{newPurchase?.commissionFee}))
                   </small>
                 </span>
               </div>
