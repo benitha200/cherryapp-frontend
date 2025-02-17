@@ -695,6 +695,7 @@ const ProcessingList = () => {
     const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [selectedBatches, setSelectedBatches] = useState([]);
+    const userInfo = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
         fetchProcessingBatches();
@@ -702,7 +703,7 @@ const ProcessingList = () => {
 
     const fetchProcessingBatches = async () => {
         try {
-            const res = await axios.get(`${API_URL}/processing/cws/1`);
+            const res = await axios.get(`${API_URL}/processing/cws/${userInfo.cwsId}`);
             const mappedBatches = res.data
                 .filter(processing => processing.status !== 'COMPLETED')
                 .map(processing => ({
