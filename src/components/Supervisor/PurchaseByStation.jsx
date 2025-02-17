@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../../constants/Constants';
 
 const theme = {
   primary: '#008080',
@@ -53,7 +54,7 @@ const PurchaseByStation = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const response = await axios.get('https://cherryapp.ds.com:5000/api/purchases/cws-aggregated', {
+        const response = await axios.get(`${API_URL}/purchases/cws-aggregated`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPurchases(response.data);
