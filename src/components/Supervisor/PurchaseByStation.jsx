@@ -44,6 +44,7 @@ const PurchaseByStation = () => {
   const [itemsPerPage] = useState(10);
   const [totals, setTotals] = useState({
     totalKgs: 0,
+    totalPrice: 0,
     totalCherryPrice: 0,
     totalTransportFee: 0,
     totalCommissionFee: 0
@@ -63,12 +64,14 @@ const PurchaseByStation = () => {
         const aggregatedTotals = response.data.reduce((acc, item) => {
           return {
             totalKgs: acc.totalKgs + item.totalKgs,
+            totalPrice: acc.totalPrice + item.totalPrice,
             totalCherryPrice: acc.totalCherryPrice + item.totalCherryPrice,
             totalTransportFee: acc.totalTransportFee + item.totalTransportFee,
             totalCommissionFee: acc.totalCommissionFee + item.totalCommissionFee
           };
         }, {
           totalKgs: 0,
+          totalPrice: 0,
           totalCherryPrice: 0,
           totalTransportFee: 0,
           totalCommissionFee: 0
@@ -111,7 +114,15 @@ const PurchaseByStation = () => {
         <div className="col-md-3 mb-3">
           <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
             <div className="card-body">
-              <h5 className="card-title">Total Cherry Price (RWF)</h5>
+              <h5 className="card-title">Total Price (RWF)</h5>
+              <h3 className="card-text">{totals.totalPrice.toLocaleString()}</h3>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3 mb-3">
+          <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
+            <div className="card-body">
+              <h5 className="card-title">Total Cherry Value (RWF)</h5>
               <h3 className="card-text">{totals.totalCherryPrice.toLocaleString()}</h3>
             </div>
           </div>
@@ -119,15 +130,19 @@ const PurchaseByStation = () => {
         <div className="col-md-3 mb-3">
           <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
             <div className="card-body">
-              <h5 className="card-title">Total Transport Fee (RWF)</h5>
+              <h5 className="card-title">Total Transport Value (RWF)</h5>
               <h3 className="card-text">{totals.totalTransportFee.toLocaleString()}</h3>
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Second row for Commission Fee */}
+      <div className="row mb-4">
         <div className="col-md-3 mb-3">
           <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
             <div className="card-body">
-              <h5 className="card-title">Total Commission Fee (RWF)</h5>
+              <h5 className="card-title">Total Commission Value (RWF)</h5>
               <h3 className="card-text">{totals.totalCommissionFee.toLocaleString()}</h3>
             </div>
           </div>
@@ -145,25 +160,26 @@ const PurchaseByStation = () => {
                   <th>CWS Code</th>
                   <th>Purchase Date</th>
                   <th>Total KGs</th>
-                  <th>Cherry Price (RWF)</th>
-                  <th>Transport Fee (RWF)</th>
-                  <th>Commission Fee (RWF)</th>
                   <th>Total Amount (RWF)</th>
+                  <th>Cherry Amount (RWF)</th>
+                  <th>Transport Amount (RWF)</th>
+                  <th>Commission Amount (RWF)</th>
+                  {/* <th>Calculated Total (RWF)</th> */}
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   Array(5).fill(0).map((_, index) => (
-                    <SkeletonRow key={index} cols={8} />
+                    <SkeletonRow key={index} cols={9} />
                   ))
                 ) : error ? (
                   <tr>
-                    <td colSpan="8" className="text-center text-danger">{error}</td>
+                    <td colSpan="9" className="text-center text-danger">{error}</td>
                   </tr>
                 ) : currentItems.length > 0 ? (
                   currentItems.map((purchase, index) => {
                     const purchaseDate = new Date(purchase.purchaseDate).toLocaleDateString();
-                    const totalAmount = purchase.totalCherryPrice + purchase.totalTransportFee + purchase.totalCommissionFee;
+                    // const calculatedTotal = purchase.totalCherryPrice + purchase.totalTransportFee + purchase.totalCommissionFee;
                     
                     return (
                       <tr key={`${purchase.cwsId}-${index}`}>
@@ -171,10 +187,11 @@ const PurchaseByStation = () => {
                         <td>{purchase.cwsCode}</td>
                         <td>{purchaseDate}</td>
                         <td>{purchase.totalKgs.toLocaleString()}</td>
+                        <td>{purchase.totalPrice.toLocaleString()}</td>
                         <td>{purchase.totalCherryPrice.toLocaleString()}</td>
                         <td>{purchase.totalTransportFee.toLocaleString()}</td>
                         <td>{purchase.totalCommissionFee.toLocaleString()}</td>
-                        <td>{totalAmount.toLocaleString()}</td>
+                        {/* <td>{calculatedTotal.toLocaleString()}</td> */}
                       </tr>
                     );
                   })
