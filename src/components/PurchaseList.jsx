@@ -1635,11 +1635,11 @@ const PurchaseList = () => {
                                   {batch.isSpecialBatch && (
                                     <div className="mt-1 text-muted small">
                                       {/* Current: {specialBatchKgs[batch.batchNo] || 0} KGs */}
-                                      {isInvalid && (
+                                      {/* {isInvalid && (
                                         <div className="text-danger mt-1">
                                           Combined total should equal {batch.originalTotalKgs.toLocaleString()} KGs
                                         </div>
-                                      )}
+                                      )} */}
                                     </div>
                                   )}
                                 </>
