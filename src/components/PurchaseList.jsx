@@ -67,6 +67,7 @@ const PurchaseList = () => {
   const [selectedBatch, setSelectedBatch] = useState(null);
   const userInfo = JSON.parse(localStorage.getItem('user'));
   const cwsInfo = JSON.parse(localStorage.getItem('cws'));
+  const [specialBatchKgs, setSpecialBatchKgs] = useState({});
 
   // Set today's date and yesterday's date
   const today = new Date();
@@ -82,8 +83,9 @@ const PurchaseList = () => {
     grade: 'A',
     purchaseDate: yesterdayString,
     siteCollectionId: '',
-    batchNo: new Date().toISOString().split('T')[0] // Use date as batch number
+    // batchNo: new Date().toISOString().split('T')[0] // Use date as batch number
   });
+  const [batchesState, setBatchesState] = useState([]);
 
 
   useEffect(() => {
@@ -180,18 +182,24 @@ const PurchaseList = () => {
     return grades.filter(grade => !isGradeProcessing(grade, yesterdayString));
   };
 
-  const getYesterdayPurchases = () => {
-    // Get a list of all batch numbers currently in processing
-    const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
+  // const getYesterdayPurchases = () => {
+  //   // Get a list of all batch numbers currently in processing
+  //   const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
 
-    return purchases.filter(purchase => {
-      const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
-      // Only show purchases that haven't started processing and their batch is not in processing
-      return purchaseDate === yesterdayString &&
-        !isGradeProcessing(purchase.grade, yesterdayString) &&
-        !processingBatchNumbers.includes(purchase.batchNo);
-    });
-  };
+  //   return purchases.filter(purchase => {
+  //     const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+  //     // Only show purchases that haven't started processing and their batch is not in processing
+  //     return purchaseDate === yesterdayString &&
+  //       !isGradeProcessing(purchase.grade, yesterdayString) &&
+  //       !processingBatchNumbers.includes(purchase.batchNo);
+  //   });
+  // };
+
+  useEffect(() => {
+    if (!isLoading.processingEntries) {
+      setBatchesState(getBatchesByGrade());
+    }
+  }, [isLoading.processingEntries, purchases, processingEntries]);
 
   useEffect(() => {
     const fetchAllSiteFees = async () => {
@@ -349,11 +357,11 @@ const PurchaseList = () => {
     try {
       const token = localStorage.getItem('token');
       const userInfo = JSON.parse(localStorage.getItem('user'));
-      
+
       const response = await axios.get(`${API_URL}/pricing/cws-pricing/${userInfo.cwsId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       setCwsPricing(response.data);
       setPrices(prev => ({
         ...prev,
@@ -363,6 +371,30 @@ const PurchaseList = () => {
       setError('Error fetching CWS pricing');
       console.error('Error fetching CWS pricing:', err);
     }
+  };
+
+  const getBatchSuffix = (batchNo) => {
+    return batchNo.split('-').pop();
+  };
+
+  // Function to determine available processing types
+  const getProcessingOptions = () => {
+    if (cwsInfo?.havespeciality) {
+      const suffix = getBatchSuffix(selectedBatch.batchNo);
+      if (suffix === '1') {
+        return (
+          <>
+            <option value="NATURAL">Natural</option>
+            <option value="HONEY">Honey</option>
+          </>
+        );
+      } else if (suffix === '2') {
+        return <option value="FULLY_WASHED">Fully Washed</option>;
+      }
+    }
+
+    // Default case: only Fully Washed
+    return <option value="FULLY_WASHED">Fully Washed</option>;
   };
 
   useEffect(() => {
@@ -455,7 +487,7 @@ const PurchaseList = () => {
           ...prev,
           [grade]: false
         }));
-        
+
         await fetchCWSPricing();
       } catch (err) {
         setError('Error updating cherry price');
@@ -465,36 +497,6 @@ const PurchaseList = () => {
       }
     }
   };
-
-  // const handlePriceEdit = (grade) => {
-  //   // Only allow editing for grade A
-  //   if (grade === 'A') {
-  //     setEditingPrice(prev => ({
-  //       ...prev,
-  //       [grade]: true
-  //     }));
-  //   }
-  // };
-
-  // const handlePriceChange = (grade, value) => {
-  //   // Only allow changes for grade A
-  //   if (grade === 'A') {
-  //     setPrices(prev => ({
-  //       ...prev,
-  //       [grade]: parseFloat(value) || 0
-  //     }));
-  //   }
-  // };
-
-  // const handlePriceSave = (grade) => {
-  //   // Only allow saving for grade A
-  //   if (grade === 'A') {
-  //     setEditingPrice(prev => ({
-  //       ...prev,
-  //       [grade]: false
-  //     }));
-  //   }
-  // };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -746,20 +748,39 @@ const PurchaseList = () => {
   };
 
 
-
   const handleStartProcessing = async (batch) => {
-    setSelectedBatch(batch);
-    // Reset processing type when selecting new batch
-    setProcessingType('');
+    if (cwsInfo?.havespeciality) {
+      // For specialty CWS, check if KGs have been set for special batches
+      if (!batch.isSpecialBatch || (specialBatchKgs[batch.batchNo] || 0) > 0) {
+        setSelectedBatch({
+          ...batch,
+          totalKgs: batch.isSpecialBatch ? 
+            specialBatchKgs[batch.batchNo] : 
+            batch.originalTotalKgs,
+          batchNo: batch.isSpecialBatch ? batch.batchNo : batch.originalBatchNo
+        });
+        setProcessingType('');
+      } else {
+        console.warn('Please set KGs before starting processing');
+      }
+    } else {
+      // For non-specialty CWS, pass the accumulated values by grade
+      setSelectedBatch({
+        ...batch,
+        totalKgs: batch.totalKgs,  // This should now be the accumulated value by grade
+        batchNo: batch.batchNo     // This should be formatted as yesterdayString + grade
+      });
+      setProcessingType('');
+    }
   };
+
 
   const handleProcessingSubmit = async () => {
     if (!processingType) {
-      // Consider adding toast notification
       console.error('Please select a processing type');
       return;
     }
-
+  
     try {
       const processingData = {
         batchNo: selectedBatch.batchNo,
@@ -768,32 +789,28 @@ const PurchaseList = () => {
         grade: selectedBatch.grade,
         cwsId: userInfo.cwsId
       };
-
+  
       const response = await axios.post(`${API_URL}/processing`, processingData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-
+  
       // Refresh data
       fetchPurchases();
       fetchProcessingEntries();
-
+  
       // Reset states
       setSelectedBatch(null);
       setProcessingType('');
-
-      // Consider adding success toast
+  
       console.log('Processing started successfully');
     } catch (error) {
       const errorMessage = error.response?.data?.error || 'Failed to start processing';
       console.error('Error starting processing:', errorMessage);
-      // Consider adding error toast
     }
   };
-
-
 
 
   const areAllGradesProcessing = () => {
@@ -803,38 +820,202 @@ const PurchaseList = () => {
   const getBatchesByGrade = () => {
     const batches = {};
     const processingStatusMap = {}; // Track processing statuses
-
-    // First, map processing statuses
+    const totalKgsByGrade = {}; // Track total KGs by grade
+    
+    // First, map processing statuses and track processing batch bases
+    const processedBatchBases = new Set();
     processingEntries.forEach(entry => {
       const batchKey = `${entry.batchNo}-${entry.grade}`;
       processingStatusMap[batchKey] = entry.status;
-    });
-
-    // Then process batches
-    getYesterdayPurchases().forEach(purchase => {
-      const batchKey = `${purchase.batchNo}-${purchase.grade}`;
-
-      // MODIFIED: Only include batches that are NOT started
-      const processingStatus = processingStatusMap[batchKey] || 'NOT STARTED';
-      if (processingStatus !== 'NOT STARTED') return;
-
-      if (!batches[batchKey]) {
-        batches[batchKey] = {
-          batchNo: purchase.batchNo,
-          grade: purchase.grade,
-          totalKgs: 0,
-          totalPrice: 0,
-          purchases: [],
-          processingStatus: processingStatus
-        };
+  
+      // If we have both -1 and -2 variants, store the base
+      const batchBase = entry.batchNo.split('-')[0];
+      if (processingEntries.some(e =>
+        e.batchNo === `${batchBase}-1` &&
+        e.batchNo === `${batchBase}-2`)) {
+        processedBatchBases.add(batchBase);
       }
-      batches[batchKey].totalKgs += purchase.totalKgs;
-      batches[batchKey].totalPrice += purchase.totalPrice;
-      batches[batchKey].purchases.push(purchase);
     });
-
-    return Object.values(batches);
+  
+    // Calculate total KGs by grade from all yesterday's purchases
+    const yesterdayPurchases = getYesterdayPurchases();
+    yesterdayPurchases.forEach(purchase => {
+      if (!totalKgsByGrade[purchase.grade]) {
+        totalKgsByGrade[purchase.grade] = 0;
+      }
+      totalKgsByGrade[purchase.grade] += purchase.totalKgs;
+    });
+  
+    // Group purchases by grade for non-specialty CWS
+    if (!cwsInfo?.havespeciality) {
+      const purchasesByGrade = {};
+      
+      yesterdayPurchases.forEach(purchase => {
+        const batchKey = purchase.grade;
+        const processingStatus = processingStatusMap[`${purchase.batchNo}-${purchase.grade}`] || 'NOT STARTED';
+        
+        if (processingStatus !== 'NOT STARTED') return;
+        
+        if (!purchasesByGrade[batchKey]) {
+          purchasesByGrade[batchKey] = {
+            // batchNo: yesterdayString + purchase.grade,
+            batchNo: purchase.batchNo,
+            grade: purchase.grade,
+            totalKgs: 0,
+            originalTotalKgs: totalKgsByGrade[purchase.grade],
+            totalPrice: 0,
+            purchases: [],
+            processingStatus: processingStatus
+          };
+        }
+        
+        purchasesByGrade[batchKey].totalKgs += purchase.totalKgs;
+        purchasesByGrade[batchKey].totalPrice += purchase.totalPrice;
+        purchasesByGrade[batchKey].purchases.push(purchase);
+      });
+      
+      // Convert grouped purchases to array
+      return Object.values(purchasesByGrade);
+    } 
+    
+    // For specialty CWS, continue with the original logic
+    else {
+      yesterdayPurchases.forEach(purchase => {
+        // Extract the base batch number (without grade suffix)
+        const batchBase = purchase.batchNo.slice(0, -1);
+  
+        // Skip if this batch base is already in processing
+        if (processedBatchBases.has(batchBase)) {
+          return;
+        }
+  
+        const batchKey = `${purchase.batchNo}-${purchase.grade}`;
+  
+        // Only include batches that are NOT started
+        const processingStatus = processingStatusMap[batchKey] || 'NOT STARTED';
+        if (processingStatus !== 'NOT STARTED') return;
+  
+        // For all batches in specialty coffee mode, split them
+        const baseId = purchase.batchNo;
+        const newBatch = baseId.substring(0, baseId.length - 1);
+        const totalKgs = purchase.totalKgs;
+        const totalPrice = purchase.totalPrice;
+  
+        // Skip if either variant is in processing
+        if (processingStatusMap[`${newBatch}-1`] || processingStatusMap[`${newBatch}-2`]) {
+          return;
+        }
+  
+        batches[`${newBatch}-1`] = {
+          batchNo: `${newBatch}-1`,
+          originalBatchNo: baseId,
+          grade: purchase.grade,
+          totalKgs: totalKgs / 2,
+          originalTotalKgs: totalKgsByGrade[purchase.grade],
+          totalPrice: totalPrice / 2,
+          purchases: [purchase],
+          processingStatus: processingStatus,
+          isSpecialBatch: true
+        };
+  
+        batches[`${newBatch}-2`] = {
+          batchNo: `${newBatch}-2`,
+          originalBatchNo: baseId,
+          grade: purchase.grade,
+          totalKgs: totalKgs / 2,
+          originalTotalKgs: totalKgsByGrade[purchase.grade],
+          totalPrice: totalPrice / 2,
+          purchases: [purchase],
+          processingStatus: processingStatus,
+          isSpecialBatch: true
+        };
+      });
+  
+      return Object.values(batches);
+    }
   };
+
+  // Helper function to check if a batch should be hidden
+  const shouldHideBatch = (batchNo) => {
+    const batchBase = batchNo.split('-')[0];
+    return processingEntries.some(entry =>
+      entry.batchNo.startsWith(batchBase) &&
+      processingEntries.some(e =>
+        e.batchNo === `${batchBase}-1` &&
+        e.batchNo === `${batchBase}-2`
+      )
+    );
+  };
+
+  // Updated getYesterdayPurchases function
+  const getYesterdayPurchases = () => {
+    const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
+
+    return purchases.filter(purchase => {
+      const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+      const batchBase = purchase.batchNo.slice(0, -1);
+
+      // Hide if the batch base has both -1 and -2 variants in processing
+      if (processingEntries.some(entry =>
+        entry.batchNo === `${batchBase}-1` &&
+        processingEntries.some(e => e.batchNo === `${batchBase}-2`)
+      )) {
+        return false;
+      }
+
+      return purchaseDate === yesterdayString &&
+        !isGradeProcessing(purchase.grade, yesterdayString) &&
+        !processingBatchNumbers.includes(purchase.batchNo);
+    });
+  };
+
+  // Updated validation function to check against total KGs across all batches
+  const validateBatchKgsMatch = (batch) => {
+    if (!batch.isSpecialBatch) return true;
+
+    const batchBase = batch.batchNo.split('-')[0];
+    const batch1 = `${batchBase}-1`;
+    const batch2 = `${batchBase}-2`;
+
+    // Get KGs for both batches
+    const kg1 = specialBatchKgs[batch1] || 0;
+    const kg2 = specialBatchKgs[batch2] || 0;
+    const totalKgs = kg1 + kg2;
+
+    // Find original batch
+    const originalBatch = purchases.find(p =>
+      p.batchNo.startsWith(batchBase) &&
+      new Date(p.purchaseDate).toISOString().split('T')[0] === yesterdayString
+    );
+
+    if (!originalBatch) return true;
+
+    return Math.abs(totalKgs - originalBatch.totalKgs) < 0.01;
+  };
+
+
+
+  // 3. Add the missing handleBatchKgChange() function
+  const handleBatchKgChange = (batchNo, value) => {
+    const newValue = parseFloat(value) || 0;
+
+    // Find the original batch to get total KGs
+    const batchBase = batchNo.split('-')[0];
+    const originalBatch = purchases.find(p =>
+      p.batchNo.startsWith(batchBase) &&
+      new Date(p.purchaseDate).toISOString().split('T')[0] === yesterdayString
+    );
+
+    if (!originalBatch) return;
+
+    // Update only the current batch's KGs
+    setSpecialBatchKgs(prev => ({
+      ...prev,
+      [batchNo]: newValue
+    }));
+  };
+
+
 
   const getBatchProcessingMessage = () => {
     // Check if we have any purchases from yesterday
@@ -871,6 +1052,8 @@ const PurchaseList = () => {
     console.log('Yesterday purchases:', getYesterdayPurchases());
   }, [purchases]);
 
+
+
   const renderProcessingStatusBadge = (status) => {
     const statusColors = {
       'PENDING': 'bg-secondary',
@@ -885,7 +1068,6 @@ const PurchaseList = () => {
       </span>
     );
   };
-
 
   const renderPurchaseTable = () => {
     const hasProcessingStarted = () => {
@@ -1136,7 +1318,7 @@ const PurchaseList = () => {
                     <button
                       className="btn btn-outline-sucafina"
                       onClick={() => handlePriceEdit(grade)}
-                      // style={{ color: theme.primary, borderColor: theme.primary }}
+                    // style={{ color: theme.primary, borderColor: theme.primary }}
                     >
                       Edit
                     </button>
@@ -1314,7 +1496,6 @@ const PurchaseList = () => {
 
           {/* Get available grades for the form */}
           {(() => {
-            const availableGrades = getAvailableGrades(processingEntries, yesterdayString);
             return null;
           })()}
 
@@ -1326,7 +1507,7 @@ const PurchaseList = () => {
           {renderPurchaseTable()}
 
           {/* Batches Section */}
-          <div className="card border-0 shadow-sm">
+          {/* <div className="card border-0 shadow-sm">
             <div className="card-body">
               <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
               <div className="table-responsive mt-2">
@@ -1334,9 +1515,7 @@ const PurchaseList = () => {
                   <thead>
                     <tr style={{ backgroundColor: theme.neutral }}>
                       <th>Batch Date</th>
-                      <th>Grade</th>
                       <th>Total KGs</th>
-                      <th>Total Price</th>
                       <th>Status</th>
                       <th>Actions</th>
                     </tr>
@@ -1348,33 +1527,176 @@ const PurchaseList = () => {
                       Array(3).fill(0).map((_, index) => (
                         <SkeletonRow key={index} cols={6} />
                       ))
-                    ) : getBatchesByGrade().length > 0 ? (
-                      getBatchesByGrade().map((batch, index) => (
-                        <tr key={index}>
-                          <td>{batch.batchNo}</td>
-                          <td>Grade {batch.grade}</td>
-                          <td>{batch.totalKgs.toLocaleString()}</td>
-                          <td>{batch.totalPrice.toLocaleString()}</td>
-                          <td>
-                            {renderProcessingStatusBadge(batch.processingStatus)}
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-primary btn-sm"
-                              onClick={() => handleStartProcessing(batch)}
-                              style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                              disabled={batch.processingStatus === 'IN_PROGRESS'}
-                            >
-                              Start Processing
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                    ) : batchesState.length > 0 ? (
+                      batchesState.map((batch, index) => {
+                        const isInvalid = batch.isSpecialBatch && !validateBatchKgsMatch(batch);
+                        return (
+                          <tr key={index} className={isInvalid ? "bg-info-subtle" : ""}>
+                            <td>{batch.batchNo}</td>
+                            <td>
+                              {batch.isSpecialBatch ? (
+                                <input
+                                  type="number"
+                                  className={`form-control form-control-sm ${isInvalid ? "is-warning" : ""}`}
+                                  // className={`form-control form-control-sm ${isInvalid ? "is-invalid" : ""}`}
+                                  value={batch.totalKgs || ''}
+                                  onChange={(e) => handleBatchKgChange(index, e.target.value)}
+                                  disabled={batch.processingStatus === 'IN_PROGRESS'} // Disable input if processing is in progress
+                                />
+                              ) : (
+                                batch.totalKgs.toLocaleString()
+                              )}
+                              {batch.isSpecialBatch && isInvalid && (
+                                <div className="text-info">
+                                  Total KGs across split batches must equal {batch.originalTotalKgs.toLocaleString()}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              {renderProcessingStatusBadge(batch.processingStatus)}
+                            </td>
+                            <td>
+                              <button
+                                className="btn btn-primary btn-sm"
+                                onClick={() => handleStartProcessing(batch)}
+                                style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
+                                disabled={batch.processingStatus === 'IN_PROGRESS' || (batch.isSpecialBatch && !batch.totalKgs)}
+                              >
+                                Start Processing
+                              </button>
+                              {batch.isSpecialBatch && isInvalid && (
+                                <div className="text-warning mt-1" style={{ fontSize: '0.8rem' }}>
+                                  <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                                  KGs don't match original total
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
                     ) : (
                       <EmptyState message={getBatchProcessingMessage()} />
                     )}
                   </tbody>
                 </table>
+                {cwsInfo?.havespeciality && getBatchesByGrade().some(b => b.isSpecialBatch) && (
+                  <div className="alert alert-info mt-3">
+                    <i className="bi bi-info-circle-fill me-2"></i>
+                    For specialty coffee, each batch can be split into two processing runs. Please distribute the total weight across both entries.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div> */}
+
+          <div className="card border-0 shadow-sm">
+            <div className="card-body">
+              <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
+              <div className="table-responsive mt-2">
+                <table className="table table-hover">
+                  <thead>
+                    <tr style={{ backgroundColor: theme.neutral }}>
+                      <th>Batch</th>
+                      <th>Total KGs</th>
+                      <th>Processing Type</th>
+                      <th>Status</th>
+                      {/* <th>Start Date</th> */}
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {isLoading.processingEntries ? (
+                      Array(3).fill(0).map((_, index) => (
+                        <SkeletonRow key={index} cols={6} />
+                      ))
+                    ) : batchesState.length > 0 ? (
+                      batchesState.map((batch, index) => {
+                        // Find matching processing entry
+                        const processingEntry = processingEntries.find(entry =>
+                          entry.batchNo === batch.batchNo
+                        );
+
+                        const isInvalid = batch.isSpecialBatch && !validateBatchKgsMatch(batch);
+
+                        return (
+                          <tr key={index} className={isInvalid ? "bg-info-subtle" : ""}>
+                            <td>{batch.batchNo}</td>
+                            <td>
+                              {batch.isSpecialBatch ? (
+                                <>
+                                  <input
+                                    type="number"
+                                    className={`form-control form-control-sm ${isInvalid ? "is-warning" : ""}`}
+                                    value={specialBatchKgs[batch.batchNo] ?? (processingEntry?.totalKgs || '')}
+                                    onChange={(e) => handleBatchKgChange(batch.batchNo, e.target.value)}
+                                    disabled={processingEntry?.status === 'IN_PROGRESS'}
+                                  />
+                                  {batch.isSpecialBatch && (
+                                    <div className="mt-1 text-muted small">
+                                      {/* Current: {specialBatchKgs[batch.batchNo] || 0} KGs */}
+                                      {isInvalid && (
+                                        <div className="text-danger mt-1">
+                                          Combined total should equal {batch.originalTotalKgs.toLocaleString()} KGs
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                batch.originalTotalKgs.toLocaleString()
+                              )}
+                            </td>
+                            <td>
+                              {processingEntry?.processingType || '-'}
+                            </td>
+                            <td>
+                              {processingEntry ? (
+                                renderProcessingStatusBadge(processingEntry.status)
+                              ) : (
+                                renderProcessingStatusBadge(batch.processingStatus)
+                              )}
+                            </td>
+                            {/* <td>
+                              {processingEntry?.startDate ?
+                                new Date(processingEntry.startDate).toLocaleString() :
+                                '-'
+                              }
+                            </td> */}
+                            <td>
+                              {!processingEntry?.status || processingEntry.status === 'PENDING' ? (
+                                <button
+                                  className="btn btn-primary btn-sm"
+                                  onClick={() => handleStartProcessing(batch)}
+                                  style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
+                                  disabled={processingEntry?.status === 'IN_PROGRESS' || (batch.isSpecialBatch && !batch.totalKgs)}
+                                >
+                                  Start Processing
+                                </button>
+                              ) : (
+                                <span className="text-muted">Processing Started</span>
+                              )}
+                              {/* {batch.isSpecialBatch && isInvalid && (
+                                <div className="text-warning mt-1" style={{ fontSize: '0.8rem' }}>
+                                  <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                                  KGs don't match original total
+                                </div>
+                              )} */}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <EmptyState message={getBatchProcessingMessage()} />
+                    )}
+                  </tbody>
+                </table>
+                {cwsInfo?.havespeciality && getBatchesByGrade().some(b => b.isSpecialBatch) && (
+                  <div className="alert alert-info mt-3">
+                    <i className="bi bi-info-circle-fill me-2"></i>
+                    For specialty coffee, each batch can be split into two processing runs. Please distribute the total weight across both entries.
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1386,8 +1708,14 @@ const PurchaseList = () => {
               <div className="modal-dialog">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title">Start Processing - Batch {selectedBatch.batchNo}</h5>
-                    <button type="button" className="btn-close" onClick={() => setSelectedBatch(null)}></button>
+                    <h5 className="modal-title">
+                      Start Processing - Batch {cwsInfo?.havespeciality ? selectedBatch.batchNo : selectedBatch.originalBatchNo}
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setSelectedBatch(null)}
+                    />
                   </div>
                   <div className="modal-body">
                     <div className="mb-3">
@@ -1399,15 +1727,7 @@ const PurchaseList = () => {
                         required
                       >
                         <option value="">Select Processing Type</option>
-                        {selectedBatch.grade === 'A' && cwsInfo?.havespeciality ? (
-                          <>
-                            <option value="FULLY_WASHED">Fully Washed</option>
-                            <option value="NATURAL">Natural</option>
-                            <option value="HONEY">Honey</option>
-                          </>
-                        ) : (
-                          <option value="FULLY_WASHED">Fully Washed</option>
-                        )}
+                        {getProcessingOptions()}
                       </select>
                     </div>
                   </div>
@@ -1434,63 +1754,12 @@ const PurchaseList = () => {
             </div>
           )}
 
-          {/* {selectedBatch && (
-              <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                <div className="modal-dialog">
-                  <div className="modal-content">
-                    <div className="modal-header">
-                      <h5 className="modal-title">Start Processing - Batch {selectedBatch.batchNo}</h5>
-                      <button type="button" className="btn-close" onClick={() => setSelectedBatch(null)}></button>
-                    </div>
-                    <div className="modal-body">
-                      <div className="mb-3">
-                        <label className="form-label">Processing Type</label>
-                        <select
-                          className="form-select"
-                          value={processingType}
-                          onChange={(e) => setProcessingType(e.target.value)}
-                          required
-                        >
-                          <option value="">Select Processing Type</option>
-                          {selectedBatch.grade === 'A' ? (
-                            <>
-                              <option value="FULLY_WASHED">Fully Washed</option>
-                              <option value="NATURAL">Natural</option>
-                              <option value="HONEY">Honey</option>
-                            </>
-                          ) : (
-                            <option value="FULLY_WASHED">Fully Washed</option>
-                          )}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="modal-footer">
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={() => setSelectedBatch(null)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={handleProcessingSubmit}
-                        disabled={!processingType}
-                        style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                      >
-                        Start Processing
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
-          } */}
+
         </div >
       </div >
     </div >
   );
+
 };
 
 export default PurchaseList;
