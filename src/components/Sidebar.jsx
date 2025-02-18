@@ -234,6 +234,7 @@ const Sidebar = () => {
     menuItems = [
       ...menuItems,
       { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
+      { path: '/pricing', icon: 'cash', text: 'Pricing' },
     ];
   } else {
     menuItems = [
