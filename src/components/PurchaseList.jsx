@@ -386,6 +386,7 @@ const PurchaseList = () => {
           <>
             <option value="NATURAL">Natural</option>
             <option value="HONEY">Honey</option>
+            <option value="FULLY_WASHED">Fully Washed</option>
           </>
         );
       } else if (suffix === '2') {
