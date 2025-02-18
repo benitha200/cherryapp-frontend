@@ -170,7 +170,7 @@ const Sidebar = () => {
       setIsMobile(window.innerWidth < 768);
       setIsOpen(window.innerWidth >= 768);
     };
-    
+
     checkWidth();
     window.addEventListener('resize', checkWidth);
     return () => window.removeEventListener('resize', checkWidth);
@@ -183,11 +183,44 @@ const Sidebar = () => {
   };
 
   // Base menu items
+  // let menuItems = [
+  //   { path: '/', icon: 'house-door', text: 'Dashboard' },
+  // ];
+
+  // // Add admin-specific menu items
+  // if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+  //   menuItems = [
+  //     ...menuItems,
+  //     { path: '/pricing', icon: 'cash', text: 'Pricing' },
+  //     { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
+  //     { path: '/cws', icon: 'journal', text: 'CWS' },
+  //     { path: '/users', icon: 'people', text: 'Users' },
+  //   ];
+  // }
+  // if (user.role === 'SUPERVISOR') {
+  //   menuItems = [
+  //     ...menuItems,
+  //     { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
+  //     // { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
+  //     // { path: '/cws', icon: 'journal', text: 'CWS' },
+  //     // { path: '/users', icon: 'people', text: 'Users' },
+  //   ];
+  // } 
+  // else {
+  //   menuItems = [
+  //     ...menuItems,
+  //     { path: '/purchases', icon: 'cart', text: 'Purchases' },
+  //     { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
+  //     { path: '/transfer', icon: 'truck', text: 'Transfer' },
+  //   ];
+  // }
+
+  // Base menu items
   let menuItems = [
     { path: '/', icon: 'house-door', text: 'Dashboard' },
   ];
 
-  // Add admin-specific menu items
+  // Add role-specific menu items
   if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
     menuItems = [
       ...menuItems,
@@ -195,18 +228,14 @@ const Sidebar = () => {
       { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
       { path: '/cws', icon: 'journal', text: 'CWS' },
       { path: '/users', icon: 'people', text: 'Users' },
+      { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
     ];
-  }
-  if (user.role === 'SUPERVISOR') {
+  } else if (user.role === 'SUPERVISOR') {
     menuItems = [
       ...menuItems,
       { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
-      // { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
-      // { path: '/cws', icon: 'journal', text: 'CWS' },
-      // { path: '/users', icon: 'people', text: 'Users' },
     ];
-  } 
-  else {
+  } else {
     menuItems = [
       ...menuItems,
       { path: '/purchases', icon: 'cart', text: 'Purchases' },
