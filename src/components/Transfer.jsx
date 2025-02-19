@@ -135,8 +135,7 @@ const Transfer = () => {
     const fetchUntransferredRecords = async () => {
         try {
             const response = await axios.get(`${API_URL}/bagging-off/cws/${userInfo.cwsId}`);
-            // Filter out records that have already been transferred
-            // const untransferred = response.data.filter(record => record.transfer === null);
+            // Filter records with empty transfers array
             const untransferred = response.data.filter(record => record.transfers.length === 0);
             setUntransferredRecords(untransferred);
             setLoading(false);
@@ -159,7 +158,6 @@ const Transfer = () => {
                 date: new Date().toISOString()
             });
             
-            // Refresh the data after transfer
             await fetchUntransferredRecords();
             setShowTransferModal(false);
             alert('Transfer completed successfully');
@@ -169,8 +167,8 @@ const Transfer = () => {
         }
     };
 
-    const renderOutputKgs = (outputKgsJson) => {
-        const outputKgs = JSON.parse(outputKgsJson);
+    const renderOutputKgs = (outputKgs) => {
+        // Handle outputKgs as an object directly, no need for JSON.parse
         return Object.entries(outputKgs).map(([grade, kg]) => (
             <div key={grade}>{grade}: {kg} kg</div>
         ));
