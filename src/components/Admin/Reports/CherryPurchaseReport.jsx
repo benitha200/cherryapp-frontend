@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../../../constants/Constants';
-// import API_URL from '../../constants/Constants';
 
 const theme = {
     primary: '#008080',
@@ -56,6 +55,28 @@ const CherryPurchaseReport = () => {
 
     const itemsPerPage = 10;
 
+    // Function to get the first and last day of the current month
+    const getCurrentMonthDates = () => {
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+        // Format dates as YYYY-MM-DD
+        const formatDate = (date) => date.toISOString().split('T')[0];
+
+        return {
+            startDate: formatDate(firstDay),
+            endDate: formatDate(lastDay)
+        };
+    };
+
+    // Set default dates on component mount
+    useEffect(() => {
+        const { startDate, endDate } = getCurrentMonthDates();
+        setStartDate(startDate);
+        setEndDate(endDate);
+    }, []);
+
     const fetchPurchaseReport = async () => {
         if (!startDate || !endDate) {
             setError('Please select both start and end dates');
@@ -93,6 +114,7 @@ const CherryPurchaseReport = () => {
 
     // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
     const downloadTableAsCSV = () => {
         if (purchases.length === 0) return;
 
@@ -153,7 +175,6 @@ const CherryPurchaseReport = () => {
         link.click();
         document.body.removeChild(link);
     };
-
 
     const downloadTableAsExcel = () => {
         if (purchases.length === 0) return;
