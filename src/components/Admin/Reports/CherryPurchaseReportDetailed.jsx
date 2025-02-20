@@ -49,7 +49,7 @@ const CherryPurchaseReportDetailed = () => {
         totalPrice: 0
     });
 
-    const itemsPerPage = 10;
+    const itemsPerPage = 100;
 
     // Function to get the first and last day of the current month
     const getCurrentMonthDates = () => {

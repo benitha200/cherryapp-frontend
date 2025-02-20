@@ -51,7 +51,7 @@ const PurchaseByStation = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage] = useState(100);
     const [selectedDate, setSelectedDate] = useState(getYesterdayDate());
     const [cwsList, setCwsList] = useState([]);
     const [selectedCws, setSelectedCws] = useState('');
