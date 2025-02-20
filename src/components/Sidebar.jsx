@@ -224,6 +224,7 @@ const Sidebar = () => {
   if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
     menuItems = [
       ...menuItems,
+      { path: '/purchases-all', icon: 'coin', text: 'Add Purchase' },
       { path: '/pricing', icon: 'cash', text: 'Pricing' },
       { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
       { path: '/cws', icon: 'journal', text: 'CWS' },
@@ -234,14 +235,8 @@ const Sidebar = () => {
   } else if (user.role === 'SUPERVISOR') {
     menuItems = [
       ...menuItems,
-      { path: '/pricing', icon: 'cash', text: 'Pricing' },
-      { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
-      { path: '/cws', icon: 'journal', text: 'CWS' },
-      { path: '/users', icon: 'people', text: 'Users' },
       { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' }, 
       { path: '/cherry-purchase-report', icon: 'pie-chart', text: 'Report' },
-      // { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
-      // { path: '/pricing', icon: 'cash', text: 'Pricing' },
     ];
   } else {
     menuItems = [

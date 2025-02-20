@@ -98,6 +98,7 @@ import CwsList from './components/Admin/Cws/CwsList.jsx';
 import CwsForm from './components/Admin/Cws/CwsForm.jsx';
 import PurchaseByStation from './components/Supervisor/PurchaseByStation.jsx';
 import CherryPurchaseReport from './components/Admin/Reports/CherryPurchaseReport.jsx';
+import PurchaseListAll from './components/Admin/Cherry/PurchaseListAll.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -141,6 +142,11 @@ const AppContent = () => {
             <Route path="/purchases" element={
               <PrivateRoute>
                 <PurchaseList />
+              </PrivateRoute>
+            } />
+            <Route path="/purchases-all" element={
+              <PrivateRoute>
+                <PurchaseListAll />
               </PrivateRoute>
             } />
             <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />

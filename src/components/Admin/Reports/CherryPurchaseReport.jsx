@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../../../constants/Constants';
+// import API_URL from '../../../constants/Constants';
 
 const theme = {
     primary: '#008080',
@@ -57,19 +58,19 @@ const CherryPurchaseReport = () => {
 
     // Function to get the first and last day of the current month
     const getCurrentMonthDates = () => {
+        const firstDay = new Date(2025, 0, 1); // January 1, 2025
         const today = new Date();
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
         const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
+    
         // Format dates as YYYY-MM-DD
         const formatDate = (date) => date.toISOString().split('T')[0];
-
+    
         return {
             startDate: formatDate(firstDay),
             endDate: formatDate(lastDay)
         };
     };
-
+    
     // Set default dates on component mount
     useEffect(() => {
         const { startDate, endDate } = getCurrentMonthDates();
