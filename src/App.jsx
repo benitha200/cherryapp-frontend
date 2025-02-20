@@ -97,8 +97,8 @@ import Users from './components/Admin/Users.jsx';
 import CwsList from './components/Admin/Cws/CwsList.jsx';
 import CwsForm from './components/Admin/Cws/CwsForm.jsx';
 import PurchaseByStation from './components/Supervisor/PurchaseByStation.jsx';
-import CherryPurchaseReport from './components/Admin/Reports/CherryPurchaseReport.jsx';
 import PurchaseListAll from './components/Admin/Cherry/PurchaseListAll.jsx';
+import CherryPurchaseReportDetailed from './components/Admin/Reports/CherryPurchaseReportDetailed.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -210,7 +210,7 @@ const AppContent = () => {
               path="/cherry-purchase-report"
               element={
                 <PrivateRoute>
-                  <CherryPurchaseReport />
+                  <CherryPurchaseReportDetailed />
                 </PrivateRoute>
               }
             />

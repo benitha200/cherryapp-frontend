@@ -38,7 +38,7 @@ const EmptyState = ({ message, startDate, endDate }) => (
     </tr>
 );
 
-const CherryPurchaseReport = () => {
+const CherryPurchaseReportSummary = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [purchases, setPurchases] = useState([]);
@@ -487,4 +487,4 @@ const CherryPurchaseReport = () => {
     );
 };
 
-export default CherryPurchaseReport;
+export default CherryPurchaseReportSummary;

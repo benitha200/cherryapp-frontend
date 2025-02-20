@@ -319,7 +319,7 @@ const PurchaseListAll = () => {
                 commissionFee: prices.commissionFee,
                 grade: newPurchase.grade,
                 purchaseDate: selectedDate,
-                batchNo: `${new Date(newPurchase.purchaseDate).getFullYear().toString().slice(-2)}${allCws.find(cws => cws.id === parseInt(selectedCWS, 10))?.code}${new Date(selectedDate).toISOString().slice(5, 10).replace('-', '')}${newPurchase.grade}`,
+                batchNo: `${new Date(newPurchase.purchaseDate).getFullYear().toString().slice(-2)}${allCws.find(cws => cws.id === parseInt(selectedCWS, 10))?.code}${new Date(selectedDate).toISOString().slice(8, 10)}${new Date(selectedDate).toISOString().slice(5, 7)}${newPurchase.grade}`,
                 siteCollectionId: newPurchase.siteCollectionId ?
                     parseInt(newPurchase.siteCollectionId, 10) : null
             };
