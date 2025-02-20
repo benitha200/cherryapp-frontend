@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../../constants/Constants';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const theme = {
     primary: '#008080',
@@ -13,28 +17,34 @@ const theme = {
     supplier: '#FFA500',
 };
 
-// Skeleton loading component
 const SkeletonRow = ({ cols }) => (
     <tr>
         {Array(cols).fill(0).map((_, index) => (
-            <td key={index}>
-                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+            <td key={index} className="p-3">
+                <div className="placeholder-glow">
+                    <span className="placeholder col-12"></span>
+                </div>
             </td>
         ))}
     </tr>
 );
 
-// Empty state component
 const EmptyState = ({ message = "No records found" }) => (
     <tr>
-        <td colSpan="100%" className="text-center py-8">
-            <div className="flex flex-col items-center justify-center space-y-2">
-                <i className="bi bi-inbox text-4xl text-gray-400"></i>
-                <p className="text-gray-500">{message}</p>
+        <td colSpan="100%" className="text-center py-4">
+            <div className="d-flex flex-column align-items-center">
+                <i className="bi bi-inbox fs-1 text-muted"></i>
+                <p className="text-muted mt-2">{message}</p>
             </div>
         </td>
     </tr>
 );
+
+const getYesterdayDate = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return yesterday;
+};
 
 const PurchaseByStation = () => {
     const [purchases, setPurchases] = useState([]);
@@ -42,42 +52,102 @@ const PurchaseByStation = () => {
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const [selectedDate, setSelectedDate] = useState(getYesterdayDate());
+    const [cwsList, setCwsList] = useState([]);
+    const [selectedCws, setSelectedCws] = useState('');
+    const [filteredPurchases, setFilteredPurchases] = useState([]);
     const [totals, setTotals] = useState({
         totalKgs: 0,
         totalPrice: 0,
         totalCherryPrice: 0,
         totalTransportFee: 0,
-        totalCommissionFee: 0
+        totalCommissionFee: 0,
+        averagePricePerKg: 0
     });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    // Filter CWS list based on search term
+    const filteredCwsList = cwsList.filter(cws =>
+        cws.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cws.id.toString().includes(searchTerm)
+    );
+
+    // Handle CWS selection
+    const handleCwsSelect = (cwsId) => {
+        setSelectedCws(cwsId);
+        setIsDropdownOpen(false);
+        setSearchTerm('');
+    };
+
+
+
+
+
+    useEffect(() => {
+        const fetchCwsList = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get(`${API_URL}/cws`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setCwsList(response.data);
+            } catch (error) {
+                console.error('Error fetching CWS list:', error);
+            }
+        };
+        fetchCwsList();
+    }, []);
 
     useEffect(() => {
         const fetchPurchases = async () => {
             try {
                 setLoading(true);
                 const token = localStorage.getItem('token');
-                const response = await axios.get(`${API_URL}/purchases/cws-aggregated`, {
+                const formattedDate = selectedDate.toISOString().split('T')[0];
+                const response = await axios.get(`${API_URL}/purchases/date/${formattedDate}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setPurchases(response.data);
 
-                // Calculate totals
-                const aggregatedTotals = response.data.reduce((acc, item) => {
-                    return {
-                        totalKgs: acc.totalKgs + item.totalKgs,
-                        totalPrice: acc.totalPrice + item.totalPrice,
-                        totalCherryPrice: acc.totalCherryPrice + item.totalCherryPrice,
-                        totalTransportFee: acc.totalTransportFee + item.totalTransportFee,
-                        totalCommissionFee: acc.totalCommissionFee + item.totalCommissionFee
-                    };
-                }, {
-                    totalKgs: 0,
-                    totalPrice: 0,
-                    totalCherryPrice: 0,
-                    totalTransportFee: 0,
-                    totalCommissionFee: 0
-                });
+                // Flatten the cwsData array and add cwsName and cwsCode to each purchase
+                const flattenedPurchases = response.data.cwsData.flatMap(cwsGroup =>
+                    cwsGroup.purchases.map(purchase => ({
+                        ...purchase,
+                        cwsName: cwsGroup.name,
+                        cwsCode: purchase.cws.code
+                    }))
+                );
 
-                setTotals(aggregatedTotals);
+                // Aggregate purchases by CWS
+                const aggregatedPurchases = flattenedPurchases.reduce((acc, purchase) => {
+                    const { cwsName, cwsCode, totalKgs, totalPrice, cherryPrice, transportFee, commissionFee } = purchase;
+
+                    if (!acc[cwsName]) {
+                        acc[cwsName] = {
+                            cwsName,
+                            cwsCode,
+                            totalKgs: 0,
+                            totalPrice: 0,
+                            totalCherryPrice: 0,
+                            totalTransportFee: 0,
+                            totalCommissionFee: 0
+                        };
+                    }
+
+                    acc[cwsName].totalKgs += totalKgs;
+                    acc[cwsName].totalPrice += totalPrice;
+                    acc[cwsName].totalCherryPrice += totalKgs * cherryPrice;
+                    acc[cwsName].totalTransportFee += totalKgs * transportFee;
+                    acc[cwsName].totalCommissionFee += totalKgs * commissionFee;
+
+                    return acc;
+                }, {});
+
+                // Convert the aggregated object back to an array
+                const aggregatedPurchasesArray = Object.values(aggregatedPurchases);
+
+                setPurchases(aggregatedPurchasesArray);
+                updateFilteredPurchases(aggregatedPurchasesArray, selectedCws);
             } catch (err) {
                 setError('Error fetching purchase data');
                 console.error('Error fetching purchase data:', err);
@@ -86,67 +156,196 @@ const PurchaseByStation = () => {
             }
         };
 
-        fetchPurchases();
-    }, []);
+        if (selectedDate) {
+            fetchPurchases();
+        }
+    }, [selectedDate]);
 
-    // Get current items for pagination
+    const updateFilteredPurchases = (purchases, cwsId) => {
+        const filtered = cwsId
+            ? purchases.filter(p => p.cwsCode === cwsId)
+            : purchases;
+
+        setFilteredPurchases(filtered);
+
+        const newTotals = filtered.reduce((acc, item) => ({
+            totalKgs: acc.totalKgs + item.totalKgs,
+            totalPrice: acc.totalPrice + item.totalPrice,
+            totalCherryPrice: acc.totalCherryPrice + item.totalCherryPrice,
+            totalTransportFee: acc.totalTransportFee + item.totalTransportFee,
+            totalCommissionFee: acc.totalCommissionFee + item.totalCommissionFee
+        }), {
+            totalKgs: 0,
+            totalPrice: 0,
+            totalCherryPrice: 0,
+            totalTransportFee: 0,
+            totalCommissionFee: 0
+        });
+
+        // Calculate average price per kg
+        newTotals.averagePricePerKg = newTotals.totalKgs > 0
+            ? newTotals.totalPrice / newTotals.totalKgs
+            : 0;
+
+        setTotals(newTotals);
+        setCurrentPage(1);
+    };
+
+    useEffect(() => {
+        updateFilteredPurchases(purchases, selectedCws);
+    }, [selectedCws, purchases]);
+
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = purchases.slice(indexOfFirstItem, indexOfLastItem);
-
-    // Change page
+    const currentItems = filteredPurchases.slice(indexOfFirstItem, indexOfLastItem);
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="container-fluid p-4">
-            <h2 className="mb-4">Purchases By Station</h2>
+        <div className="container-fluid py-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2 className="mb-0">Purchases By Station</h2>
 
+                <div className="d-flex gap-3 align-items-end">
+                    <div>
+                        <label className="form-label" style={{ color: theme.primary }}>Select Date</label>
+                        <DatePicker
+                            selected={selectedDate}
+                            onChange={date => setSelectedDate(date)}
+                            className="form-control"
+                            dateFormat="yyyy-MM-dd"
+                            style={{
+                                borderColor: theme.primary,
+                                '&:focus': {
+                                    borderColor: theme.secondary,
+                                    boxShadow: `0 0 0 0.2rem ${theme.neutral}`
+                                }
+                            }}
+                        />
+                    </div>
 
-            {/* Summary Cards */}
-            <div className="row mb-4">
-                <div className="col-md-2 col-sm-6 mb-3">
-                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
-                        <div className="card-body">
-                            <h6 className="card-title">Total KGs</h6>
-                            <h4 className="card-text">{totals.totalKgs.toLocaleString()}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-2 col-sm-6 mb-3">
-                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
-                        <div className="card-body">
-                            <h6 className="card-title">Total Amount (RWF)</h6>
-                            <h4 className="card-text">{totals.totalPrice.toLocaleString()}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-2 col-sm-6 mb-3">
-                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
-                        <div className="card-body">
-                            <h6 className="card-title">Cherry Amount (RWF)</h6>
-                            <h4 className="card-text">{totals.totalCherryPrice.toLocaleString()}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-2 col-sm-6 mb-3">
-                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
-                        <div className="card-body">
-                            <h6 className="card-title">Transport Amount (RWF)</h6>
-                            <h4 className="card-text">{totals.totalTransportFee.toLocaleString()}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-2 col-sm-6 mb-3">
-                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
-                        <div className="card-body">
-                            <h6 className="card-title">Commission Amount (RWF)</h6>
-                            <h4 className="card-text">{totals.totalCommissionFee.toLocaleString()}</h4>
+                    <div className="dropdown" style={{ width: '400px' }}> {/* Adjust width here */}
+                        <label className="form-label" style={{ color: theme.primary }}>Filter by CWS</label>
+                        <div className="position-relative">
+                            <button
+                                className="form-select d-flex justify-content-between align-items-center"
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                type="button"
+                                aria-expanded={isDropdownOpen}
+                                style={{
+                                    borderColor: theme.primary,
+                                    color: theme.primary,
+                                    backgroundColor: isDropdownOpen ? theme.neutral : 'white',
+                                    width: '100%' // Ensure the button takes full width
+                                }}
+                            >
+                                {selectedCws ? cwsList.find(cws => cws.id.toString() === selectedCws)?.name : 'All CWS'}
+                            </button>
+
+                            <div
+                                className={`dropdown-menu w-100 ${isDropdownOpen ? 'show' : ''}`}
+                                style={{
+                                    maxHeight: '300px',
+                                    overflowY: 'auto',
+                                    borderColor: theme.primary,
+                                    width: '100%'
+                                }}
+                            >
+                                <div className="px-3 py-2">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        placeholder="Search CWS..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        style={{ borderColor: theme.primary }}
+                                    />
+                                </div>
+                                <div className="dropdown-divider"></div>
+                                <button
+                                    className={`dropdown-item ${!selectedCws ? 'active' : ''}`}
+                                    onClick={() => handleCwsSelect('')}
+                                    style={{
+                                        backgroundColor: !selectedCws ? theme.primary : 'transparent',
+                                        color: !selectedCws ? 'white' : 'inherit'
+                                    }}
+                                >
+                                    All CWS
+                                </button>
+                                {filteredCwsList.map(cws => (
+                                    <button
+                                        key={cws.id}
+                                        className={`dropdown-item ${selectedCws === cws.id.toString() ? 'active' : ''}`}
+                                        onClick={() => handleCwsSelect(cws.id.toString())}
+                                        style={{
+                                            backgroundColor: selectedCws === cws.id.toString() ? theme.primary : 'transparent',
+                                            color: selectedCws === cws.id.toString() ? 'white' : 'inherit'
+                                        }}
+                                    >
+                                        {cws.name}
+                                    </button>
+                                ))}
+                                {filteredCwsList.length === 0 && (
+                                    <div className="dropdown-item text-muted">No results found</div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-         
+            {/* Summary Cards */}
+            <div className="row g-3 mb-4">
+                <div className="col">
+                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
+                        <div className="card-body">
+                            <h6 className="card-subtitle mb-2">Total KGs</h6>
+                            <h4 className="card-title mb-0">{totals.totalKgs.toLocaleString()}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div className="col">
+                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
+                        <div className="card-body">
+                            <h6 className="card-subtitle mb-2">Total (RWF)</h6>
+                            <h4 className="card-title mb-0">{totals.totalPrice.toLocaleString()}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div className="col">
+                    <div className="card h-100" style={{ backgroundColor: theme.neutral, borderColor: theme.primary }}>
+                        <div className="card-body">
+                            <h6 className="card-subtitle mb-2" style={{ color: theme.primary }}>Average Price/Kg (RWF)</h6>
+                            <h4 className="card-title mb-0">{totals?.averagePricePerKg?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div className="col">
+                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
+                        <div className="card-body">
+                            <h6 className="card-subtitle mb-2">Cherry (RWF)</h6>
+                            <h4 className="card-title mb-0">{totals.totalCherryPrice.toLocaleString()}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div className="col">
+                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
+                        <div className="card-body">
+                            <h6 className="card-subtitle mb-2">Transport  (RWF)</h6>
+                            <h4 className="card-title mb-0">{totals.totalTransportFee.toLocaleString()}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div className="col">
+                    <div className="card h-100" style={{ backgroundColor: theme.neutral }}>
+                        <div className="card-body">
+                            <h6 className="card-subtitle mb-2">Commission  (RWF)</h6>
+                            <h4 className="card-title mb-0">{totals.totalCommissionFee.toLocaleString()}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Purchase Table */}
             <div className="card">
                 <div className="card-body">
@@ -157,42 +356,36 @@ const PurchaseByStation = () => {
                                     <th>CWS Name</th>
                                     <th>CWS Code</th>
                                     <th>Purchase Date</th>
-                                    <th>Total KGs</th>
-                                    <th>Total Amount (RWF)</th>
-                                    <th>Cherry Amount (RWF)</th>
-                                    <th>Transport Amount (RWF)</th>
-                                    <th>Commission Amount (RWF)</th>
-                                    {/* <th>Calculated Total (RWF)</th> */}
+                                    <th className="text-end">Total KGs</th>
+                                    <th className="text-end">Total Amount (RWF)</th>
+                                    <th className="text-end">Cherry Amount (RWF)</th>
+                                    <th className="text-end">Transport Amount (RWF)</th>
+                                    <th className="text-end">Commission Amount (RWF)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
                                     Array(5).fill(0).map((_, index) => (
-                                        <SkeletonRow key={index} cols={9} />
+                                        <SkeletonRow key={index} cols={8} />
                                     ))
                                 ) : error ? (
                                     <tr>
-                                        <td colSpan="9" className="text-center text-danger">{error}</td>
+                                        <td colSpan="8" className="text-center text-danger">{error}</td>
                                     </tr>
                                 ) : currentItems.length > 0 ? (
-                                    currentItems.map((purchase, index) => {
-                                        const purchaseDate = new Date(purchase.purchaseDate).toLocaleDateString();
-                                        // const calculatedTotal = purchase.totalCherryPrice + purchase.totalTransportFee + purchase.totalCommissionFee;
-
-                                        return (
-                                            <tr key={`${purchase.cwsId}-${index}`}>
-                                                <td>{purchase.cwsName}</td>
-                                                <td>{purchase.cwsCode}</td>
-                                                <td>{purchaseDate}</td>
-                                                <td>{purchase.totalKgs.toLocaleString()}</td>
-                                                <td>{purchase.totalPrice.toLocaleString()}</td>
-                                                <td>{purchase.totalCherryPrice.toLocaleString()}</td>
-                                                <td>{purchase.totalTransportFee.toLocaleString()}</td>
-                                                <td>{purchase.totalCommissionFee.toLocaleString()}</td>
-                                                {/* <td>{calculatedTotal.toLocaleString()}</td> */}
-                                            </tr>
-                                        );
-                                    })
+                                    currentItems.map((purchase, index) => (
+                                        <tr key={index}>
+                                            <td>{purchase.cwsName}</td>
+                                            <td>{purchase.cwsCode}</td>
+                                            {/* <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td> */}
+                                            <td className='text-end'>{selectedDate ? "" : ""}</td>
+                                            <td className="text-end">{purchase.totalKgs.toLocaleString()}</td>
+                                            <td className="text-end">{purchase.totalPrice.toLocaleString()}</td>
+                                            <td className="text-end">{purchase.totalCherryPrice.toLocaleString()}</td>
+                                            <td className="text-end">{purchase.totalTransportFee.toLocaleString()}</td>
+                                            <td className="text-end">{purchase.totalCommissionFee.toLocaleString()}</td>
+                                        </tr>
+                                    ))
                                 ) : (
                                     <EmptyState />
                                 )}
@@ -200,35 +393,50 @@ const PurchaseByStation = () => {
                         </table>
                     </div>
 
-                    {/* Pagination */}
-                    {!loading && !error && purchases.length > 0 && (
-                        <nav>
-                            <ul className="pagination justify-content-center">
+                    {/* Pagination with updated styling */}
+                    {!loading && !error && filteredPurchases.length > itemsPerPage && (
+                        <nav className="d-flex justify-content-center mt-4">
+                            <ul className="pagination">
                                 <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                                     <button
                                         className="page-link"
                                         onClick={() => paginate(currentPage - 1)}
                                         disabled={currentPage === 1}
+                                        style={{
+                                            color: theme.primary,
+                                            borderColor: theme.primary
+                                        }}
                                     >
                                         Previous
                                     </button>
                                 </li>
-                                {[...Array(Math.ceil(purchases.length / itemsPerPage)).keys()].map(number => (
-                                    <li key={number + 1} className={`page-item ${currentPage === number + 1 ? 'active' : ''}`}>
+                                {[...Array(Math.ceil(filteredPurchases.length / itemsPerPage))].map((_, index) => (
+                                    <li
+                                        key={index + 1}
+                                        className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                                    >
                                         <button
                                             className="page-link"
-                                            onClick={() => paginate(number + 1)}
-                                            style={currentPage === number + 1 ? { backgroundColor: theme.primary, borderColor: theme.primary } : {}}
+                                            onClick={() => paginate(index + 1)}
+                                            style={{
+                                                backgroundColor: currentPage === index + 1 ? theme.primary : 'white',
+                                                borderColor: theme.primary,
+                                                color: currentPage === index + 1 ? 'white' : theme.primary
+                                            }}
                                         >
-                                            {number + 1}
+                                            {index + 1}
                                         </button>
                                     </li>
                                 ))}
-                                <li className={`page-item ${currentPage === Math.ceil(purchases.length / itemsPerPage) ? 'disabled' : ''}`}>
+                                <li className={`page-item ${currentPage === Math.ceil(filteredPurchases.length / itemsPerPage) ? 'disabled' : ''}`}>
                                     <button
                                         className="page-link"
                                         onClick={() => paginate(currentPage + 1)}
-                                        disabled={currentPage === Math.ceil(purchases.length / itemsPerPage)}
+                                        disabled={currentPage === Math.ceil(filteredPurchases.length / itemsPerPage)}
+                                        style={{
+                                            color: theme.primary,
+                                            borderColor: theme.primary
+                                        }}
                                     >
                                         Next
                                     </button>
@@ -243,3 +451,4 @@ const PurchaseByStation = () => {
 };
 
 export default PurchaseByStation;
+

@@ -44,7 +44,7 @@ const PricingManagement = () => {
                     const parsedUser = JSON.parse(storedUser);
                     setUserInfo(parsedUser);
                     await fetchGlobalFees();
-                    if (parsedUser.role === 'ADMIN' || parsedUser.role === 'SUPER_ADMIN') {
+                    if (parsedUser.role === 'ADMIN' || parsedUser.role === 'SUPER_ADMIN' ||  parsedUser.role === 'SUPERVISOR') {
                         await fetchCWSList();
                     }
                 }
@@ -494,10 +494,10 @@ const PricingManagement = () => {
             )}
 
             {/* Render global pricing section for both ADMIN and SUPER_ADMIN roles */}
-            {(userInfo?.role === 'SUPER_ADMIN' || userInfo?.role === 'ADMIN') && renderGlobalPricingSection()}
+            {(userInfo?.role === 'SUPER_ADMIN' || userInfo?.role === 'ADMIN' || userInfo?.role === 'SUPERVISOR') && renderGlobalPricingSection()}
 
             {/* Render CWS-specific pricing sections for ADMIN role */}
-            {userInfo?.role === 'ADMIN' && (
+            {(userInfo?.role === 'ADMIN' || userInfo?.role === 'SUPERVISOR' || userInfo?.role === 'SUPER_ADMIN') && (
                 <>
                     {renderCWSSelector()}
                     {selectedCWS && (
