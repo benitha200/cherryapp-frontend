@@ -385,7 +385,7 @@ const PurchaseListAll = () => {
                 processingType: processingType,
                 totalKgs: selectedBatch.totalKgs,
                 grade: selectedBatch.grade,
-                cwsId: selectedCWS
+                cwsId: parseInt(selectedCWS, 10)
             };
 
             const response = await axios.post(`${API_URL}/processing`, processingData, {
