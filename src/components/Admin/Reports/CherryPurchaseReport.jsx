@@ -61,7 +61,7 @@ const CherryPurchaseReport = () => {
             setError('Please select both start and end dates');
             return;
         }
-    
+
         try {
             setLoading(true);
             setError(null);
@@ -70,11 +70,11 @@ const CherryPurchaseReport = () => {
                 params: { startDate, endDate },
                 headers: { Authorization: `Bearer ${token}` }
             });
-    
+
             if (response.data.data.length === 0) {
                 setError(`No purchase data found for the period ${startDate} to ${endDate}`);
             }
-            
+
             setPurchases(response.data.data);
             setTotals(response.data.overallTotals);
             setCurrentPage(1);
@@ -93,10 +93,195 @@ const CherryPurchaseReport = () => {
 
     // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const downloadTableAsCSV = () => {
+        if (purchases.length === 0) return;
+
+        // Format the date for the filename
+        const formattedStartDate = startDate.replace(/-/g, '');
+        const formattedEndDate = endDate.replace(/-/g, '');
+        const filename = `cherry_purchase_report_${formattedStartDate}_${formattedEndDate}.csv`;
+
+        // Create header row with proper formatting
+        const headers = [
+            'CWS Name',
+            'CWS Code',
+            'Total KGs',
+            'Total Amount (RWF)',
+            'Cherry Amount (RWF)',
+            'Transport Amount (RWF)',
+            'Commission Amount (RWF)'
+        ];
+
+        // Create CSV content
+        const csvContent = [
+            // Add report title and date range
+            ['Cherry Purchase Report'],
+            [`Period: ${startDate} to ${endDate}`],
+            [''], // Empty row for spacing
+
+            // Add summary section
+            ['Summary'],
+            ['Total CWS:', totals.numberOfCWS],
+            ['Total KGs:', totals.totalKgs],
+            ['Total Amount (RWF):', totals.totalPrice],
+            ['Cherry Amount (RWF):', totals.totalCherryPrice],
+            ['Transport Amount (RWF):', totals.totalTransportFee],
+            ['Commission Amount (RWF):', totals.totalCommissionFee],
+            [''], // Empty row for spacing
+
+            // Add detailed table
+            ['Detailed Purchase Data'],
+            headers,
+            ...purchases.map(purchase => [
+                purchase.cwsName,
+                purchase.cwsCode,
+                purchase.totalKgs,
+                purchase.totalPrice,
+                purchase.totalCherryPrice,
+                purchase.totalTransportFee,
+                purchase.totalCommissionFee
+            ])
+        ].map(row => row.join(','));
+
+        // Create and download the file
+        const blob = new Blob(['\ufeff' + csvContent.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+
+    const downloadTableAsExcel = () => {
+        if (purchases.length === 0) return;
+
+        // Format the date for the filename
+        const formattedStartDate = startDate.replace(/-/g, '');
+        const formattedEndDate = endDate.replace(/-/g, '');
+        const filename = `cherry_purchase_report_${formattedStartDate}_${formattedEndDate}.xls`;
+
+        // Create HTML content for Excel
+        const htmlContent = `
+            <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        table { border-collapse: collapse; width: 100%; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: ${theme.neutral}; }
+                        .title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+                        .summary { margin: 20px 0; }
+                        .summary td { padding: 5px; }
+                        .text-end { text-align: right; }
+                    </style>
+                </head>
+                <body>
+                    <div class="title">Cherry Purchase Report</div>
+                    <div>Period: ${startDate} to ${endDate}</div>
+                    
+                    <table class="summary">
+                        <tr>
+                            <td><strong>Total CWS:</strong></td>
+                            <td class="text-end">${totals.numberOfCWS}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total KGs:</strong></td>
+                            <td class="text-end">${totals.totalKgs.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Amount (RWF):</strong></td>
+                            <td class="text-end">${totals.totalPrice.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cherry Amount (RWF):</strong></td>
+                            <td class="text-end">${totals.totalCherryPrice.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Transport Amount (RWF):</strong></td>
+                            <td class="text-end">${totals.totalTransportFee.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Commission Amount (RWF):</strong></td>
+                            <td class="text-end">${totals.totalCommissionFee.toLocaleString()}</td>
+                        </tr>
+                    </table>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CWS Name</th>
+                                <th>CWS Code</th>
+                                <th class="text-end">Total KGs</th>
+                                <th class="text-end">Total Amount (RWF)</th>
+                                <th class="text-end">Cherry Amount (RWF)</th>
+                                <th class="text-end">Transport Amount (RWF)</th>
+                                <th class="text-end">Commission Amount (RWF)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${purchases.map(purchase => `
+                                <tr>
+                                    <td>${purchase.cwsName}</td>
+                                    <td>${purchase.cwsCode}</td>
+                                    <td class="text-end">${purchase.totalKgs.toLocaleString()}</td>
+                                    <td class="text-end">${purchase.totalPrice.toLocaleString()}</td>
+                                    <td class="text-end">${purchase.totalCherryPrice.toLocaleString()}</td>
+                                    <td class="text-end">${purchase.totalTransportFee.toLocaleString()}</td>
+                                    <td class="text-end">${purchase.totalCommissionFee.toLocaleString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </body>
+            </html>
+        `;
+
+        // Create and download the file
+        const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <div className="container-fluid p-4">
-            <h2 className="mb-4">Cherry Purchase Report</h2>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2>Cherry Purchase Report</h2>
+                {!loading && !error && purchases.length > 0 && (
+                    <div className="btn-group">
+                        <button
+                            className="btn btn-outline-sucafina me-2"
+                            onClick={downloadTableAsCSV}
+                            style={{
+                                borderColor: theme.primary,
+                                color: theme.primary,
+                                marginRight: '10px'
+                            }}
+                        >
+                            <i className="bi bi-download me-2"></i>
+                            Download CSV
+                        </button>
+                        <button
+                            className="btn btn-primary"
+                            onClick={downloadTableAsExcel}
+                            style={{
+                                backgroundColor: theme.primary,
+                                borderColor: theme.primary
+                            }}
+                        >
+                            <i className="bi bi-file-earmark-spreadsheet me-2"></i>
+                            Download Excel
+                        </button>
+                    </div>
+                )}
+            </div>
 
             {/* Date Range Selection */}
             <div className="card mb-4">
@@ -227,7 +412,7 @@ const CherryPurchaseReport = () => {
                                 ) : (
                                     <EmptyState startDate={startDate} endDate={endDate} />
                                 )}
-                                
+
                             </tbody>
                         </table>
                     </div>

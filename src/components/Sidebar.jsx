@@ -229,7 +229,7 @@ const Sidebar = () => {
       { path: '/cws', icon: 'journal', text: 'CWS' },
       { path: '/users', icon: 'people', text: 'Users' },
       { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' }, 
-      { path: '/cherry-purchase-report', icon: 'cash', text: 'Report' },
+      { path: '/cherry-purchase-report', icon: 'file', text: 'Report' },
     ];
   } else if (user.role === 'SUPERVISOR') {
     menuItems = [
