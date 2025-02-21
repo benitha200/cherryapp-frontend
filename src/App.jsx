@@ -99,6 +99,7 @@ import CwsForm from './components/Admin/Cws/CwsForm.jsx';
 import PurchaseByStation from './components/Supervisor/PurchaseByStation.jsx';
 import PurchaseListAll from './components/Admin/Cherry/PurchaseListAll.jsx';
 import CherryPurchaseReportDetailed from './components/Admin/Reports/CherryPurchaseReportDetailed.jsx';
+import MyAccount from './components/Auth/MyAccount.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -129,6 +130,7 @@ const AppContent = () => {
         <div className="container-fluid p-4">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/my-account" element={<MyAccount />} />
             <Route path="/" element={
               <PrivateRoute>
                 <Dashboard />

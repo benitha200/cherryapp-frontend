@@ -51,26 +51,53 @@ const CherryPurchaseReportDetailed = () => {
 
     const itemsPerPage = 100;
 
-    // Function to get the first and last day of the current month
     const getCurrentMonthDates = () => {
-        const firstDay = new Date(2025, 0, 1); // January 1, 2025
+        const firstDay = new Date(new Date().getFullYear(), 0, 1);
         const today = new Date();
         const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
+    
         // Format dates as YYYY-MM-DD
         const formatDate = (date) => date.toISOString().split('T')[0];
-
+    
         return {
             startDate: formatDate(firstDay),
             endDate: formatDate(lastDay)
         };
     };
-
+    
     // Set default dates on component mount
     useEffect(() => {
-        const { startDate, endDate } = getCurrentMonthDates();
-        setStartDate(startDate);
-        setEndDate(endDate);
+        const { startDate: start, endDate: end } = getCurrentMonthDates();
+        setStartDate(start);
+        setEndDate(end);
+        
+        // Create an async function to handle the fetch
+        const initialFetch = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const token = localStorage.getItem('token');
+                const response = await axios.get(`${API_URL}/purchases/date-range`, {
+                    params: { startDate: start, endDate: end },
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.data.purchases.length === 0) {
+                    setError(`No purchase data found for the period ${start} to ${end}`);
+                }
+
+                setPurchases(response.data.purchases);
+                setTotals(response.data.totals);
+                setCurrentPage(1);
+            } catch (err) {
+                setError(err.response?.data?.error || 'Error fetching purchase data');
+                console.error('Error fetching purchase data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initialFetch();
     }, []);
 
     const fetchPurchaseReport = async () => {
@@ -134,7 +161,7 @@ const CherryPurchaseReportDetailed = () => {
                     </style>
                 </head>
                 <body>
-                    <div class="title">Detailed Cherry Purchase Report</div>
+                    <div class="title">Cherry Purchase Report</div>
                     <div>Period: ${startDate} to ${endDate}</div>
                     
                     <table>
@@ -264,7 +291,7 @@ const CherryPurchaseReportDetailed = () => {
     return (
         <div className="container-fluid p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Detailed Cherry Purchase Report</h2>
+                <h2>Cherry Purchase Report</h2>
                 {!loading && !error && purchases.length > 0 && (
                     <div className="btn-group">
                         <button
@@ -382,7 +409,7 @@ const CherryPurchaseReportDetailed = () => {
                             <tbody>
                                 {loading ? (
                                     Array(5).fill(0).map((_, index) => (
-                                        <SkeletonRow key={index} cols={10} />
+                                        <SkeletonRow key={index} cols={12} />
                                     ))
                                 ) : error ? (
                                     <tr>
