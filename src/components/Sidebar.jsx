@@ -44,11 +44,12 @@ const Sidebar = () => {
     menuItems = [
       ...menuItems,
       { path: '/purchases-all', icon: 'coin', text: 'Add Purchase' },
+      { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
+      { path: '/processing-all', icon: 'hourglass-split', text: 'Processing' },
       { path: '/pricing', icon: 'cash', text: 'Pricing' },
       { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
       { path: '/cws', icon: 'journal', text: 'CWS' },
       { path: '/users', icon: 'people', text: 'Users' },
-      { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
       { path: '/cherry-purchase-report', icon: 'pie-chart', text: 'Report' },
     ];
   } else if (user.role === 'SUPERVISOR' || user.role === 'OPERATIONS' || user.role === 'FINANCE' || user.role === 'MD') {

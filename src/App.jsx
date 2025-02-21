@@ -91,7 +91,6 @@ import ProcessingList from './components/ProcessingList.jsx';
 import DailyPurchaseDetails from './components/DailyPurchaseDetails.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Transfer from './components/Transfer.jsx';
-import AdminDashboard from './components/Admin/AdminDashboard.jsx';
 import PricingManagement from './components/Admin/PricingManagement.jsx';
 import Users from './components/Admin/Users.jsx';
 import CwsList from './components/Admin/Cws/CwsList.jsx';
@@ -100,6 +99,7 @@ import PurchaseByStation from './components/Supervisor/PurchaseByStation.jsx';
 import PurchaseListAll from './components/Admin/Cherry/PurchaseListAll.jsx';
 import CherryPurchaseReportDetailed from './components/Admin/Reports/CherryPurchaseReportDetailed.jsx';
 import MyAccount from './components/Auth/MyAccount.jsx';
+import ProcessingListAll from './components/Admin/Cherry/ProcessingListAll.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -149,6 +149,11 @@ const AppContent = () => {
             <Route path="/purchases-all" element={
               <PrivateRoute>
                 <PurchaseListAll />
+              </PrivateRoute>
+            } />
+            <Route path="/processing-all" element={
+              <PrivateRoute>
+                <ProcessingListAll />
               </PrivateRoute>
             } />
             <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />
