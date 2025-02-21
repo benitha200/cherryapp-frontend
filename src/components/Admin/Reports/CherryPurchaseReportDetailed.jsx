@@ -56,16 +56,16 @@ const CherryPurchaseReportDetailed = () => {
         const firstDay = new Date(2025, 0, 1); // January 1, 2025
         const today = new Date();
         const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
+
         // Format dates as YYYY-MM-DD
         const formatDate = (date) => date.toISOString().split('T')[0];
-    
+
         return {
             startDate: formatDate(firstDay),
             endDate: formatDate(lastDay)
         };
     };
-    
+
     // Set default dates on component mount
     useEffect(() => {
         const { startDate, endDate } = getCurrentMonthDates();
@@ -129,6 +129,8 @@ const CherryPurchaseReportDetailed = () => {
                         .title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
                         .summary { margin: 20px 0; }
                         .text-end { text-align: right; }
+                        .text-center { text-align: center; }
+                        .secondary-text { color: ${theme.secondary}; }
                     </style>
                 </head>
                 <body>
@@ -142,10 +144,14 @@ const CherryPurchaseReportDetailed = () => {
                                 <th>CWS Name</th>
                                 <th>Batch No</th>
                                 <th>Delivery Type</th>
+                                <th>Site Collection</th>
                                 <th>Grade</th>
                                 <th class="text-end">KGs</th>
-                                <th class="text-end">Price/Kg</th>
+                                <th class="text-end">Total Cherry Price</th>
+                                <th class="text-end">Total Transport</th>
+                                <th class="text-end">Total Commission</th>
                                 <th class="text-end">Total Amount</th>
+                                <th class="text-end">Transaction Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -155,10 +161,24 @@ const CherryPurchaseReportDetailed = () => {
                                     <td>${purchase.cws.name}</td>
                                     <td>${purchase.batchNo}</td>
                                     <td>${purchase.deliveryType.replace('_', ' ')}</td>
-                                    <td>${purchase.grade}</td>
+                                    <td class="text-center">${purchase.siteCollection?.name || '_'}</td>
+                                    <td class="text-center">${purchase.grade}</td>
                                     <td class="text-end">${purchase.totalKgs.toLocaleString()}</td>
-                                    <td class="text-end">${purchase.cherryPrice.toLocaleString()}</td>
+                                    <td class="text-end">${(purchase.totalKgs * purchase.cherryPrice).toLocaleString()}</td>
+                                    <td class="text-end">${(purchase.totalKgs * purchase.transportFee).toLocaleString()}</td>
+                                    <td class="text-end">${(purchase.totalKgs * purchase.commissionFee).toLocaleString()}</td>
                                     <td class="text-end">${purchase.totalPrice.toLocaleString()}</td>
+                                    <td class="text-end">
+                                        ${new Date(purchase.createdAt).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        })}
+                                    </td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -177,22 +197,99 @@ const CherryPurchaseReportDetailed = () => {
         document.body.removeChild(link);
     };
 
+    const downloadTableAsCSV = () => {
+        if (purchases.length === 0) return;
+
+        const formattedStartDate = startDate.replace(/-/g, '');
+        const formattedEndDate = endDate.replace(/-/g, '');
+        const filename = `cherry_purchase_detailed_${formattedStartDate}_${formattedEndDate}.csv`;
+
+        // Define headers
+        const headers = [
+            'Date',
+            'CWS Name',
+            'Batch No',
+            'Delivery Type',
+            'Site Collection',
+            'Grade',
+            'KGs',
+            'Total Cherry Price',
+            'Total Transport',
+            'Total Commission',
+            'Total Amount',
+            'Transaction Date'
+        ];
+
+        // Convert data to CSV format
+        const csvData = purchases.map(purchase => [
+            new Date(purchase.purchaseDate).toLocaleDateString(),
+            purchase.cws.name,
+            purchase.batchNo,
+            purchase.deliveryType.replace('_', ' '),
+            purchase.siteCollection?.name || '_',
+            purchase.grade,
+            purchase.totalKgs,
+            (purchase.totalKgs * purchase.cherryPrice),
+            (purchase.totalKgs * purchase.transportFee),
+            (purchase.totalKgs * purchase.commissionFee),
+            purchase.totalPrice,
+            new Date(purchase.createdAt).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            })
+        ]);
+
+        // Combine headers and data
+        const csvContent = [
+            headers.join(','),
+            ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+
+        // Create and download the file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="container-fluid p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Detailed Cherry Purchase Report</h2>
                 {!loading && !error && purchases.length > 0 && (
-                    <button
-                        className="btn btn-primary"
-                        onClick={downloadTableAsExcel}
-                        style={{
-                            backgroundColor: theme.primary,
-                            borderColor: theme.primary
-                        }}
-                    >
-                        <i className="bi bi-file-earmark-spreadsheet me-2"></i>
-                        Download Excel
-                    </button>
+                    <div className="btn-group">
+                        <button
+                            className="btn btn-primary"
+                            onClick={downloadTableAsExcel}
+                            style={{
+                                backgroundColor: theme.primary,
+                                borderColor: theme.primary
+                            }}
+                        >
+                            <i className="bi bi-file-earmark-spreadsheet me-2"></i>
+                            Download Excel
+                        </button>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={downloadTableAsCSV}
+                            style={{
+                                backgroundColor: theme.secondary,
+                                borderColor: theme.secondary
+                            }}
+                        >
+                            <i className="bi bi-file-earmark-text me-2"></i>
+                            Download CSV
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -272,16 +369,20 @@ const CherryPurchaseReportDetailed = () => {
                                     <th>CWS Name</th>
                                     <th>Batch No</th>
                                     <th>Delivery Type</th>
+                                    <th>Site Collection</th>
                                     <th>Grade</th>
                                     <th className="text-end">KGs</th>
-                                    <th className="text-end">Price/Kg</th>
+                                    <th className="text-end">Total Cherry Price</th>
+                                    <th className="text-end">Total Transport</th>
+                                    <th className="text-end">Total Commission</th>
                                     <th className="text-end">Total Amount</th>
+                                    <th className="text-end">Transaction Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
                                     Array(5).fill(0).map((_, index) => (
-                                        <SkeletonRow key={index} cols={8} />
+                                        <SkeletonRow key={index} cols={10} />
                                     ))
                                 ) : error ? (
                                     <tr>
@@ -294,10 +395,25 @@ const CherryPurchaseReportDetailed = () => {
                                             <td>{purchase.cws.name}</td>
                                             <td>{purchase.batchNo}</td>
                                             <td>{purchase.deliveryType.replace('_', ' ')}</td>
-                                            <td>{purchase.grade}</td>
+                                            <td className='text-center'>{purchase.siteCollection?.name || '_'}</td>
+                                            <td className='text-center'>{purchase.grade}</td>
                                             <td className="text-end">{purchase.totalKgs.toLocaleString()}</td>
-                                            <td className="text-end">{purchase.cherryPrice.toLocaleString()}</td>
+                                            <td className="text-end">{purchase.totalKgs * purchase.cherryPrice}</td>
+                                            <td className="text-end">{purchase.totalKgs * purchase.commissionFee}</td>
+                                            <td className="text-end">{purchase.totalKgs * purchase.transportFee}</td>
                                             <td className="text-end">{purchase.totalPrice.toLocaleString()}</td>
+                                            <td className="text-end" style={{ color: theme.secondary }}>
+                                                {new Date(purchase.createdAt).toLocaleString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    second: '2-digit',
+                                                    hour12: true, // Adjusts for AM/PM format
+                                                })}
+                                            </td>
+
                                         </tr>
                                     ))
                                 ) : (
