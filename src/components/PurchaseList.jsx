@@ -378,6 +378,26 @@ const PurchaseList = () => {
   };
 
   // Function to determine available processing types
+  // const getProcessingOptions = () => {
+  //   if (cwsInfo?.havespeciality) {
+  //     const suffix = getBatchSuffix(selectedBatch.batchNo);
+  //     if (suffix === '1') {
+  //       return (
+  //         <>
+  //           <option value="NATURAL">Natural</option>
+  //           <option value="HONEY">Honey</option>
+  //           <option value="FULLY_WASHED">Fully Washed</option>
+  //         </>
+  //       );
+  //     } else if (suffix === '2') {
+  //       return <option value="FULLY_WASHED">Fully Washed</option>;
+  //     }
+  //   }
+
+  //   // Default case: only Fully Washed
+  //   return <option value="FULLY_WASHED">Fully Washed</option>;
+  // };
+
   const getProcessingOptions = () => {
     if (cwsInfo?.havespeciality) {
       const suffix = getBatchSuffix(selectedBatch.batchNo);
@@ -390,12 +410,22 @@ const PurchaseList = () => {
           </>
         );
       } else if (suffix === '2') {
-        return <option value="FULLY_WASHED">Fully Washed</option>;
+        return (
+          <>
+            <option value="FULLY_WASHED">Fully Washed</option>
+            <option value="NATURAL">Natural</option>
+          </>
+        );
       }
     }
-
-    // Default case: only Fully Washed
-    return <option value="FULLY_WASHED">Fully Washed</option>;
+    
+    // Default case: Fully Washed and Natural
+    return (
+      <>
+        <option value="FULLY_WASHED">Fully Washed</option>
+        <option value="NATURAL">Natural</option>
+      </>
+    );
   };
 
   useEffect(() => {
