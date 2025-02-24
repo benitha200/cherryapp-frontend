@@ -139,7 +139,7 @@ const ProcessingListAll = () => {
         const naturalKgs = batches
             .filter(batch => batch.processingType === 'NATURAL')
             .reduce((sum, batch) => sum + (Number(batch.totalKgs) || 0), 0);
-
+            
         setSummaryData({
             totalBatches: batches.length,
             totalKgs,
@@ -147,12 +147,20 @@ const ProcessingListAll = () => {
             naturalKgs
         });
     };
-
+    
+    // Add this useEffect to recalculate summary data when filters or processingBatches change
+    useEffect(() => {
+        const filteredData = filteredBatches(processingBatches);
+        calculateSummaryData(filteredData);
+    }, [filters, processingBatches]);
+    
+    // Update the fetchAllBatches function to avoid unnecessary calculations
     const fetchAllBatches = async () => {
         try {
             const res = await axios.get(`${API_URL}/processing?limit=1000`);
             const batchData = res.data.data;
             setAllBatches(batchData);
+            // Calculate summary data for the initial load (all batches)
             calculateSummaryData(batchData);
         } catch (error) {
             console.error('Error fetching all batches:', error);
