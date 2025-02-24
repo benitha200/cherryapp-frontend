@@ -226,7 +226,7 @@ const Transfer = () => {
                                         }}
                                     >
                                         <td>{record.batchNo}</td>
-                                        <td>{record.processing.processingType}</td>
+                                        <td>{record.processingType}</td>
                                         <td>{record.processing.totalKgs.toFixed(2)} kg</td>
                                         <td>{renderOutputKgs(record.outputKgs)}</td>
                                         <td>{record.totalOutputKgs} kg</td>
