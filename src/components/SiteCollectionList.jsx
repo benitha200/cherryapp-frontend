@@ -131,24 +131,39 @@ const SiteCollectionList = () => {
   };
 
   if (loading) {
-    // ... (keeping existing loading state JSX)
     return (
       <div className="container-fluid py-4">
         <div className="card border-0 shadow-sm">
-          <div className="card-header bg-light bg-opacity-10 py-3">
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="skeleton-title bg-gray-200 w-48 h-8 rounded" />
-              <div className="skeleton-button bg-gray-200 w-36 h-10 rounded" />
+          <div className="card-header py-3" style={{ backgroundColor: theme.neutral }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="h4 mb-0 bg-secondary bg-opacity-25 rounded" style={{ width: '200px', height: '24px' }} />
+              <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '150px', height: '38px' }} />
+            </div>
+  
+            {/* Search Bar Skeleton */}
+            <div className="input-group">
+              <span className="input-group-text" style={{ backgroundColor: theme.neutral }}>
+                <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '16px', height: '16px' }} />
+              </span>
+              <div 
+                className="form-control bg-secondary bg-opacity-25"
+                style={{ border: `1px solid ${theme.secondary}` }}
+              />
             </div>
           </div>
+  
           <div className="card-body p-0">
             <div className="table-responsive">
-              <table className="table table-hover mb-0">
-                <thead className="table-light">
+              <table className="table table-hover table-sm mb-0">
+                <thead style={{ backgroundColor: theme.neutral }}>
                   <tr>
                     {['Name', 'CWS', 'Created Date', 'Actions'].map((header, index) => (
-                      <th key={index} className="text-uppercase text-secondary px-4 py-3">
-                        <div className="skeleton-header bg-gray-200 w-24 h-5 rounded" />
+                      <th 
+                        key={index} 
+                        className="text-uppercase px-4 py-3"
+                        style={{ color: theme.primary }}
+                      >
+                        {header}
                       </th>
                     ))}
                   </tr>
@@ -156,15 +171,42 @@ const SiteCollectionList = () => {
                 <tbody>
                   {skeletonRows.map((_, rowIndex) => (
                     <tr key={rowIndex}>
-                      {[1, 2, 3, 4].map((cellIndex) => (
-                        <td key={cellIndex} className="px-2 py-2">
-                          <div className="skeleton-cell bg-gray-100 w-4/5 h-5 rounded" />
-                        </td>
-                      ))}
+                      <td className="px-2 py-2">
+                        <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '180px', height: '20px' }} />
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '120px', height: '20px' }} />
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '100px', height: '20px' }} />
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="d-flex gap-2">
+                          <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '32px', height: '32px' }} />
+                          <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '32px', height: '32px' }} />
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+  
+            {/* Pagination Skeleton */}
+            <div className="d-flex justify-content-between align-items-center px-4 py-3" style={{ backgroundColor: theme.neutral }}>
+              <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '200px', height: '20px' }} />
+              <nav aria-label="Site Collections pagination">
+                <ul className="pagination mb-0">
+                  {[1, 2, 3].map((_, index) => (
+                    <li key={index} className="page-item">
+                      <div 
+                        className="page-link bg-secondary bg-opacity-25" 
+                        style={{ width: '40px', height: '38px', border: `1px solid ${theme.secondary}` }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </nav>
             </div>
           </div>
         </div>
