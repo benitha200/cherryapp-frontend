@@ -697,6 +697,80 @@ const processingTheme = {
     readonly: '#f0f0f0'    // Light gray for readonly fields
 };
 
+const LoadingSkeleton = () => {
+    const placeholderStyle = {
+        opacity: 0.4,
+        backgroundColor: processingTheme.secondary
+    };
+
+    return (
+        <Card>
+            <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
+                <Placeholder as="h2" animation="glow">
+                    <Placeholder xs={4} style={placeholderStyle} />
+                </Placeholder>
+            </Card.Header>
+            <Card.Body className="p-0">
+                <div className="table-responsive">
+                    <table className="table mb-0">
+                        <thead style={{ backgroundColor: processingTheme.neutral }}>
+                            <tr>
+                                <th>Batch No</th>
+                                <th>Total KGs</th>
+                                <th>CWS</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[...Array(5)].map((_, index) => (
+                                <tr key={index}>
+                                    <td>
+                                        <Placeholder animation="glow">
+                                            <Placeholder xs={6} style={placeholderStyle} />
+                                        </Placeholder>
+                                    </td>
+                                    <td>
+                                        <Placeholder animation="glow">
+                                            <Placeholder xs={4} style={placeholderStyle} />
+                                        </Placeholder>
+                                    </td>
+                                    <td>
+                                        <Placeholder animation="glow">
+                                            <Placeholder xs={3} style={placeholderStyle} />
+                                        </Placeholder>
+                                    </td>
+                                    <td>
+                                        <Placeholder animation="glow">
+                                            <Placeholder xs={5} style={placeholderStyle} />
+                                        </Placeholder>
+                                    </td>
+                                    <td>
+                                        <Button
+                                            variant="outline-primary"
+                                            size="sm"
+                                            disabled
+                                            style={{
+                                                color: processingTheme.primary,
+                                                borderColor: processingTheme.primary,
+                                                opacity: 0.4,
+                                                backgroundColor: 'transparent',
+                                                cursor: 'default'
+                                            }}
+                                        >
+                                            Bag Off
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </Card.Body>
+        </Card>
+    );
+};
+
 const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete }) => {
     const [existingProcessing, setExistingProcessing] = useState(null);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
