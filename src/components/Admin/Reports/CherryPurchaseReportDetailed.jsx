@@ -55,22 +55,22 @@ const CherryPurchaseReportDetailed = () => {
         const firstDay = new Date(new Date().getFullYear(), 0, 1);
         const today = new Date();
         const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
+
         // Format dates as YYYY-MM-DD
         const formatDate = (date) => date.toISOString().split('T')[0];
-    
+
         return {
             startDate: formatDate(firstDay),
             endDate: formatDate(lastDay)
         };
     };
-    
+
     // Set default dates on component mount
     useEffect(() => {
         const { startDate: start, endDate: end } = getCurrentMonthDates();
         setStartDate(start);
         setEndDate(end);
-        
+
         // Create an async function to handle the fetch
         const initialFetch = async () => {
             try {
@@ -459,6 +459,7 @@ const CherryPurchaseReportDetailed = () => {
                                         className="page-link"
                                         onClick={() => paginate(currentPage - 1)}
                                         disabled={currentPage === 1}
+                                        style={{ color: theme.primary }}
                                     >
                                         Previous
                                     </button>
@@ -474,7 +475,7 @@ const CherryPurchaseReportDetailed = () => {
                                             style={currentPage === index + 1 ? {
                                                 backgroundColor: theme.primary,
                                                 borderColor: theme.primary
-                                            } : {}}
+                                            } : { color: theme.primary }}
                                         >
                                             {index + 1}
                                         </button>
@@ -485,6 +486,7 @@ const CherryPurchaseReportDetailed = () => {
                                         className="page-link"
                                         onClick={() => paginate(currentPage + 1)}
                                         disabled={currentPage === Math.ceil(purchases.length / itemsPerPage)}
+                                        style={{ color: theme.primary }}
                                     >
                                         Next
                                     </button>
