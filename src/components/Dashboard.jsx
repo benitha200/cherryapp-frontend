@@ -307,12 +307,19 @@ const PurchasesDashboard = () => {
     fetchPurchases();
   }, [navigate]);
 
-  // Rest of your existing code remains the same
+  // Updated stats computation to separate Grade A and Grade B
   const computeStats = () => {
-    const totalPurchases = purchases.length;
-    const totalKgs = purchases.reduce((sum, purchase) => sum + purchase.totalKgs, 0);
-    const totalPrice = purchases.reduce((sum, purchase) => sum + purchase.totalPrice, 0);
-    const averagePricePerKg = totalPrice / totalKgs;
+    // Calculate stats specifically for Grade A
+    const gradeAPurchases = purchases.filter(purchase => purchase.grade === 'A');
+    const gradeATotalKgs = gradeAPurchases.reduce((sum, purchase) => sum + purchase.totalKgs, 0);
+    const gradeATotalPrice = gradeAPurchases.reduce((sum, purchase) => sum + purchase.totalPrice, 0);
+    const gradeAAveragePricePerKg = gradeATotalPrice / gradeATotalKgs || 0;
+    
+    // Calculate stats specifically for Grade B
+    const gradeBPurchases = purchases.filter(purchase => purchase.grade === 'B');
+    const gradeBTotalKgs = gradeBPurchases.reduce((sum, purchase) => sum + purchase.totalKgs, 0);
+    const gradeBTotalPrice = gradeBPurchases.reduce((sum, purchase) => sum + purchase.totalPrice, 0);
+    const gradeBAveragePricePerKg = gradeBTotalPrice / gradeBTotalKgs || 0;
 
     const deliveryTypeStats = purchases.reduce((acc, purchase) => {
       acc[purchase.deliveryType] = {
@@ -333,10 +340,12 @@ const PurchasesDashboard = () => {
     }, {});
 
     return { 
-      totalPurchases, 
-      totalKgs, 
-      totalPrice, 
-      averagePricePerKg, 
+      gradeATotalKgs,
+      gradeATotalPrice,
+      gradeAAveragePricePerKg,
+      gradeBTotalKgs,
+      gradeBTotalPrice,
+      gradeBAveragePricePerKg,
       deliveryTypeStats, 
       gradeStats 
     };
@@ -357,33 +366,60 @@ const PurchasesDashboard = () => {
 
   return (
     <div className="container-fluid p-4" style={{ backgroundColor: '#f8fafa' }}>
+      {/* Grade A Summary Cards */}
       <div className="row g-4 mb-4">
-        {[
-          {
-            title: 'Total Purchases',
-            value: stats.totalPurchases,
-            iconClass: 'bi-cart-check'
-          },
-          {
-            title: 'Total Coffee Weight (kg)',
-            value: stats.totalKgs.toLocaleString(),
-            iconClass: 'bi-graph-up'
-          },
-          {
-            title: 'Total Purchase Value',
-            value: `${stats.totalPrice.toLocaleString()}`,
-            iconClass: 'bi-cash'
-          },
-          {
-            title: 'Avg Price per KG',
-            value: `${stats.averagePricePerKg.toFixed(0).toLocaleString()}`,
-            iconClass: 'bi-coin'
-          }
-        ].map((item, index) => (
-          <div key={index} className="col-12 col-md-6 col-lg-3">
-            <DashboardCard {...item} />
-          </div>
-        ))}
+        <div className="col-12">
+          <h5 className="text-sucafina mb-3">Grade A Summary</h5>
+        </div>
+        <div className="col-12 col-md-6 col-lg-4">
+          <DashboardCard 
+            title="Grade A Coffee Weight (kg)" 
+            value={stats.gradeATotalKgs.toFixed(2)} 
+            iconClass="bi-basket" 
+          />
+        </div>
+        <div className="col-12 col-md-6 col-lg-4">
+          <DashboardCard 
+            title="Grade A Purchase Value" 
+            value={`${stats.gradeATotalPrice.toLocaleString()}`} 
+            iconClass="bi-cash-stack" 
+          />
+        </div>
+        <div className="col-12 col-md-6 col-lg-4">
+          <DashboardCard 
+            title="Grade A Avg Price per KG" 
+            value={`${stats.gradeAAveragePricePerKg.toFixed(2)}`} 
+            iconClass="bi-cash" 
+          />
+        </div>
+      </div>
+
+      {/* Grade B Summary Cards */}
+      <div className="row g-4 mb-4">
+        <div className="col-12">
+          <h5 className="text-sucafina mb-3">Grade B Summary</h5>
+        </div>
+        <div className="col-12 col-md-6 col-lg-4">
+          <DashboardCard 
+            title="Grade B Coffee Weight (kg)" 
+            value={stats.gradeBTotalKgs.toFixed(2)} 
+            iconClass="bi-basket-fill" 
+          />
+        </div>
+        <div className="col-12 col-md-6 col-lg-4">
+          <DashboardCard 
+            title="Grade B Purchase Value" 
+            value={`${stats.gradeBTotalPrice.toLocaleString()}`} 
+            iconClass="bi-cash-stack" 
+          />
+        </div>
+        <div className="col-12 col-md-6 col-lg-4">
+          <DashboardCard 
+            title="Grade B Avg Price per KG" 
+            value={`${stats.gradeBAveragePricePerKg.toFixed(2)}`} 
+            iconClass="bi-cash" 
+          />
+        </div>
       </div>
 
       <div className="row g-4">
