@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_URL from '../constants/Constants';
+import { Modal, Button, Toast, ToastContainer } from 'react-bootstrap';
 
 const theme = {
   primary: '#008080',
@@ -18,7 +19,7 @@ const SkeletonRow = ({ cols }) => (
   <tr>
     {Array(cols).fill(0).map((_, index) => (
       <td key={index}>
-        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-6 pt-2 bg-gray-200 rounded animate-pulse"></div>
       </td>
     ))}
   </tr>
@@ -68,6 +69,10 @@ const PurchaseList = () => {
   const userInfo = JSON.parse(localStorage.getItem('user'));
   const cwsInfo = JSON.parse(localStorage.getItem('cws'));
   const [specialBatchKgs, setSpecialBatchKgs] = useState({});
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [purchaseToDelete, setPurchaseToDelete] = useState(null);
 
   // Set today's date and yesterday's date
   const today = new Date();
@@ -182,18 +187,7 @@ const PurchaseList = () => {
     return grades.filter(grade => !isGradeProcessing(grade, yesterdayString));
   };
 
-  // const getYesterdayPurchases = () => {
-  //   // Get a list of all batch numbers currently in processing
-  //   const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
 
-  //   return purchases.filter(purchase => {
-  //     const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
-  //     // Only show purchases that haven't started processing and their batch is not in processing
-  //     return purchaseDate === yesterdayString &&
-  //       !isGradeProcessing(purchase.grade, yesterdayString) &&
-  //       !processingBatchNumbers.includes(purchase.batchNo);
-  //   });
-  // };
 
   useEffect(() => {
     if (!isLoading.processingEntries) {
@@ -418,7 +412,7 @@ const PurchaseList = () => {
         );
       }
     }
-    
+
     // Default case: Fully Washed and Natural
     return (
       <>
@@ -785,8 +779,8 @@ const PurchaseList = () => {
       if (!batch.isSpecialBatch || (specialBatchKgs[batch.batchNo] || 0) > 0) {
         setSelectedBatch({
           ...batch,
-          totalKgs: batch.isSpecialBatch ? 
-            specialBatchKgs[batch.batchNo] : 
+          totalKgs: batch.isSpecialBatch ?
+            specialBatchKgs[batch.batchNo] :
             batch.originalTotalKgs,
           batchNo: batch.isSpecialBatch ? batch.batchNo : batch.originalBatchNo
         });
@@ -811,7 +805,7 @@ const PurchaseList = () => {
       console.error('Please select a processing type');
       return;
     }
-  
+
     try {
       const processingData = {
         batchNo: selectedBatch.batchNo,
@@ -820,22 +814,22 @@ const PurchaseList = () => {
         grade: selectedBatch.grade,
         cwsId: userInfo.cwsId
       };
-  
+
       const response = await axios.post(`${API_URL}/processing`, processingData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-  
+
       // Refresh data
       fetchPurchases();
       fetchProcessingEntries();
-  
+
       // Reset states
       setSelectedBatch(null);
       setProcessingType('');
-  
+
       console.log('Processing started successfully');
     } catch (error) {
       const errorMessage = error.response?.data?.error || 'Failed to start processing';
@@ -852,13 +846,13 @@ const PurchaseList = () => {
     const batches = {};
     const processingStatusMap = {}; // Track processing statuses
     const totalKgsByGrade = {}; // Track total KGs by grade
-    
+
     // First, map processing statuses and track processing batch bases
     const processedBatchBases = new Set();
     processingEntries.forEach(entry => {
       const batchKey = `${entry.batchNo}-${entry.grade}`;
       processingStatusMap[batchKey] = entry.status;
-  
+
       // If we have both -1 and -2 variants, store the base
       const batchBase = entry.batchNo.split('-')[0];
       if (processingEntries.some(e =>
@@ -867,7 +861,7 @@ const PurchaseList = () => {
         processedBatchBases.add(batchBase);
       }
     });
-  
+
     // Calculate total KGs by grade from all yesterday's purchases
     const yesterdayPurchases = getYesterdayPurchases();
     yesterdayPurchases.forEach(purchase => {
@@ -876,17 +870,17 @@ const PurchaseList = () => {
       }
       totalKgsByGrade[purchase.grade] += purchase.totalKgs;
     });
-  
+
     // Group purchases by grade for non-specialty CWS
     if (!cwsInfo?.havespeciality) {
       const purchasesByGrade = {};
-      
+
       yesterdayPurchases.forEach(purchase => {
         const batchKey = purchase.grade;
         const processingStatus = processingStatusMap[`${purchase.batchNo}-${purchase.grade}`] || 'NOT STARTED';
-        
+
         if (processingStatus !== 'NOT STARTED') return;
-        
+
         if (!purchasesByGrade[batchKey]) {
           purchasesByGrade[batchKey] = {
             // batchNo: yesterdayString + purchase.grade,
@@ -899,44 +893,44 @@ const PurchaseList = () => {
             processingStatus: processingStatus
           };
         }
-        
+
         purchasesByGrade[batchKey].totalKgs += purchase.totalKgs;
         purchasesByGrade[batchKey].totalPrice += purchase.totalPrice;
         purchasesByGrade[batchKey].purchases.push(purchase);
       });
-      
+
       // Convert grouped purchases to array
       return Object.values(purchasesByGrade);
-    } 
-    
+    }
+
     // For specialty CWS, continue with the original logic
     else {
       yesterdayPurchases.forEach(purchase => {
         // Extract the base batch number (without grade suffix)
         const batchBase = purchase.batchNo.slice(0, -1);
-  
+
         // Skip if this batch base is already in processing
         if (processedBatchBases.has(batchBase)) {
           return;
         }
-  
+
         const batchKey = `${purchase.batchNo}-${purchase.grade}`;
-  
+
         // Only include batches that are NOT started
         const processingStatus = processingStatusMap[batchKey] || 'NOT STARTED';
         if (processingStatus !== 'NOT STARTED') return;
-  
+
         // For all batches in specialty coffee mode, split them
         const baseId = purchase.batchNo;
         const newBatch = baseId.substring(0, baseId.length - 1);
         const totalKgs = purchase.totalKgs;
         const totalPrice = purchase.totalPrice;
-  
+
         // Skip if either variant is in processing
         if (processingStatusMap[`${newBatch}-1`] || processingStatusMap[`${newBatch}-2`]) {
           return;
         }
-  
+
         batches[`${newBatch}-1`] = {
           batchNo: `${newBatch}-1`,
           originalBatchNo: baseId,
@@ -948,7 +942,7 @@ const PurchaseList = () => {
           processingStatus: processingStatus,
           isSpecialBatch: true
         };
-  
+
         batches[`${newBatch}-2`] = {
           batchNo: `${newBatch}-2`,
           originalBatchNo: baseId,
@@ -961,7 +955,7 @@ const PurchaseList = () => {
           isSpecialBatch: true
         };
       });
-  
+
       return Object.values(batches);
     }
   };
@@ -1046,7 +1040,85 @@ const PurchaseList = () => {
     }));
   };
 
+  const handleDeleteClick = (purchase) => {
+    setPurchaseToDelete(purchase.id);
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!purchaseToDelete) return;
+
+    try {
+      setLoading(true);
+      await axios.delete(`${API_URL}/purchases/${purchaseToDelete}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      setPurchases(purchases.filter(p => p.id !== purchaseToDelete));
+      setValidationError('');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Error deleting purchase:', error);
+      setValidationError(
+        <div className="alert alert-danger" role="alert">
+          <i className="bi bi-x-circle me-2"></i>
+          <strong>Error deleting purchase:</strong>
+          <div className="mt-1">
+            {error.response?.data?.message || 'An unexpected error occurred. Please try again.'}
+          </div>
+        </div>
+      );
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
+    }
+  };
+
+  // Add this function to handle purchase deletion
+  const handleDelete = async (purchaseId) => {
+    // Create a modal instance (needs to be done before showing modal)
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
+    // Show the modal
+    modal.show();
+
+    // Add click event to the confirm button
+    document.getElementById('confirmDeleteBtn').onclick = async () => {
+      try {
+        setLoading(true);
+        await axios.delete(`${API_URL}/purchases/${purchaseId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        // Update the purchases state by filtering out the deleted purchase
+        setPurchases(purchases.filter(p => p.id !== purchaseId));
+        setValidationError('');
+
+        // Show success toast notification
+        const toastEl = document.getElementById('successToast');
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+
+      } catch (error) {
+        console.error('Error deleting purchase:', error);
+        setValidationError(
+          <div className="alert alert-danger" role="alert">
+            <i className="bi bi-x-circle me-2"></i>
+            <strong>Error deleting purchase:</strong>
+            <div className="mt-1">
+              {error.response?.data?.message || 'An unexpected error occurred. Please try again.'}
+            </div>
+          </div>
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+  };
 
   const getBatchProcessingMessage = () => {
     // Check if we have any purchases from yesterday
@@ -1134,7 +1206,7 @@ const PurchaseList = () => {
             <tbody>
               {isLoading.purchases ? (
                 Array(5).fill(0).map((_, index) => (
-                  <SkeletonRow key={index} cols={9} />
+                  <SkeletonRow key={index} cols={10} />
                 ))
               ) : hasProcessingStarted() ? (
                 <tr>
@@ -1251,7 +1323,7 @@ const PurchaseList = () => {
                       <td>{totalCommissionFees.toLocaleString()}</td>
                       <td>{cherryAmount.toLocaleString()}</td>
                       <td>{purchase.totalPrice.toLocaleString()}</td>
-                      <td>
+                      {/* <td>
                         <button
                           className="btn btn-sm btn-outline-sucafina"
                           onClick={() => handleEditInline(purchase)}
@@ -1259,6 +1331,27 @@ const PurchaseList = () => {
                         >
                           Edit
                         </button>
+                      </td> */}
+
+                      <td>
+                        <div className="btn-group">
+                          <Button
+                            variant="outline-sucafina"
+                            size="sm"
+                            className="me-1"
+                            onClick={() => handleEditInline(purchase)}
+                            style={{ color: theme.primary, borderColor: theme.primary }}
+                          >
+                            <i className="bi bi-pencil me-1"></i>
+                          </Button>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => handleDeleteClick(purchase)}
+                          >
+                            <i className="bi bi-trash me-1"></i>
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1477,7 +1570,7 @@ const PurchaseList = () => {
                 <span className="form-control-plaintext">
                   <strong>{newPurchase.cherryPrice}</strong>
                   <small className="text-muted ms-2">
-                    ({newPurchase.grade === 'A' ? `${cwsPricing?.gradeAPrice? cwsPricing.gradeAPrice : 750 }` : '200'} - ({newPurchase?.transportFee}+{newPurchase?.commissionFee}))
+                    ({newPurchase.grade === 'A' ? `${cwsPricing?.gradeAPrice ? cwsPricing.gradeAPrice : 750}` : '200'} - ({newPurchase?.transportFee}+{newPurchase?.commissionFee}))
                   </small>
                 </span>
               </div>
@@ -1538,88 +1631,6 @@ const PurchaseList = () => {
           {renderPurchaseTable()}
 
           {/* Batches Section */}
-          {/* <div className="card border-0 shadow-sm">
-            <div className="card-body">
-              <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
-              <div className="table-responsive mt-2">
-                <table className="table table-hover">
-                  <thead>
-                    <tr style={{ backgroundColor: theme.neutral }}>
-                      <th>Batch Date</th>
-                      <th>Total KGs</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {isLoading.processingEntries ? (
-                      // Show 3 skeleton rows while loading
-                      Array(3).fill(0).map((_, index) => (
-                        <SkeletonRow key={index} cols={6} />
-                      ))
-                    ) : batchesState.length > 0 ? (
-                      batchesState.map((batch, index) => {
-                        const isInvalid = batch.isSpecialBatch && !validateBatchKgsMatch(batch);
-                        return (
-                          <tr key={index} className={isInvalid ? "bg-info-subtle" : ""}>
-                            <td>{batch.batchNo}</td>
-                            <td>
-                              {batch.isSpecialBatch ? (
-                                <input
-                                  type="number"
-                                  className={`form-control form-control-sm ${isInvalid ? "is-warning" : ""}`}
-                                  // className={`form-control form-control-sm ${isInvalid ? "is-invalid" : ""}`}
-                                  value={batch.totalKgs || ''}
-                                  onChange={(e) => handleBatchKgChange(index, e.target.value)}
-                                  disabled={batch.processingStatus === 'IN_PROGRESS'} // Disable input if processing is in progress
-                                />
-                              ) : (
-                                batch.totalKgs.toLocaleString()
-                              )}
-                              {batch.isSpecialBatch && isInvalid && (
-                                <div className="text-info">
-                                  Total KGs across split batches must equal {batch.originalTotalKgs.toLocaleString()}
-                                </div>
-                              )}
-                            </td>
-                            <td>
-                              {renderProcessingStatusBadge(batch.processingStatus)}
-                            </td>
-                            <td>
-                              <button
-                                className="btn btn-primary btn-sm"
-                                onClick={() => handleStartProcessing(batch)}
-                                style={{ backgroundColor: theme.primary, borderColor: theme.primary }}
-                                disabled={batch.processingStatus === 'IN_PROGRESS' || (batch.isSpecialBatch && !batch.totalKgs)}
-                              >
-                                Start Processing
-                              </button>
-                              {batch.isSpecialBatch && isInvalid && (
-                                <div className="text-warning mt-1" style={{ fontSize: '0.8rem' }}>
-                                  <i className="bi bi-exclamation-triangle-fill me-1"></i>
-                                  KGs don't match original total
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <EmptyState message={getBatchProcessingMessage()} />
-                    )}
-                  </tbody>
-                </table>
-                {cwsInfo?.havespeciality && getBatchesByGrade().some(b => b.isSpecialBatch) && (
-                  <div className="alert alert-info mt-3">
-                    <i className="bi bi-info-circle-fill me-2"></i>
-                    For specialty coffee, each batch can be split into two processing runs. Please distribute the total weight across both entries.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div> */}
-
           <div className="card border-0 shadow-sm">
             <div className="card-body">
               <span className="card-title mb-3 h5" style={{ color: theme.primary }}>Batches</span>
@@ -1638,7 +1649,7 @@ const PurchaseList = () => {
 
                   <tbody>
                     {isLoading.processingEntries ? (
-                      Array(3).fill(0).map((_, index) => (
+                      Array(4).fill(0).map((_, index) => (
                         <SkeletonRow key={index} cols={6} />
                       ))
                     ) : batchesState.length > 0 ? (
@@ -1786,7 +1797,39 @@ const PurchaseList = () => {
           )}
 
 
-        </div >
+          {/* Delete Modal */}
+          <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+            <Modal.Header closeButton style={{ backgroundColor: theme.primary, color: 'white' }}>
+              <Modal.Title>Confirm Delete</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <div className="d-flex align-items-center">
+                <i className="bi bi-exclamation-triangle-fill text-warning me-3" style={{ fontSize: '1.5rem' }}></i>
+                <p className="mb-0">Are you sure you want to delete this purchase? This action cannot be undone.</p>
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={confirmDelete}>
+                <i className="bi bi-trash me-1"></i>Delete
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          {/* success modal */}
+          <ToastContainer position="bottom-end" className="p-3">
+            <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide>
+              {/* <Toast.Header style={{ backgroundColor: '#28a745', color: 'white' }}> */}
+              <Toast.Header className='bg-sucafina text-white'>
+                <i className="bi bi-check-circle me-2"></i>
+                <strong className="me-auto">Success</strong>
+              </Toast.Header>
+              <Toast.Body>Purchase deleted successfully.</Toast.Body>
+            </Toast>
+          </ToastContainer>
+        </div>
       </div >
     </div >
   );
