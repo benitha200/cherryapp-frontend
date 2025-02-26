@@ -265,11 +265,32 @@ const PurchasesDashboard = () => {
 
     const fetchPurchases = async () => {
       try {
-        const response = await axios.get(`${API_URL}/purchases`, {
+        // Get user data from localStorage
+        const userString = localStorage.getItem('user');
+        let endpoint = `${API_URL}/purchases`;
+        
+        // Check if user exists and is a CWS_MANAGER
+        if (userString) {
+          const userData = JSON.parse(userString);
+          
+          if (userData.role === "CWS_MANAGER") {
+            // Get CWS data from localStorage
+            const cwsString = localStorage.getItem('cws');
+            
+            if (cwsString) {
+              const cwsData = JSON.parse(cwsString);
+              // Use CWS-specific endpoint with the cwsId
+              endpoint = `${API_URL}/purchases/cws/${cwsData.id}`;
+            }
+          }
+        }
+        
+        const response = await axios.get(endpoint, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
+        
         setPurchases(response.data);
         setLoading(false);
       } catch (error) {
@@ -345,7 +366,7 @@ const PurchasesDashboard = () => {
           },
           {
             title: 'Total Coffee Weight (kg)',
-            value: stats.totalKgs.toFixed(2),
+            value: stats.totalKgs.toLocaleString(),
             iconClass: 'bi-graph-up'
           },
           {
@@ -355,7 +376,7 @@ const PurchasesDashboard = () => {
           },
           {
             title: 'Avg Price per KG',
-            value: `${stats.averagePricePerKg.toFixed(2)}`,
+            value: `${stats.averagePricePerKg.toFixed(0).toLocaleString()}`,
             iconClass: 'bi-coin'
           }
         ].map((item, index) => (
