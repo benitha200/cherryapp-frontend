@@ -100,6 +100,8 @@ import PurchaseListAll from './components/Admin/Cherry/PurchaseListAll.jsx';
 import CherryPurchaseReportDetailed from './components/Admin/Reports/CherryPurchaseReportDetailed.jsx';
 import MyAccount from './components/Auth/MyAccount.jsx';
 import ProcessingListAll from './components/Admin/Cherry/ProcessingListAll.jsx';
+import WetTransfer from './components/Cws/WetTransfer.jsx';
+import WetTransferReceiver from './components/Cws/WetTransferReceiver.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -165,6 +167,17 @@ const AppContent = () => {
                 <ProcessingList />
               </PrivateRoute>
             } />
+            <Route path="/wet-transfer" element={
+              <PrivateRoute>
+                <WetTransfer />
+              </PrivateRoute>
+            } />
+            <Route path="/wet-transfer-receiver" element={
+              <PrivateRoute>
+                <WetTransferReceiver />
+              </PrivateRoute>
+            } />
+
             <Route path="/transfer" element={
               <PrivateRoute>
                 <Transfer />

@@ -19,6 +19,8 @@ body {
   }
 }
 
+
+
 /* Global variables */
 :root {
   --primary-color: #0d6efd;
@@ -31,6 +33,22 @@ body {
   --sucafina-text-color: #4C585B;
 }
 
+/* For the switch itself */
+.custom-switch .form-check-input:checked {
+  background-color: var(--sucafina-color);
+  border-color:var(--sucafina-color);
+  /* height: 1rem !important;
+  width: 3rem !important; */
+}
+
+/* Optional: style the switch when being toggled/focused */
+.custom-switch .form-check-input:focus {
+  border-color: var(--sucafina-color);
+  box-shadow: 0 0 0 0.25rem rgba(0,128,128, 0.25);
+  /* height: 1rem !important;
+  width: 3rem !important; */
+  padding-left: 5px;
+}
 
 /* Layout */
 .container {

@@ -12,7 +12,7 @@ const theme = {
   tableHover: '#F8FAFA'
 };
 
-const AdminDashboard = () => {
+const Users = () => {
   const [users, setUsers] = useState([]);
   const [cwsList, setCwsList] = useState([]);
   const [newUser, setNewUser] = useState({
@@ -213,4 +213,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default Users;
