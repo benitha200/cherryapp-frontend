@@ -217,7 +217,7 @@ const ProcessingList = () => {
 
                 {cwsInfo?.is_wet_parchment_sender?(
                     <Button
-                    onClick={navigateToWetTransfer}
+                    onClick={navigateToWetTransfer()}
                     style={{
                         backgroundColor: processingTheme.primary,
                         borderColor: processingTheme.primary,
