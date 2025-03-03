@@ -245,9 +245,11 @@ const WetTransfer = () => {
         try {
             // Fetch all CWS locations except the current one
             const response = await axios.get(`${API_URL}/cws`);
-            const filteredCws = response.data.filter(cws => cws.id !== userInfo.cwsId);
+            const filteredCws = response.data.filter(cws => 
+                cws.id !== userInfo.cwsId && cws.name !== "TEST"
+            );
             setCwsList(filteredCws);
-
+            
             // Set default destination CWS if available
             if (filteredCws.length > 0) {
                 setSelectedDestinationCws(filteredCws[0].id);
@@ -816,7 +818,7 @@ const WetTransfer = () => {
                                                                                 <td>{record.processingType}</td>
                                                                                 <td>{parseFloat(record.totalKgs).toFixed(2)} kg</td>
                                                                                 <td>{record.grade}</td>
-                                                                                <td>{new Date(record.date).toLocaleDateString()}</td>
+                                                                                <td>{new Date(record.StartDate).toLocaleDateString()}</td>
                                                                             </tr>
                                                                         ))}
                                                                     </tbody>
