@@ -147,7 +147,7 @@ const WetTransferReceiver = () => {
                 const transfer = pendingTransfers.find(t => t.id === transferId);
                 return axios.post(`${API_URL}/wet-transfer/receive`, {
                     transferId: transferId,
-                    // receivedDate: new Date().toISOString(),
+                    receivedDate: new Date().toISOString(),
                     receivingCwsId: userInfo.cwsId,
                     sourceCwsId: transfer.sourceCwsId,
                     notes: transferNotes,

@@ -168,7 +168,7 @@ const ProcessingList = () => {
 
             setShowModal(false);
             setRefreshKey(prevKey => prevKey + 1);
-            
+
             // Use a toast notification instead of an alert
             // If you have a toast library like react-toastify
             // toast.success('Bagging off processed successfully');
@@ -193,7 +193,7 @@ const ProcessingList = () => {
         <div className="alert alert-danger">
             <i className="fas fa-exclamation-triangle mr-2"></i>
             {error}
-            <button 
+            <button
                 className="btn btn-sm btn-outline-danger ml-3"
                 onClick={() => setRefreshKey(prevKey => prevKey + 1)}
             >
@@ -211,66 +211,68 @@ const ProcessingList = () => {
                 onSubmit={handleProcessSubmit}
                 onComplete={handleBatchCompletion}
             />
-            
+
             <div className="d-flex justify-content-between mb-3 align-items-center">
                 <h4 style={{ color: processingTheme.primary }}>Processing Management</h4>
 
-                {cwsInfo?.is_wet_parchment_sender?(
+                {cwsInfo?.is_wet_parchment_sender ? (
                     <Button
-                    onClick={navigateToWetTransfer()}
-                    style={{
-                        backgroundColor: processingTheme.primary,
-                        borderColor: processingTheme.primary,
-                        transition: 'all 0.3s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}
-                    className="btn-sm"
-                    onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = processingTheme.buttonHover;
-                        e.currentTarget.style.borderColor = processingTheme.buttonHover;
-                    }}
-                    onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = processingTheme.primary;
-                        e.currentTarget.style.borderColor = processingTheme.primary;
-                    }}
-                >
-                    <i className="fas fa-plus-circle"></i>
-                    Wet Transfer
-                </Button>
-            ):( <Button
-                onClick={navigateToWetTransferReceiver()}
-                style={{
-                    backgroundColor: processingTheme.primary,
-                    borderColor: processingTheme.primary,
-                    transition: 'all 0.3s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                }}
-                className="btn-sm"
-                onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = processingTheme.buttonHover;
-                    e.currentTarget.style.borderColor = processingTheme.buttonHover;
-                }}
-                onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = processingTheme.primary;
-                    e.currentTarget.style.borderColor = processingTheme.primary;
-                }}
-            >
-                <i className="fas fa-plus-circle"></i>
-                Wet Transfer
-            </Button>)}
-                
+                        onClick={() => navigateToWetTransfer()} // Pass a callback function
+                        style={{
+                            backgroundColor: processingTheme.primary,
+                            borderColor: processingTheme.primary,
+                            transition: 'all 0.3s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                        className="btn-sm"
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = processingTheme.buttonHover;
+                            e.currentTarget.style.borderColor = processingTheme.buttonHover;
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = processingTheme.primary;
+                            e.currentTarget.style.borderColor = processingTheme.primary;
+                        }}
+                    >
+                        <i className="fas fa-plus-circle"></i>
+                        Wet Transfer
+                    </Button>
+                ) : (
+                    <Button
+                        onClick={() => navigateToWetTransferReceiver()} // Pass a callback function
+                        style={{
+                            backgroundColor: processingTheme.primary,
+                            borderColor: processingTheme.primary,
+                            transition: 'all 0.3s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                        className="btn-sm"
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = processingTheme.buttonHover;
+                            e.currentTarget.style.borderColor = processingTheme.buttonHover;
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = processingTheme.primary;
+                            e.currentTarget.style.borderColor = processingTheme.primary;
+                        }}
+                    >
+                        <i className="fas fa-plus-circle"></i>
+                        Wet Transfer
+                    </Button>
+                )}
+
             </div>
 
             <Card className="shadow-sm">
                 <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
                     <span className='h5' style={{ color: processingTheme.primary }}>Processing Batches</span>
-                    <Button 
-                        variant="link" 
-                        size="sm" 
+                    <Button
+                        variant="link"
+                        size="sm"
                         className="float-right"
                         onClick={() => setRefreshKey(prevKey => prevKey + 1)}
                         style={{ color: processingTheme.primary }}
@@ -308,7 +310,7 @@ const ProcessingList = () => {
                                         </td>
                                     </tr>
                                 ) : (processingBatches.map((batch) => (
-                                    <tr key={batch.id} style={{ cursor: 'pointer' }} 
+                                    <tr key={batch.id} style={{ cursor: 'pointer' }}
                                         onClick={() => startProcessing(batch.batches)}
                                         className="position-relative"
                                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = processingTheme.tableHover}
@@ -322,10 +324,10 @@ const ProcessingList = () => {
                                             <span
                                                 className="badge"
                                                 style={{
-                                                    backgroundColor: 
+                                                    backgroundColor:
                                                         batch.status === 'PROCESSING' ? processingTheme.secondary :
-                                                        batch.status === 'PENDING' ? '#FFC107' :
-                                                        processingTheme.primary,
+                                                            batch.status === 'PENDING' ? '#FFC107' :
+                                                                processingTheme.primary,
                                                     color: 'white',
                                                     padding: '6px 10px'
                                                 }}
@@ -486,10 +488,10 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
 
     const prepareSubmissionData = (processingType, status) => {
         if (!batches?.[0]?.batchNo) return [];
-    
+
         const submissions = [];
         const batchNo = batches[0].batchNo;
-    
+
         if (processingType === 'HONEY') {
             if (honeyOutputKgs.H1) {
                 submissions.push({
@@ -503,7 +505,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                     recordId: isEditing && editingRecord?.processingType === 'HONEY' ? editingRecord.id : null
                 });
             }
-    
+
             // Add fully washed submission if applicable
             if (Object.values(fullyWashedOutputKgs).some(v => v !== '')) {
                 submissions.push({
@@ -532,7 +534,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                 });
             }
         }
-    
+
         return submissions;
     };
 
@@ -630,16 +632,16 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
 
     const handleCompleteBaggingOff = async () => {
         if (!batches?.[0]?.batchNo) return;
-    
+
         try {
             setLoading(true);
-    
+
             // Get submissions if there are any new values entered
             const submissions = prepareSubmissionData(
                 batches[0].processingType.toUpperCase(),
                 'COMPLETED'
             );
-    
+
             // If there are new entries, submit them
             if (submissions.length > 0) {
                 await Promise.all(
@@ -648,7 +650,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                     )
                 );
             }
-    
+
             // Always update existing bagging-off entries to "COMPLETED"
             if (savedBaggingOffs.length > 0) {
                 await Promise.all(
@@ -660,12 +662,12 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                     )
                 );
             }
-    
+
             // Always call onComplete even if there are no new submissions
             if (onComplete && typeof onComplete === 'function') {
                 await onComplete(batches[0].batchNo);
             }
-    
+
             handleClose();
             alert('Bagging off completed successfully');
         } catch (error) {
@@ -838,7 +840,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                             marginRight: '5px'
                                                         }}
                                                     >
-                                                     <i className="bi bi-pencil-square"></i>
+                                                        <i className="bi bi-pencil-square"></i>
                                                     </Button>
                                                     <Button
                                                         variant="outline-danger"
@@ -849,7 +851,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                             borderColor: '#dc3545'
                                                         }}
                                                     >
-                                                       <i className="bi bi-trash"></i>
+                                                        <i className="bi bi-trash"></i>
                                                     </Button>
                                                 </>
                                             )}
