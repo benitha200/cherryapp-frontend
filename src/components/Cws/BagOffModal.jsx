@@ -3,7 +3,16 @@ import axios from 'axios';
 import { Modal, Button, Form, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import API_URL from '../../constants/Constants';
 
-const BagOffModal = ({ show, onHide, batchNo, processingTheme, onSuccess }) => {
+const processingTheme = {
+    primary: '#008080',    // Sucafina teal
+    secondary: '#4FB3B3',  // Lighter teal
+    neutral: '#E6F3F3',    // Very light teal
+    tableHover: '#F8FAFA', // Ultra light teal for table hover
+    success: '#28a745',    // Success green
+    warning: '#ffc107',    // Warning yellow
+    danger: '#dc3545',     // Danger red
+};
+const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [batchDetails, setBatchDetails] = useState(null);
   const [error, setError] = useState('');
@@ -258,7 +267,7 @@ const BagOffModal = ({ show, onHide, batchNo, processingTheme, onSuccess }) => {
       size="lg"
       centered
     >
-      <Modal.Header closeButton style={{ backgroundColor: processingTheme.neutral }}>
+      <Modal.Header closeButton style={{ backgroundColor: processingTheme.primary }}>
         <Modal.Title>Bag Off - {batchNo}</Modal.Title>
       </Modal.Header>
       <Modal.Body>

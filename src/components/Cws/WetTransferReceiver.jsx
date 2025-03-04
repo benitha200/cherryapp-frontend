@@ -317,7 +317,7 @@ const WetTransferReceiver = () => {
                             color: activeTab === 'completed' ? 'white' : processingTheme.primary
                         }}
                     >
-                        History ({Object.keys(groupedCompletedTransfers).length})
+                        Bag Off Received Batches ({Object.keys(groupedCompletedTransfers).length})
                     </Button>
                 </div>
             </div>
@@ -406,7 +406,7 @@ const WetTransferReceiver = () => {
                 <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
                     <div className="d-flex justify-content-between align-items-center">
                         <span className="h5" style={{ color: processingTheme.primary }}>
-                            {activeTab === 'pending' ? 'Pending Batches' : 'Batch History'}
+                            {activeTab === 'pending' ? 'Pending Batches' : 'Received Batches'}
                         </span>
                         <div className="d-flex">
                             <InputGroup>
@@ -571,7 +571,7 @@ const WetTransferReceiver = () => {
                                                                                 <th>Output KGs</th>
                                                                                 <th>Moisture %</th>
                                                                                 <th>Status</th>
-                                                                               
+
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
@@ -583,7 +583,7 @@ const WetTransferReceiver = () => {
                                                                                     <td>{parseFloat(transfer.outputKgs).toFixed(2)} kg</td>
                                                                                     <td>{parseFloat(transfer.moistureContent).toFixed(1)}%</td>
                                                                                     <td>{getStatusBadge(transfer.status)}</td>
-                                                                                  
+
                                                                                 </tr>
                                                                             ))}
                                                                         </tbody>
@@ -611,6 +611,8 @@ const WetTransferReceiver = () => {
                                                                         </div>
                                                                     </div>
                                                                 )}
+
+                                                               
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -722,3 +724,4 @@ const WetTransferReceiver = () => {
 };
 
 export default WetTransferReceiver;
+

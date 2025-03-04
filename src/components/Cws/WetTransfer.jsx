@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Button, Modal, Placeholder, Form, Alert, InputGroup, Badge, Accordion, Row, Col } from 'react-bootstrap';
 import API_URL from '../../constants/Constants';
+import AlertModal from '../CwsManager/AlertModal';
 
 const processingTheme = {
     primary: '#008080',    // Sucafina teal
@@ -79,8 +80,12 @@ const WetTransfer = () => {
         N1: '', N2: '', B1: '', B2: ''
     });
     const [fullyWashedOutputKgs, setFullyWashedOutputKgs] = useState({
-        A0: '', A1: '', A2: '', A3: '', B1: '', B2: ''
+        A0: '', A1: ''
     });
+
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertTitle, setAlertTitle] = useState('');
 
     // Define allowed grades based on processing type
     const getOutputGradesForProcessingType = (processingType, grade) => {
@@ -93,9 +98,9 @@ const WetTransfer = () => {
         return Object.keys(groupedRecords).filter(uniqueKey => {
             const record = groupedRecords[uniqueKey][0];
             const batchNo = record.batchNo; // Extract batchNo from the unique key
-            
-            // Filter out batches where batchNo ends with "B"
-            if (batchNo.endsWith("B")) {
+
+            // Filter out batches where batchNo ends with "B" and "-2"
+            if (batchNo.endsWith("B") || batchNo.endsWith("-2")) {
                 return false;
             }
 
@@ -127,7 +132,7 @@ const WetTransfer = () => {
                 const processingType = record.processingType;
                 const gradePrefix = record.grade.charAt(0);
                 const allowedGrades = getOutputGradesForProcessingType(processingType, gradePrefix);
-    
+
                 allowedGrades.forEach(grade => {
                     if (!grades[grade]) {
                         grades[grade] = true;
@@ -135,9 +140,9 @@ const WetTransfer = () => {
                 });
             });
         });
-    
+
         setAvailableGrades(Object.keys(grades));
-    
+
         // Initialize selected grades if not already set
         const newSelectedGrades = {};
         Object.keys(grades).forEach(grade => {
@@ -145,22 +150,22 @@ const WetTransfer = () => {
                 newSelectedGrades[grade] = true;
             }
         });
-    
+
         setSelectedGrades(prev => ({ ...prev, ...newSelectedGrades }));
     }, [selectedBatches, groupedRecords]);
-    
+
     useEffect(() => {
         // Initialize moisture values for each grade if not already set
         const newMoistureValues = { ...moistureValues };
         let moistureValuesChanged = false;
-    
+
         selectedBatches.forEach(uniqueKey => {
             const batchRecords = groupedRecords[uniqueKey] || [];
             batchRecords.forEach(record => {
                 const processingType = record.processingType;
                 const gradePrefix = record.grade.charAt(0);
                 const allowedGrades = getOutputGradesForProcessingType(processingType, gradePrefix);
-    
+
                 allowedGrades.forEach(grade => {
                     const key = `${uniqueKey}-${grade}`;
                     if (!newMoistureValues[key]) {
@@ -170,26 +175,26 @@ const WetTransfer = () => {
                 });
             });
         });
-    
+
         if (moistureValuesChanged) {
             setMoistureValues(newMoistureValues);
         }
     }, [selectedBatches, groupedRecords]);
-    
+
     useEffect(() => {
         // Initialize output quantities for each grade if not already set
         const newHoneyOutputKgs = { ...honeyOutputKgs };
         const newNaturalOutputKgs = { ...naturalOutputKgs };
         const newFullyWashedOutputKgs = { ...fullyWashedOutputKgs };
         let outputKgsChanged = false;
-    
+
         selectedBatches.forEach(uniqueKey => {
             const batchRecords = groupedRecords[uniqueKey] || [];
             batchRecords.forEach(record => {
                 const processingType = record.processingType;
                 const gradePrefix = record.grade.charAt(0);
                 const allowedGrades = getOutputGradesForProcessingType(processingType, gradePrefix);
-    
+
                 allowedGrades.forEach(grade => {
                     if (grade.startsWith('H') && !newHoneyOutputKgs[grade]) {
                         newHoneyOutputKgs[grade] = '';
@@ -204,14 +209,14 @@ const WetTransfer = () => {
                 });
             });
         });
-    
+
         if (outputKgsChanged) {
             setHoneyOutputKgs(newHoneyOutputKgs);
             setNaturalOutputKgs(newNaturalOutputKgs);
             setFullyWashedOutputKgs(newFullyWashedOutputKgs);
         }
     }, [selectedBatches, groupedRecords]);
-    
+
     useEffect(() => {
         // Calculate total selected KGs
         calculateTotalSelectedKgs();
@@ -376,10 +381,7 @@ const WetTransfer = () => {
                                 ...record,
                                 grade: grade,
                                 moistureContent: parseFloat(moistureValues[`${uniqueKey}-${grade}`] || 0.0),
-                                outputKgs: parseFloat(
-                                    grade.startsWith('H') ? honeyOutputKgs[grade] :
-                                        grade.startsWith('N') || grade.startsWith('B') ? naturalOutputKgs[grade] :
-                                            fullyWashedOutputKgs[grade] || 0
+                                outputKgs: parseFloat(fullyWashedOutputKgs[grade] || 0
                                 )
                             });
                         }
@@ -410,10 +412,16 @@ const WetTransfer = () => {
             setNaturalOutputKgs({ N1: '', N2: '', B1: '', B2: '' });
             setFullyWashedOutputKgs({ A0: '', A1: '', A2: '', A3: '', B1: '', B2: '' });
             setShowTransferModal(false);
-            alert('Wet Transfer completed successfully');
+
+
+            setAlertTitle('Success');
+            setAlertMessage('Wet Transfer completed successfully');
+            setShowAlertModal(true);
         } catch (error) {
             console.error('Transfer error:', error);
-            alert('Failed to complete wet transfer');
+            setAlertTitle('Error');
+            setAlertMessage('Failed to complete wet transfer');
+            setShowAlertModal(true);
         }
     };
 
@@ -621,7 +629,7 @@ const WetTransfer = () => {
                                                                             setFullyWashedOutputKgs(prev => ({ ...prev, [grade]: value }));
                                                                         }
                                                                     }}
-                                                                    step="0.1"
+                                                                    step="0.5"
                                                                     min="0"
                                                                 />
                                                             </td>
@@ -632,7 +640,7 @@ const WetTransfer = () => {
                                                                     style={{ width: '80px' }}
                                                                     value={moistureValues[`${selectedBatches[0]}-${grade}`] || '0.0'}
                                                                     onChange={(e) => handleMoistureChange(selectedBatches[0], grade, e.target.value)}
-                                                                    step="0.1"
+                                                                    step="0.5"
                                                                     min="0"
                                                                     max="100"
                                                                 />
@@ -664,7 +672,22 @@ const WetTransfer = () => {
                                     <div className="d-grid gap-2">
                                         <Button
                                             variant="primary"
-                                            disabled={selectedBatches.length === 0 || totalSelectedKgs === 0 || !selectedDestinationCws}
+                                            disabled={
+                                                selectedBatches.length === 0 ||
+                                                totalSelectedKgs === 0 ||
+                                                !selectedDestinationCws ||
+                                                Object.entries(selectedGrades).some(([grade, isSelected]) => {
+                                                    if (!isSelected || (grade !== 'A0' && grade !== 'A1')) {
+                                                        return false; // Skip validation for non-selected grades or grades other than A0/A1
+                                                    }
+
+                                                    const transferredKgs = fullyWashedOutputKgs[grade];
+                                                    const moistureContent = parseFloat(moistureValues[`${selectedBatches[0]}-${grade}`] || 0);
+
+                                                    return !transferredKgs || parseFloat(transferredKgs) <= 0 || isNaN(moistureContent) || moistureContent <= 0;
+                                                })
+                                            }
+
                                             onClick={handleTransferClick}
                                             style={{
                                                 backgroundColor: processingTheme.primary,
@@ -686,7 +709,7 @@ const WetTransfer = () => {
                 <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
                     <div className="d-flex justify-content-between align-items-center">
                         <span className="h5" style={{ color: processingTheme.primary }}>
-                            Available Batches for Wet Transfer 
+                            Available Batches for Wet Transfer ({filteredBatches.length})
                         </span>
                         <div className="d-flex">
                             <InputGroup>
@@ -839,51 +862,10 @@ const WetTransfer = () => {
                     <Modal.Title>Confirm Wet Transfer</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Alert variant="info">
-                        You are about to transfer coffee from {sourceCwsName} to {destinationCwsName}.
-                    </Alert>
-
-                    <InputGroup className="mb-3">
-                        <Form.Control
-                            placeholder="Search batches..."
-                            value={modalBatchSearch}
-                            onChange={(e) => setModalBatchSearch(e.target.value)}
-                        />
-                    </InputGroup>
 
                     <Accordion defaultActiveKey="0">
-                        <Accordion.Item eventKey="0">
-                            <Accordion.Header>Selected Batches ({selectedBatches.length})</Accordion.Header>
-                            <Accordion.Body style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                <table className="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Batch No</th>
-                                            <th>Processing Types</th>
-                                            <th>Total KGs</th>
-                                            <th>Grades</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {selectedBatches
-                                            .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                                            .map(uniqueKey => {
-                                                const records = groupedRecords[uniqueKey];
-                                                return (
-                                                    <tr key={uniqueKey}>
-                                                        <td>{records[0].batchNo}</td>
-                                                        <td>{[...new Set(records.map(r => r.processingType))].join(', ')}</td>
-                                                        <td>{records.reduce((sum, r) => sum + parseFloat(r.totalKgs), 0).toFixed(2)} kg</td>
-                                                        <td>{[...new Set(records.map(r => r.grade))].join(', ')}</td>
-                                                    </tr>
-                                                );
-                                            })}
-                                    </tbody>
-                                </table>
-                            </Accordion.Body>
-                        </Accordion.Item>
 
-                        <Accordion.Item eventKey="1">
+                        <Accordion.Item eventKey="0">
                             <Accordion.Header>Selected Grades</Accordion.Header>
                             <Accordion.Body>
                                 <table className="table table-sm">
@@ -932,8 +914,8 @@ const WetTransfer = () => {
 
                     <Row className="mt-3">
                         <Col>
-                            <Alert variant="warning">
-                                Please confirm that you want to transfer the selected batches and grades to {destinationCwsName}.
+                        <Alert variant="warning">
+                                Please confirm that you are about to transfer coffee from {sourceCwsName} to {destinationCwsName}.
                                 This action cannot be undone.
                             </Alert>
                         </Col>
@@ -955,6 +937,13 @@ const WetTransfer = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+            <AlertModal
+                show={showAlertModal}
+                onHide={() => setShowAlertModal(false)}
+                title={alertTitle}
+                message={alertMessage}
+            />
+
         </div>
     );
 };

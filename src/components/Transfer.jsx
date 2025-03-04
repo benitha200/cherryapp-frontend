@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Button, Modal, Placeholder, Form, Alert, InputGroup, Badge, Accordion } from 'react-bootstrap';
@@ -256,13 +257,38 @@ const Transfer = () => {
     }
   };
 
-  const renderOutputKgs = (outputKgs) => {
-    return Object.entries(outputKgs).map(([grade, kg]) => (
-      <div key={grade} className="small">
-        {grade}: {kg} kg
-      </div>
-    ));
+  const renderOutputKgs = (outputKgs, isExpanded = false) => {
+    // If not expanded, sum up all grades
+    if (!isExpanded) {
+      const totalsByGrade = Object.entries(outputKgs)
+        .reduce((acc, [grade, kg]) => {
+          // Convert to number, handling empty strings
+          const numKg = kg === "" ? 0 : parseFloat(kg);
+          return {
+            ...acc,
+            [grade]: (acc[grade] || 0) + numKg
+          };
+        }, {});
+
+      return Object.entries(totalsByGrade)
+        .filter(([_, total]) => total > 0)
+        .map(([grade, total]) => (
+          <div key={grade} className="small">
+            {grade}: {total.toFixed(2)} kg
+          </div>
+        ));
+    }
+
+    // If expanded, show individual record output
+    return Object.entries(outputKgs)
+      .filter(([_, kg]) => kg !== "" && parseFloat(kg) > 0)
+      .map(([grade, kg]) => (
+        <div key={grade} className="small">
+          {grade}: {parseFloat(kg).toFixed(2)} kg
+        </div>
+      ));
   };
+
 
   const calculateOutturn = (records) => {
     const totalProcessingKgs = records.reduce((sum, record) => {
@@ -376,7 +402,7 @@ const Transfer = () => {
       <Card className="mb-4">
         <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
           <span className="h5" style={{ color: processingTheme.primary }}>
-            Create New Transfer
+            Transport to HQ
           </span>
         </Card.Header>
         <Card.Body>
@@ -492,7 +518,7 @@ const Transfer = () => {
                         borderColor: processingTheme.primary
                       }}
                     >
-                      Create Transfer
+                      Transport to HQ
                     </Button>
                   </div>
                 </Card.Body>
@@ -567,6 +593,17 @@ const Transfer = () => {
                   const isExpanded = expandedBatches[baseBatchNo];
                   const isSelected = selectedBatches.includes(baseBatchNo);
 
+                  const aggregatedOutputKgs = records.reduce((acc, record) => {
+                    Object.entries(record.outputKgs).forEach(([grade, kg]) => {
+                      const numKg = kg === "" ? 0 : parseFloat(kg);
+                      acc[grade] = (acc[grade] || 0) + numKg;
+                    });
+                    return acc;
+                  }, {});
+                
+                  // Total output KGs
+                  const totalOutputKgs = records.reduce((sum, record) => sum + record.totalOutputKgs, 0);
+                
                   return (
                     <React.Fragment key={baseBatchNo}>
                       <tr
@@ -612,10 +649,16 @@ const Transfer = () => {
                           {records[0].processing.totalKgs.toFixed(2)} kg
                         </td>
                         <td>
-                          {renderOutputKgs(records[0].outputKgs)}
+                          {Object.entries(aggregatedOutputKgs)
+                            .filter(([_, kg]) => kg > 0)
+                            .map(([grade, kg]) => (
+                              <div key={grade} className="small">
+                                {grade}: {kg.toFixed(2)} kg
+                              </div>
+                            ))}
                         </td>
                         <td>
-                          {records.reduce((sum, record) => sum + record.totalOutputKgs, 0).toFixed(2)} kg
+                          {totalOutputKgs.toFixed(2)} kg
                         </td>
                         <td>
                           {calculateOutturn(records)}%
@@ -634,7 +677,7 @@ const Transfer = () => {
                           </span>
                         </td>
                       </tr>
-
+                
                       {isExpanded && (
                         <tr className="table-light">
                           <td colSpan={10} className="p-0">
@@ -657,7 +700,15 @@ const Transfer = () => {
                                       <td>{record.batchNo}</td>
                                       <td>{record.processingType}</td>
                                       <td>{record.processing.totalKgs.toFixed(2)} kg</td>
-                                      <td>{renderOutputKgs(record.outputKgs)}</td>
+                                      <td>
+                                        {Object.entries(record.outputKgs)
+                                          .filter(([_, kg]) => kg !== "" && parseFloat(kg) > 0)
+                                          .map(([grade, kg]) => (
+                                            <div key={grade} className="small">
+                                              {grade}: {parseFloat(kg).toFixed(2)} kg
+                                            </div>
+                                          ))}
+                                      </td>
                                       <td>{record.totalOutputKgs.toFixed(2)} kg</td>
                                       <td>{new Date(record.date).toLocaleDateString()}</td>
                                     </tr>

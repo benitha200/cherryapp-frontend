@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Modal, Button, Form, Row, Col, Card, Tab, Tabs, Placeholder, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../constants/Constants';
+import ConfirmationModal from './CwsManager/ConfirmationModal';
+import AlertModal from './CwsManager/AlertModal';
 
 const processingTheme = {
     primary: '#008080',    // Sucafina teal
@@ -16,7 +18,8 @@ const processingTheme = {
 };
 const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete }) => {
     const [existingProcessing, setExistingProcessing] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedDate, setSelectedDate] = useState('');
+
     const [honeyOutputKgs, setHoneyOutputKgs] = useState({ H1: '' });
     const [naturalOutputKgs, setNaturalOutputKgs] = useState({
         N1: '', N2: '', B1: '', B2: ''
@@ -29,6 +32,10 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
     const [progressiveMode, setProgressiveMode] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editingRecord, setEditingRecord] = useState(null);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [showAlertModal, setShowAlertModal] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertTitle, setAlertTitle] = useState('');
 
     useEffect(() => {
         if (show && batches && batches.length > 0) {
@@ -38,8 +45,24 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         }
     }, [show, batches]);
 
+    useEffect(() => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        // Ensure the date is in the correct time zone
+        const offset = yesterday.getTimezoneOffset();
+        yesterday.setMinutes(yesterday.getMinutes() - offset);
+
+        const year = yesterday.getFullYear();
+        const month = (yesterday.getMonth() + 1).toString().padStart(2, '0');
+        const day = yesterday.getDate().toString().padStart(2, '0');
+
+        setSelectedDate(`${year}-${month}-${day}`);
+    }, []);
+
     const resetModalState = () => {
-        setSelectedDate(new Date().toISOString().split('T')[0]);
+        // setSelectedDate(new Date().toISOString().split('T')[0]);
         resetOutputs();
         setExistingProcessing(null);
         setSavedBaggingOffs([]);
@@ -130,88 +153,58 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         }
     };
 
-    const prepareSubmissionData = (processingType, status) => {
-        if (!batches?.[0]?.batchNo) return [];
+    // const prepareSubmissionData = (processingType, status) => {
+    //     if (!batches?.[0]?.batchNo) return [];
 
-        const submissions = [];
-        const batchNo = batches[0].batchNo;
+    //     const submissions = [];
+    //     const batchNo = batches[0].batchNo;
 
-        if (processingType === 'HONEY') {
-            if (honeyOutputKgs.H1) {
-                submissions.push({
-                    date: selectedDate,
-                    outputKgs: honeyOutputKgs,
-                    processingType: 'HONEY',
-                    existingProcessing, // Ensure this is included
-                    batchNo,
-                    status,
-                    progressive: progressiveMode,
-                    recordId: isEditing && editingRecord?.processingType === 'HONEY' ? editingRecord.id : null
-                });
-            }
-
-            // Add fully washed submission if applicable
-            if (Object.values(fullyWashedOutputKgs).some(v => v !== '')) {
-                submissions.push({
-                    date: selectedDate,
-                    outputKgs: fullyWashedOutputKgs,
-                    processingType: 'FULLY WASHED',
-                    existingProcessing, // Ensure this is included
-                    batchNo,
-                    status,
-                    progressive: progressiveMode,
-                    recordId: isEditing && editingRecord?.processingType === 'FULLY WASHED' ? editingRecord.id : null
-                });
-            }
-        } else {
-            const outputData = prepareOutputData(processingType, batchNo);
-            if (Object.values(outputData).some(v => v !== '')) {
-                submissions.push({
-                    date: selectedDate,
-                    outputKgs: outputData,
-                    processingType,
-                    existingProcessing, // Ensure this is included
-                    batchNo,
-                    status,
-                    progressive: progressiveMode,
-                    recordId: isEditing ? editingRecord?.id : null
-                });
-            }
-        }
-
-        return submissions;
-    };
-
-    // const calculateTotalsByProcessingType = () => {
-    //     const totals = {
-    //         'HONEY': { H1: 0 },
-    //         'NATURAL': { N1: 0, N2: 0, B1: 0, B2: 0 },
-    //         'FULLY WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
-    //         'FULLY_WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
-    //     };
-
-    //     savedBaggingOffs.forEach(record => {
-    //         if (record.processingType === 'HONEY') {
-    //             if (record.outputKgs.H1) {
-    //                 totals['HONEY'].H1 += parseFloat(record.outputKgs.H1);
-    //             }
-    //         } else if (record.processingType === 'NATURAL') {
-    //             Object.keys(record.outputKgs).forEach(key => {
-    //                 if (record.outputKgs[key]) {
-    //                     totals['NATURAL'][key] = (totals['NATURAL'][key] || 0) + parseFloat(record.outputKgs[key]);
-    //                 }
-    //             });
-    //         } else if (record.processingType === 'FULLY WASHED') {
-    //             Object.keys(record.outputKgs).forEach(key => {
-    //                 if (record.outputKgs[key]) {
-    //                     totals['FULLY WASHED'][key] = (totals['FULLY WASHED'][key] || 0) + parseFloat(record.outputKgs[key]);
-    //                 }
+    //     if (processingType === 'HONEY') {
+    //         if (honeyOutputKgs.H1) {
+    //             submissions.push({
+    //                 date: selectedDate,
+    //                 outputKgs: honeyOutputKgs,
+    //                 processingType: 'HONEY',
+    //                 existingProcessing, // Ensure this is included
+    //                 batchNo,
+    //                 status,
+    //                 progressive: progressiveMode,
+    //                 recordId: isEditing && editingRecord?.processingType === 'HONEY' ? editingRecord.id : null
     //             });
     //         }
-    //     });
 
-    //     return totals;
+    //         // Add fully washed submission if applicable
+    //         if (Object.values(fullyWashedOutputKgs).some(v => v !== '')) {
+    //             submissions.push({
+    //                 date: selectedDate,
+    //                 outputKgs: fullyWashedOutputKgs,
+    //                 processingType: 'FULLY WASHED',
+    //                 existingProcessing, // Ensure this is included
+    //                 batchNo,
+    //                 status,
+    //                 progressive: progressiveMode,
+    //                 recordId: isEditing && editingRecord?.processingType === 'FULLY WASHED' ? editingRecord.id : null
+    //             });
+    //         }
+    //     } else {
+    //         const outputData = prepareOutputData(processingType, batchNo);
+    //         if (Object.values(outputData).some(v => v !== '')) {
+    //             submissions.push({
+    //                 date: selectedDate,
+    //                 outputKgs: outputData,
+    //                 processingType,
+    //                 existingProcessing, // Ensure this is included
+    //                 batchNo,
+    //                 status,
+    //                 progressive: progressiveMode,
+    //                 recordId: isEditing ? editingRecord?.id : null
+    //             });
+    //         }
+    //     }
+
+    //     return submissions;
     // };
+
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString(undefined, options);
@@ -334,22 +327,44 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         if (!batches?.[0]?.processingType) return;
 
         try {
-            const submissions = prepareSubmissionData(
-                batches[0].processingType.toUpperCase(),
-                'PENDING'
-            );
-
-            if (submissions.length === 0) {
-                alert('Please enter at least one output value');
-                return;
-            }
-
             setLoading(true);
-            const results = await Promise.all(
-                submissions.map(submission =>
-                    axios.post(`${API_URL}/bagging-off`, submission)
-                )
-            );
+
+            // Determine if we're editing an existing record or creating a new one
+            if (isEditing && editingRecord) {
+                // If editing, use PUT to update the existing record
+                const updateData = {
+                    date: selectedDate,
+                    outputKgs: isEditing && editingRecord.processingType === 'HONEY' ? honeyOutputKgs :
+                        isEditing && editingRecord.processingType === 'NATURAL' ? naturalOutputKgs :
+                            fullyWashedOutputKgs,
+                    status: 'PENDING' // or keep the existing status
+                };
+
+                await axios.put(`${API_URL}/bagging-off/${editingRecord.id}`, updateData);
+
+                setAlertTitle('Success');
+                setAlertMessage('Record updated successfully');
+            } else {
+                // If not editing, create a new record
+                const submissions = prepareSubmissionData(
+                    batches[0].processingType.toUpperCase(),
+                    'PENDING'
+                );
+
+                if (submissions.length === 0) {
+                    alert('Please enter at least one output value');
+                    return;
+                }
+
+                await Promise.all(
+                    submissions.map(submission =>
+                        axios.post(`${API_URL}/bagging-off`, submission)
+                    )
+                );
+
+                setAlertTitle('Success');
+                setAlertMessage('New record added successfully');
+            }
 
             // Refresh the bagging offs data
             await fetchExistingProcessingAndBaggingOffs(batches[0].batchNo);
@@ -359,16 +374,198 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
             setIsEditing(false);
             setEditingRecord(null);
 
-            alert('Data saved successfully');
+            setShowAlertModal(true);
         } catch (error) {
             console.error('Save error:', error);
-            alert('Failed to save data');
+            setAlertTitle('Error');
+            setAlertMessage('Failed to save data');
+            setShowAlertModal(true);
         } finally {
             setLoading(false);
         }
     };
 
+    const isYesterdayRecord = (recordDate) => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        const recordDateObj = new Date(recordDate);
+        return (
+            recordDateObj.getFullYear() === yesterday.getFullYear() &&
+            recordDateObj.getMonth() === yesterday.getMonth() &&
+            recordDateObj.getDate() === yesterday.getDate()
+        );
+    };
+
+    const handleEdit = (record) => {
+        // Check if the record is from yesterday
+        if (!isYesterdayRecord(record.date)) {
+            setAlertTitle('Edit Restricted');
+            setAlertMessage('You can only edit records from yesterday.');
+            setShowAlertModal(true);
+            return;
+        }
+
+        setIsEditing(true);
+        setEditingRecord(record);
+        setSelectedDate(new Date(record.date).toISOString().split('T')[0]);
+
+        // Reset all outputs first
+        resetOutputs();
+
+        // Set the outputs based on the record being edited
+        if (record.processingType === 'HONEY') {
+            setHoneyOutputKgs(record.outputKgs);
+        } else if (record.processingType === 'NATURAL') {
+            const updatedNaturalOutputs = { ...naturalOutputKgs };
+            Object.keys(record.outputKgs).forEach(key => {
+                if (record.outputKgs[key]) {
+                    updatedNaturalOutputs[key] = record.outputKgs[key];
+                }
+            });
+            setNaturalOutputKgs(updatedNaturalOutputs);
+        } else if (record.processingType === 'FULLY WASHED') {
+            const updatedFullyWashedOutputs = { ...fullyWashedOutputKgs };
+            Object.keys(record.outputKgs).forEach(key => {
+                if (record.outputKgs[key]) {
+                    updatedFullyWashedOutputs[key] = record.outputKgs[key];
+                }
+            });
+            setFullyWashedOutputKgs(updatedFullyWashedOutputs);
+        }
+    };
+
+    // Modify handleDelete to only allow deleting yesterday's records
+    const handleDelete = async (recordId) => {
+        // Find the record to check its date
+        const recordToDelete = savedBaggingOffs.find(record => record.id === recordId);
+
+        if (!recordToDelete) {
+            alert('Record not found');
+            return;
+        }
+
+        // Check if the record is from yesterday
+        if (!isYesterdayRecord(recordToDelete.date)) {
+            setAlertTitle('Delete Restricted');
+            setAlertMessage('You can only delete records from yesterday.');
+            setShowAlertModal(true);
+            return;
+        }
+
+        if (!recordId) return;
+
+        // Confirm deletion with user
+        if (!window.confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await axios.delete(`${API_URL}/bagging-off/${recordId}`);
+
+            // Refresh the bagging offs data
+            await fetchExistingProcessingAndBaggingOffs(batches[0].batchNo);
+
+            alert('Record deleted successfully');
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete record');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // const handleEdit = (record) => {
+    //     setIsEditing(true);
+    //     setEditingRecord(record);
+    //     setSelectedDate(new Date(record.date).toISOString().split('T')[0]);
+
+    //     // Reset all outputs first
+    //     resetOutputs();
+
+    //     // Set the outputs based on the record being edited
+    //     if (record.processingType === 'HONEY') {
+    //         setHoneyOutputKgs(record.outputKgs);
+    //     } else if (record.processingType === 'NATURAL') {
+    //         // Only set the fields that exist in the record
+    //         const updatedNaturalOutputs = { ...naturalOutputKgs };
+    //         Object.keys(record.outputKgs).forEach(key => {
+    //             if (record.outputKgs[key]) {
+    //                 updatedNaturalOutputs[key] = record.outputKgs[key];
+    //             }
+    //         });
+    //         setNaturalOutputKgs(updatedNaturalOutputs);
+    //     } else if (record.processingType === 'FULLY WASHED') {
+    //         // Only set the fields that exist in the record
+    //         const updatedFullyWashedOutputs = { ...fullyWashedOutputKgs };
+    //         Object.keys(record.outputKgs).forEach(key => {
+    //             if (record.outputKgs[key]) {
+    //                 updatedFullyWashedOutputs[key] = record.outputKgs[key];
+    //             }
+    //         });
+    //         setFullyWashedOutputKgs(updatedFullyWashedOutputs);
+    //     }
+    // };
+
+    const prepareSubmissionData = (processingType, status) => {
+        if (!batches?.[0]?.batchNo) return [];
+
+        const submissions = [];
+        const batchNo = batches[0].batchNo;
+
+        if (processingType === 'HONEY') {
+            if (honeyOutputKgs.H1) {
+                submissions.push({
+                    date: selectedDate,
+                    outputKgs: honeyOutputKgs,
+                    processingType: 'HONEY',
+                    existingProcessing,
+                    batchNo,
+                    status,
+                    progressive: progressiveMode,
+                });
+
+                // Add fully washed submission if applicable
+                if (Object.values(fullyWashedOutputKgs).some(v => v !== '')) {
+                    submissions.push({
+                        date: selectedDate,
+                        outputKgs: fullyWashedOutputKgs,
+                        processingType: 'FULLY WASHED',
+                        existingProcessing,
+                        batchNo,
+                        status,
+                        progressive: progressiveMode,
+                    });
+                }
+            }
+        } else {
+            const outputData = prepareOutputData(processingType, batchNo);
+            if (Object.values(outputData).some(v => v !== '')) {
+                submissions.push({
+                    date: selectedDate,
+                    outputKgs: outputData,
+                    processingType,
+                    existingProcessing,
+                    batchNo,
+                    status,
+                    progressive: progressiveMode,
+                });
+            }
+        }
+
+        return submissions;
+    };
+
     const handleCompleteBaggingOff = async () => {
+        // Show confirmation modal
+        setShowConfirmationModal(true);
+    };
+
+    const confirmCompleteBaggingOff = async () => {
+        setShowConfirmationModal(false); // Hide confirmation modal
+
         if (!batches?.[0]?.batchNo) return;
 
         try {
@@ -407,71 +604,77 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
             }
 
             handleClose();
-            alert('Bagging off completed successfully');
+            setAlertTitle('Success');
+            setAlertMessage('Bagging off completed successfully');
+            setShowAlertModal(true); // Show success alert
         } catch (error) {
             console.error('Complete bagging off error:', error);
-            alert('Failed to complete bagging off');
+            setAlertTitle('Error');
+            setAlertMessage(error.response?.data?.message || 'Failed to complete bagging off');
+            setShowAlertModal(true); // Show error alert
         } finally {
             setLoading(false);
         }
     };
 
-    const handleEdit = (record) => {
-        setIsEditing(true);
-        setEditingRecord(record);
-        setSelectedDate(new Date(record.date).toISOString().split('T')[0]);
 
-        // Reset all outputs first
-        resetOutputs();
+    // const handleEdit = (record) => {
+    //     setIsEditing(true);
+    //     setEditingRecord(record);
+    //     setSelectedDate(new Date(record.date).toISOString().split('T')[0]);
 
-        // Set the outputs based on the record being edited
-        if (record.processingType === 'HONEY') {
-            setHoneyOutputKgs(record.outputKgs);
-        } else if (record.processingType === 'NATURAL') {
-            // Only set the fields that exist in the record
-            const updatedNaturalOutputs = { ...naturalOutputKgs };
-            Object.keys(record.outputKgs).forEach(key => {
-                if (record.outputKgs[key]) {
-                    updatedNaturalOutputs[key] = record.outputKgs[key];
-                }
-            });
-            setNaturalOutputKgs(updatedNaturalOutputs);
-        } else if (record.processingType === 'FULLY WASHED') {
-            // Only set the fields that exist in the record
-            const updatedFullyWashedOutputs = { ...fullyWashedOutputKgs };
-            Object.keys(record.outputKgs).forEach(key => {
-                if (record.outputKgs[key]) {
-                    updatedFullyWashedOutputs[key] = record.outputKgs[key];
-                }
-            });
-            setFullyWashedOutputKgs(updatedFullyWashedOutputs);
-        }
-    };
+    //     // Reset all outputs first
+    //     resetOutputs();
+
+    //     // Set the outputs based on the record being edited
+    //     if (record.processingType === 'HONEY') {
+    //         setHoneyOutputKgs(record.outputKgs);
+    //     } else if (record.processingType === 'NATURAL') {
+    //         // Only set the fields that exist in the record
+    //         const updatedNaturalOutputs = { ...naturalOutputKgs };
+    //         Object.keys(record.outputKgs).forEach(key => {
+    //             if (record.outputKgs[key]) {
+    //                 updatedNaturalOutputs[key] = record.outputKgs[key];
+    //             }
+    //         });
+    //         setNaturalOutputKgs(updatedNaturalOutputs);
+    //     } else if (record.processingType === 'FULLY WASHED') {
+    //         // Only set the fields that exist in the record
+    //         const updatedFullyWashedOutputs = { ...fullyWashedOutputKgs };
+    //         Object.keys(record.outputKgs).forEach(key => {
+    //             if (record.outputKgs[key]) {
+    //                 updatedFullyWashedOutputs[key] = record.outputKgs[key];
+    //             }
+    //         });
+    //         setFullyWashedOutputKgs(updatedFullyWashedOutputs);
+    //     }
+    // };
 
     // Add new function to handle deletion
-    const handleDelete = async (recordId) => {
-        if (!recordId) return;
 
-        // Confirm deletion with user
-        if (!window.confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
-            return;
-        }
+    // const handleDelete = async (recordId) => {
+    //     if (!recordId) return;
 
-        try {
-            setLoading(true);
-            await axios.delete(`${API_URL}/bagging-off/${recordId}`);
+    //     // Confirm deletion with user
+    //     if (!window.confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+    //         return;
+    //     }
 
-            // Refresh the bagging offs data
-            await fetchExistingProcessingAndBaggingOffs(batches[0].batchNo);
+    //     try {
+    //         setLoading(true);
+    //         await axios.delete(`${API_URL}/bagging-off/${recordId}`);
 
-            alert('Record deleted successfully');
-        } catch (error) {
-            console.error('Delete error:', error);
-            alert('Failed to delete record');
-        } finally {
-            setLoading(false);
-        }
-    };
+    //         // Refresh the bagging offs data
+    //         await fetchExistingProcessingAndBaggingOffs(batches[0].batchNo);
+
+    //         alert('Record deleted successfully');
+    //     } catch (error) {
+    //         console.error('Delete error:', error);
+    //         alert('Failed to delete record');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     const cancelEdit = () => {
         setIsEditing(false);
@@ -482,7 +685,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
 
 
     return (
-        <Modal show={show} onHide={handleClose} size="lg">
+        <><Modal show={show} onHide={handleClose} size="lg">
             <Modal.Header
                 closeButton
                 style={{
@@ -521,10 +724,11 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         <Form.Check
                             type="switch"
                             id="progressive-mode-switch"
-                            label={<span className="text-warning">Progressive Drying Mode (Add new outputs without replacing previous entries)</span>}
+                            // label={<span className="text-warning">Progressive Drying Mode (Add new outputs without replacing previous entries)</span>}
                             checked={progressiveMode}
                             onChange={(e) => setProgressiveMode(e.target.checked)}
                             className="custom-switch"
+                            hidden
                         />
                     </Form.Group>
                 )}
@@ -545,7 +749,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                     <th>Processing Type</th>
                                     <th>Grades/Output</th>
                                     {/* <th>Status</th> */}
-                                    {/* <th>Actions</th> */}
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -562,8 +766,8 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                             }
                                         </td>
                                         {/* <td>{record.status}</td> */}
-                                        {/* <td>
-                                            {record.status !== 'COMPLETED' && (
+                                        <td>
+                                            {record.status !== 'COMPLETED' && isYesterdayRecord(record.date) && (
                                                 <>
                                                     <Button
                                                         variant="outline-sucafina"
@@ -590,7 +794,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                     </Button>
                                                 </>
                                             )}
-                                        </td> */}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -644,71 +848,18 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         <Form.Control
                             type="date"
                             value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
+                            // readOnly // Make the input read-only
                             style={{
                                 borderColor: processingTheme.secondary,
-                                backgroundColor: processingTheme.neutral
+                                backgroundColor: processingTheme.neutral,
+                                // cursor: 'not-allowed', // Optional: Change cursor to indicate non-editable
                             }}
                         />
                     </Form.Group>
 
-                    {/* Honey Processing Section */}
-                    {/* {(!isEditing || (isEditing && editingRecord?.processingType === 'HONEY')) &&
-                        (batches?.[0]?.processingType?.toUpperCase() === 'HONEY' || batches?.[0]?.processingType?.toUpperCase() === 'FULLY WASHED') && (
-                            <>
-                                <div className="mb-4">
-                                    <Form.Label style={{ color: processingTheme.primary }}>
-                                        Honey Processing Output
-                                    </Form.Label>
-                                    <Row>
-                                        <Col md={12}>
-                                            <Form.Control
-                                                type="number"
-                                                placeholder="H1 KGs"
-                                                value={honeyOutputKgs.H1}
-                                                onChange={(e) => handleHoneyOutputChange(e.target.value)}
-                                                required
-                                                style={{
-                                                    borderColor: processingTheme.secondary,
-                                                    ':focus': { borderColor: processingTheme.primary }
-                                                }}
-                                            />
-                                        </Col>
-                                    </Row>
-                                </div>
 
-                                <div className="mb-3">
-                                    <div className="d-flex justify-content-between align-items-center mb-2">
-                                        <Form.Label style={{ color: processingTheme.primary, marginBottom: 0 }}>
-                                            Fully Washed Processing Output
-                                        </Form.Label>
-                                        <span style={{
-                                            fontSize: '0.875rem',
-                                            color: processingTheme.accent
-                                        }}>
-                                            Was processed as Fully Washed
-                                        </span>
-                                    </div>
-                                    <Row>
-                                        {['A0', 'A1', 'A2', 'A3'].map((field) => (
-                                            <Col md={3} key={field} className="mb-2">
-                                                <Form.Control
-                                                    type="number"
-                                                    placeholder={`${field} KGs`}
-                                                    value={fullyWashedOutputKgs[field]}
-                                                    onChange={(e) => handleFullyWashedOutputChange(field, e.target.value)}
-                                                    required
-                                                    style={{
-                                                        borderColor: processingTheme.secondary,
-                                                        ':focus': { borderColor: processingTheme.primary }
-                                                    }}
-                                                />
-                                            </Col>
-                                        ))}
-                                    </Row>
-                                </div>
-                            </>
-                        )} */}
+                    {/* Honey Processing Section */}
+
 
                     {(!isEditing || (isEditing && editingRecord?.processingType === 'HONEY')) &&
                         (batches?.[0]?.processingType?.toUpperCase() === 'HONEY') && (
@@ -980,6 +1131,26 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                 )}
             </Modal.Footer>
         </Modal>
+            <ConfirmationModal
+                show={showConfirmationModal}
+                onHide={() => setShowConfirmationModal(false)}
+                onConfirm={confirmCompleteBaggingOff}
+                title="Confirm Completion"
+                message="Are you sure you want to complete bagging off? This action cannot be undone."
+                confirmText="Yes, Complete"
+                cancelText="Cancel"
+            />
+
+            {/* Alert Modal */}
+            <AlertModal
+                show={showAlertModal}
+                onHide={() => setShowAlertModal(false)}
+                title={alertTitle}
+                message={alertMessage}
+            />
+
+        </>
+
     );
 };
 const LoadingSkeleton = () => {
@@ -1147,12 +1318,6 @@ const ProcessingList = () => {
         }
     };
 
-    // const navigateToWetTransfer = () => {
-    //     navigate('/wet-transfer');
-    // };
-    // const navigateToWetTransferReceiver = () => {
-    //     navigate('/wet-transfer-receiver');
-    // };
 
     const hideGradeColumn = shouldHideGradeColumn(processingBatches);
 
