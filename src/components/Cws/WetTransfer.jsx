@@ -614,11 +614,12 @@ const WetTransfer = () => {
                                                                     type="number"
                                                                     size="sm"
                                                                     style={{ width: '80px' }}
-                                                                    value={
-                                                                        grade.startsWith('H') ? honeyOutputKgs[grade] :
-                                                                            grade.startsWith('N') || grade.startsWith('B') ? naturalOutputKgs[grade] :
-                                                                                fullyWashedOutputKgs[grade] || ''
-                                                                    }
+                                                                    // value={
+                                                                    //     grade.startsWith('H') ? honeyOutputKgs[grade] :
+                                                                    //         grade.startsWith('N') || grade.startsWith('B') ? naturalOutputKgs[grade] :
+                                                                    //             fullyWashedOutputKgs[grade] || ''
+                                                                    // }
+                                                                    value={fullyWashedOutputKgs[grade] || ''}
                                                                     onChange={(e) => {
                                                                         const value = e.target.value;
                                                                         if (grade.startsWith('H')) {
