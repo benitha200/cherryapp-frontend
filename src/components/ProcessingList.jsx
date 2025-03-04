@@ -848,11 +848,11 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         <Form.Control
                             type="date"
                             value={selectedDate}
-                            // readOnly // Make the input read-only
+                            readOnly // Make the input read-only
                             style={{
                                 borderColor: processingTheme.secondary,
                                 backgroundColor: processingTheme.neutral,
-                                // cursor: 'not-allowed', // Optional: Change cursor to indicate non-editable
+                                cursor: 'not-allowed', // Optional: Change cursor to indicate non-editable
                             }}
                         />
                     </Form.Group>
