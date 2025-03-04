@@ -210,12 +210,43 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
+    // const calculateTotalsByProcessingType = () => {
+    //     const totals = {
+    //         'HONEY': { H1: 0 },
+    //         'NATURAL': { N1: 0, N2: 0, B1: 0, B2: 0 },
+    //         'FULLY WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
+    //         'FULLY_WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
+    //     };
+
+    //     savedBaggingOffs.forEach(record => {
+    //         if (record.processingType === 'HONEY') {
+    //             if (record.outputKgs.H1) {
+    //                 totals['HONEY'].H1 += parseFloat(record.outputKgs.H1);
+    //             }
+    //         } else if (record.processingType === 'NATURAL') {
+    //             Object.keys(record.outputKgs).forEach(key => {
+    //                 if (record.outputKgs[key]) {
+    //                     totals['NATURAL'][key] = (totals['NATURAL'][key] || 0) + parseFloat(record.outputKgs[key]);
+    //                 }
+    //             });
+    //         } else if (record.processingType === 'FULLY WASHED') {
+    //             Object.keys(record.outputKgs).forEach(key => {
+    //                 if (record.outputKgs[key]) {
+    //                     totals['FULLY WASHED'][key] = (totals['FULLY WASHED'][key] || 0) + parseFloat(record.outputKgs[key]);
+    //                 }
+    //             });
+    //         }
+    //     });
+
+    //     return totals;
+    // };
+
+
     const calculateTotalsByProcessingType = () => {
         const totals = {
             'HONEY': { H1: 0 },
             'NATURAL': { N1: 0, N2: 0, B1: 0, B2: 0 },
-            'FULLY WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
-            'FULLY_WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
+            'FULLY WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 }, // Use consistent naming
         };
 
         savedBaggingOffs.forEach(record => {
@@ -229,7 +260,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         totals['NATURAL'][key] = (totals['NATURAL'][key] || 0) + parseFloat(record.outputKgs[key]);
                     }
                 });
-            } else if (record.processingType === 'FULLY WASHED') {
+            } else if (record.processingType === 'FULLY WASHED') { // Ensure this matches the key in `totals`
                 Object.keys(record.outputKgs).forEach(key => {
                     if (record.outputKgs[key]) {
                         totals['FULLY WASHED'][key] = (totals['FULLY WASHED'][key] || 0) + parseFloat(record.outputKgs[key]);
