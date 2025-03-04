@@ -855,9 +855,8 @@ const PurchaseList = () => {
 
       // If we have both -1 and -2 variants, store the base
       const batchBase = entry.batchNo.split('-')[0];
-      if (processingEntries.some(e =>
-        e.batchNo === `${batchBase}-1` &&
-        e.batchNo === `${batchBase}-2`)) {
+      if (processingEntries.some(e => e.batchNo === `${batchBase}-1`) &&
+        processingEntries.some(e => e.batchNo === `${batchBase}-2`)) {
         processedBatchBases.add(batchBase);
       }
     });
@@ -926,8 +925,8 @@ const PurchaseList = () => {
         const totalKgs = purchase.totalKgs;
         const totalPrice = purchase.totalPrice;
 
-        // Skip if either variant is in processing
-        if (processingStatusMap[`${newBatch}-1`] || processingStatusMap[`${newBatch}-2`]) {
+        // Skip if both variants are in processing
+        if (processingStatusMap[`${newBatch}-1`] && processingStatusMap[`${newBatch}-2`]) {
           return;
         }
 
@@ -963,17 +962,89 @@ const PurchaseList = () => {
   // Helper function to check if a batch should be hidden
   const shouldHideBatch = (batchNo) => {
     const batchBase = batchNo.split('-')[0];
-    return processingEntries.some(entry =>
-      entry.batchNo.startsWith(batchBase) &&
-      processingEntries.some(e =>
-        e.batchNo === `${batchBase}-1` &&
-        e.batchNo === `${batchBase}-2`
-      )
+
+    // Check if both -1 and -2 variants are in processing
+    const hasBothVariants = processingEntries.some(entry =>
+      entry.batchNo === `${batchBase}-1`
+    ) && processingEntries.some(entry =>
+      entry.batchNo === `${batchBase}-2`
     );
+
+    return hasBothVariants;
   };
 
   // Updated getYesterdayPurchases function
+  // const getYesterdayPurchases = () => {
+  //   const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
+
+  //   return purchases.filter(purchase => {
+  //     const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+  //     const batchBase = purchase.batchNo.slice(0, -1);
+
+  //     // Hide if the batch base has both -1 and -2 variants in processing
+  //     if (processingEntries.some(e => e.batchNo === `${batchBase}-1`) &&
+  //         processingEntries.some(e => e.batchNo === `${batchBase}-2`)) {
+  //       return false;
+  //     }
+
+  //     return purchaseDate === yesterdayString &&
+  //       !isGradeProcessing(purchase.grade, yesterdayString) &&
+  //       !processingBatchNumbers.includes(purchase.batchNo);
+  //   });
+  // };
+
   const getYesterdayPurchases = () => {
+
+    if (cwsInfo?.havespeciality) {
+    const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
+
+    return purchases.filter(purchase => {
+      const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+      const batchBase = purchase.batchNo.slice(0, -1);
+
+      
+      console.table(processingEntries)
+      console.log("batchBase:", batchBase);
+
+      const hasFirstVariant = processingEntries.some(entry => entry.batchNo === `${batchBase}-1`);
+      const hasSecondVariant = processingEntries.some(entry => entry.batchNo === `${batchBase}-2`);
+      console.log("hasFirstVariant:", hasFirstVariant);
+      console.log("hasSecondVariant:", hasSecondVariant);
+
+      const hasBothVariants = hasFirstVariant && hasSecondVariant;
+      console.log("hasBothVariants:", hasBothVariants);
+
+      const trimmedEntries = processingEntries.map(entry => ({
+        ...entry,
+        batchNo: entry.batchNo.trim()
+      }));
+      console.log(trimmedEntries)
+
+
+      // Hide if both variants are in processing
+      if (hasBothVariants) {
+        return false;
+      }
+      console.log(purchase.grade)
+      console.log(yesterdayString)
+
+      console.log("isGradeProcessing:", isGradeProcessing(purchase.grade, yesterdayString));
+
+      console.log("processingBatchNumbers:", processingBatchNumbers);
+      console.log("purchase.batchNo:", purchase.batchNo);
+      console.log("is in processingBatchNumbers:", processingBatchNumbers.includes(purchase.batchNo));
+
+
+      const shouldInclude = purchaseDate === yesterdayString &&
+        !isGradeProcessing(purchase.grade, yesterdayString) &&
+        !processingBatchNumbers.includes(purchase.batchNo.slice(0, -1));
+
+      console.log("Should include this purchase?", shouldInclude);
+      return shouldInclude;
+
+    });
+  }
+  else {
     const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
 
     return purchases.filter(purchase => {
@@ -992,7 +1063,10 @@ const PurchaseList = () => {
         !isGradeProcessing(purchase.grade, yesterdayString) &&
         !processingBatchNumbers.includes(purchase.batchNo);
     });
-  };
+}
+
+
+}
 
   // Updated validation function to check against total KGs across all batches
   const validateBatchKgsMatch = (batch) => {
@@ -1323,16 +1397,6 @@ const PurchaseList = () => {
                       <td>{totalCommissionFees.toLocaleString()}</td>
                       <td>{cherryAmount.toLocaleString()}</td>
                       <td>{purchase.totalPrice.toLocaleString()}</td>
-                      {/* <td>
-                        <button
-                          className="btn btn-sm btn-outline-sucafina"
-                          onClick={() => handleEditInline(purchase)}
-                          style={{ color: theme.primary, borderColor: theme.primary }}
-                        >
-                          Edit
-                        </button>
-                      </td> */}
-
                       <td>
                         <div className="btn-group">
                           <Button
@@ -1406,6 +1470,241 @@ const PurchaseList = () => {
       </>
     );
   };
+
+  // const renderPurchaseTable = () => {
+  //   const hasProcessingStarted = () => {
+  //     const yesterdayPurchases = purchases.filter(purchase => {
+  //       const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+  //       return purchaseDate === yesterdayString;
+  //     });
+  //   }
+
+  //   return (
+  //     <>
+  //       {validationError && (
+  //         <div className="alert alert-warning" role="alert">
+  //           {validationError}
+  //         </div>
+  //       )}
+  //       <div className="table-responsive mt-4">
+  //         <table className="table table-hover">
+  //           <thead>
+  //             <tr style={{ backgroundColor: theme.neutral }}>
+  //               <th>Date</th>
+  //               <th>Site</th>
+  //               <th>Delivery Type</th>
+  //               <th>Grade</th>
+  //               <th>Total KGs</th>
+  //               <th>Transport Fees (RWF)</th>
+  //               <th>Commission Fees (RWF)</th>
+  //               <th>Cherry Amount (RWF)</th>
+  //               <th>Final Price (RWF)</th>
+  //               <th>Actions</th>
+  //             </tr>
+  //           </thead>
+  //           <tbody>
+  //             {isLoading.purchases ? (
+  //               Array(5).fill(0).map((_, index) => (
+  //                 <SkeletonRow key={index} cols={10} />
+  //               ))
+  //             ) : hasProcessingStarted() ? (
+  //               <tr>
+  //                 <td colSpan="10" className="text-center py-4">
+  //                   <EmptyState message="Yesterday's data processing has already started. You cannot enter new purchases." />
+  //                 </td>
+  //               </tr>
+  //             ) : getYesterdayPurchases().length > 0 ? (
+  //               getYesterdayPurchases().map((purchase) => {
+  //                 // Calculate cherry amount using values from API
+  //                 const totalTransportFees = purchase.transportFee * purchase.totalKgs;
+  //                 const totalCommissionFees = purchase.commissionFee * purchase.totalKgs;
+  //                 const cherryAmount = purchase.cherryPrice * purchase.totalKgs;
+
+  //                 if (editingInline === purchase.id) {
+  //                   return (
+  //                     <tr key={purchase.id}>
+  //                       <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+  //                       <td>
+  //                         {purchase.deliveryType === 'SITE_COLLECTION' ? (
+  //                           <select
+  //                             name="siteCollectionId"
+  //                             className="form-select form-select-sm"
+  //                             value={editFormData.siteCollectionId || ''}
+  //                             onChange={handleEditChange}
+  //                           >
+  //                             {siteCollections.map(site => (
+  //                               <option key={site.id} value={site.id}>{site.name}</option>
+  //                             ))}
+  //                           </select>
+  //                         ) : (
+  //                           purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct'
+  //                         )}
+  //                       </td>
+  //                       <td>
+  //                         <span className="badge" style={{
+  //                           backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' ? theme.directDelivery :
+  //                             purchase.deliveryType === 'SUPPLIER' ? theme.supplier : theme.centralStation
+  //                         }}>
+  //                           {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' :
+  //                             purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Site'}
+  //                         </span>
+  //                       </td>
+  //                       <td>
+  //                         <select
+  //                           name="grade"
+  //                           className="form-select form-select-sm"
+  //                           value={editFormData.grade}
+  //                           onChange={handleEditChange}
+  //                         >
+  //                           <option value="A">A</option>
+  //                           <option value="B">B</option>
+  //                         </select>
+  //                       </td>
+  //                       <td>
+  //                         <input
+  //                           type="number"
+  //                           className="form-control form-control-sm"
+  //                           name="totalKgs"
+  //                           value={editFormData.totalKgs}
+  //                           onChange={handleEditChange}
+  //                         />
+  //                       </td>
+  //                       <td>{totalTransportFees.toLocaleString()}</td>
+  //                       <td>{totalCommissionFees.toLocaleString()}</td>
+  //                       <td>{cherryAmount.toLocaleString()}</td>
+  //                       <td>{purchase.totalPrice.toLocaleString()}</td>
+  //                       <td>
+  //                         <div className="btn-group">
+  //                           <button
+  //                             className="btn btn-sm btn-sucafina"
+  //                             onClick={(e) => handleUpdateInline(e, purchase.id)}
+  //                             disabled={loading}
+  //                           >
+  //                             {loading ? (
+  //                               <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+  //                             ) : (
+  //                               'Save'
+  //                             )}
+  //                           </button>
+  //                           <button
+  //                             className="btn btn-sm btn-light"
+  //                             onClick={handleCancelEdit}
+  //                           >
+  //                             Cancel
+  //                           </button>
+  //                         </div>
+  //                       </td>
+  //                     </tr>
+  //                   );
+  //                 }
+
+  //                 // Regular row display
+  //                 return (
+  //                   <tr key={purchase.id}>
+  //                     <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+  //                     <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
+  //                     <td>
+  //                       <span className="badge" style={{
+  //                         backgroundColor: purchase.deliveryType === 'DIRECT_DELIVERY' ? theme.directDelivery :
+  //                           purchase.deliveryType === 'SUPPLIER' ? theme.supplier : theme.centralStation
+  //                       }}>
+  //                         {purchase.deliveryType === 'DIRECT_DELIVERY' ? 'Direct' :
+  //                           purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Site'}
+  //                       </span>
+  //                     </td>
+  //                     <td>
+  //                       <span className="badge bg-secondary">
+  //                         Grade {purchase.grade}
+  //                       </span>
+  //                     </td>
+  //                     <td>{purchase.totalKgs.toLocaleString()}</td>
+  //                     <td>{totalTransportFees.toLocaleString()}</td>
+  //                     <td>{totalCommissionFees.toLocaleString()}</td>
+  //                     <td>{cherryAmount.toLocaleString()}</td>
+  //                     <td>{purchase.totalPrice.toLocaleString()}</td>
+  //                     {/* <td>
+  //                       <button
+  //                         className="btn btn-sm btn-outline-sucafina"
+  //                         onClick={() => handleEditInline(purchase)}
+  //                         style={{ color: theme.primary, borderColor: theme.primary }}
+  //                       >
+  //                         Edit
+  //                       </button>
+  //                     </td> */}
+
+  //                     <td>
+  //                       <div className="btn-group">
+  //                         <Button
+  //                           variant="outline-sucafina"
+  //                           size="sm"
+  //                           className="me-1"
+  //                           onClick={() => handleEditInline(purchase)}
+  //                           style={{ color: theme.primary, borderColor: theme.primary }}
+  //                         >
+  //                           <i className="bi bi-pencil me-1"></i>
+  //                         </Button>
+  //                         <Button
+  //                           variant="outline-danger"
+  //                           size="sm"
+  //                           onClick={() => handleDeleteClick(purchase)}
+  //                         >
+  //                           <i className="bi bi-trash me-1"></i>
+  //                         </Button>
+  //                       </div>
+  //                     </td>
+  //                   </tr>
+  //                 );
+  //               })
+  //             ) : (
+  //               <EmptyState message="No purchases recorded for yesterday" />
+  //             )}
+  //           </tbody>
+  //           {getYesterdayPurchases().length > 0 && (
+  //             <tfoot>
+  //               <tr style={{ backgroundColor: theme.neutral }}>
+  //                 <td colSpan="4"><strong>Totals</strong></td>
+  //                 <td>
+  //                   <strong>
+  //                     {getYesterdayPurchases().reduce((sum, p) => sum + p.totalKgs, 0).toLocaleString()}
+  //                   </strong>
+  //                 </td>
+  //                 <td>
+  //                   <strong>
+  //                     {getYesterdayPurchases()
+  //                       .reduce((sum, p) => sum + (p.transportFee * p.totalKgs), 0)
+  //                       .toLocaleString()}
+  //                   </strong>
+  //                 </td>
+  //                 <td>
+  //                   <strong>
+  //                     {getYesterdayPurchases()
+  //                       .reduce((sum, p) => sum + (p.commissionFee * p.totalKgs), 0)
+  //                       .toLocaleString()}
+  //                   </strong>
+  //                 </td>
+  //                 <td>
+  //                   <strong>
+  //                     {getYesterdayPurchases()
+  //                       .reduce((sum, p) => sum + (p.cherryPrice * p.totalKgs), 0)
+  //                       .toLocaleString()}
+  //                   </strong>
+  //                 </td>
+  //                 <td>
+  //                   <strong>
+  //                     {getYesterdayPurchases()
+  //                       .reduce((sum, p) => sum + p.totalPrice, 0)
+  //                       .toLocaleString()}
+  //                   </strong>
+  //                 </td>
+  //                 <td></td>
+  //               </tr>
+  //             </tfoot>
+  //           )}
+  //         </table>
+  //       </div>
+  //     </>
+  //   );
+  // };
 
 
   const renderPriceCard = (grade) => {

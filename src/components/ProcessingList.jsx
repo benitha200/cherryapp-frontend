@@ -14,362 +14,6 @@ const processingTheme = {
     centralStation: '#008080',  // Main teal for central station badge
     buttonHover: '#006666'  // Darker teal for button hover
 };
-
-const LoadingSkeleton = () => {
-    const placeholderStyle = {
-        opacity: 0.4,
-        backgroundColor: processingTheme.secondary
-    };
-
-    return (
-        <Card className="shadow-sm">
-            <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-                <Placeholder as="h2" animation="glow">
-                    <Placeholder xs={4} style={placeholderStyle} />
-                </Placeholder>
-            </Card.Header>
-            <Card.Body className="p-0">
-                <div className="table-responsive">
-                    <table className="table mb-0">
-                        <thead style={{ backgroundColor: processingTheme.neutral }}>
-                            <tr>
-                                <th>Batch No</th>
-                                <th>Total KGs</th>
-                                <th>CWS</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {[...Array(5)].map((_, index) => (
-                                <tr key={index}>
-                                    <td>
-                                        <Placeholder animation="glow">
-                                            <Placeholder xs={6} style={placeholderStyle} />
-                                        </Placeholder>
-                                    </td>
-                                    <td>
-                                        <Placeholder animation="glow">
-                                            <Placeholder xs={4} style={placeholderStyle} />
-                                        </Placeholder>
-                                    </td>
-                                    <td>
-                                        <Placeholder animation="glow">
-                                            <Placeholder xs={3} style={placeholderStyle} />
-                                        </Placeholder>
-                                    </td>
-                                    <td>
-                                        <Placeholder animation="glow">
-                                            <Placeholder xs={5} style={placeholderStyle} />
-                                        </Placeholder>
-                                    </td>
-                                    <td>
-                                        <Button
-                                            variant="outline-primary"
-                                            size="sm"
-                                            disabled
-                                            style={{
-                                                color: processingTheme.primary,
-                                                borderColor: processingTheme.primary,
-                                                opacity: 0.4,
-                                                backgroundColor: 'transparent',
-                                                cursor: 'default'
-                                            }}
-                                        >
-                                            Bag Off
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </Card.Body>
-        </Card>
-    );
-};
-
-const ProcessingList = () => {
-    const [processingBatches, setProcessingBatches] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [showModal, setShowModal] = useState(false);
-    const [selectedBatches, setSelectedBatches] = useState([]);
-    const [refreshKey, setRefreshKey] = useState(0);
-    const userInfo = JSON.parse(localStorage.getItem('user'));
-    const cwsInfo = JSON.parse(localStorage.getItem('cws'));
-    const navigate = useNavigate();
-
-    const shouldHideGradeColumn = (batches) => {
-        if (!batches || batches.length === 0) return false;
-        return batches.some(batch => batch.batchNo && batch.batchNo.includes('-'));
-    };
-
-    useEffect(() => {
-        fetchProcessingBatches();
-    }, [refreshKey]);
-
-    const fetchProcessingBatches = async () => {
-        try {
-            setLoading(true);
-            const res = await axios.get(`${API_URL}/processing/cws/${userInfo.cwsId}`);
-            const mappedBatches = res.data
-                .filter(processing => processing.status !== 'COMPLETED')
-                .map(processing => ({
-                    id: processing.id,
-                    batchNo: processing.batchNo,
-                    totalKgs: processing.totalKgs,
-                    grade: processing.grade,
-                    cws: processing.cws.name,
-                    status: processing.status,
-                    processingType: processing.processingType,
-                    batches: [processing]
-                }));
-            setProcessingBatches(mappedBatches);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching processing batches:', error);
-            setError(error.response?.data?.message || 'Error fetching processing batches');
-            setLoading(false);
-        }
-    };
-
-    const startProcessing = (batches) => {
-        setSelectedBatches(batches);
-        setShowModal(true);
-    };
-
-    const handleBatchCompletion = (batchNo) => {
-        setProcessingBatches(prev =>
-            prev.filter(batch => batch.batchNo !== batchNo)
-        );
-        // Trigger a refresh after a short delay to ensure server consistency
-        setTimeout(() => setRefreshKey(prevKey => prevKey + 1), 500);
-    };
-
-    const handleProcessSubmit = async (processingDetailsArray) => {
-        try {
-            if (!userInfo?.cwsId) {
-                throw new Error('User CWS ID not found');
-            }
-
-            for (const processingDetails of processingDetailsArray) {
-                const { existingProcessing, batches, ...otherDetails } = processingDetails;
-
-                const submissionData = {
-                    ...otherDetails,
-                    batchNo: batches[0].batchNo,
-                    cwsId: userInfo.cwsId,
-                    existingProcessing: existingProcessing ? { id: existingProcessing.id } : null
-                };
-
-                await axios.post(`${API_URL}/bagging-off`, submissionData);
-            }
-
-            setShowModal(false);
-            setRefreshKey(prevKey => prevKey + 1);
-
-            // Use a toast notification instead of an alert
-            // If you have a toast library like react-toastify
-            // toast.success('Bagging off processed successfully');
-            alert('Bagging off processed successfully');
-        } catch (error) {
-            console.error('Bagging off submission error:', error);
-            alert(error.response?.data?.message || 'Failed to process bagging off');
-        }
-    };
-
-    const navigateToWetTransfer = () => {
-        navigate('/wet-transfer');
-    };
-    const navigateToWetTransferReceiver = () => {
-        navigate('/wet-transfer-receiver');
-    };
-
-    const hideGradeColumn = shouldHideGradeColumn(processingBatches);
-
-    if (loading) return <LoadingSkeleton />;
-    if (error) return (
-        <div className="alert alert-danger">
-            <i className="fas fa-exclamation-triangle mr-2"></i>
-            {error}
-            <button
-                className="btn btn-sm btn-outline-danger ml-3"
-                onClick={() => setRefreshKey(prevKey => prevKey + 1)}
-            >
-                Retry
-            </button>
-        </div>
-    );
-
-    return (
-        <div className="container-fluid py-4">
-            <ProcessingBatchModal
-                show={showModal}
-                handleClose={() => setShowModal(false)}
-                batches={selectedBatches}
-                onSubmit={handleProcessSubmit}
-                onComplete={handleBatchCompletion}
-            />
-
-            <div className="d-flex justify-content-between mb-3 align-items-center">
-                <h4 style={{ color: processingTheme.primary }}>Processing Management</h4>
-
-                {cwsInfo?.is_wet_parchment_sender ? (
-                    <Button
-                        onClick={() => navigateToWetTransfer()} // Pass a callback function
-                        style={{
-                            backgroundColor: processingTheme.primary,
-                            borderColor: processingTheme.primary,
-                            transition: 'all 0.3s',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
-                        className="btn-sm"
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = processingTheme.buttonHover;
-                            e.currentTarget.style.borderColor = processingTheme.buttonHover;
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = processingTheme.primary;
-                            e.currentTarget.style.borderColor = processingTheme.primary;
-                        }}
-                    >
-                        <i className="fas fa-plus-circle"></i>
-                        Wet Transfer
-                    </Button>
-                ) : (
-                    <Button
-                        onClick={() => navigateToWetTransferReceiver()} // Pass a callback function
-                        style={{
-                            backgroundColor: processingTheme.primary,
-                            borderColor: processingTheme.primary,
-                            transition: 'all 0.3s',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
-                        className="btn-sm"
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = processingTheme.buttonHover;
-                            e.currentTarget.style.borderColor = processingTheme.buttonHover;
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = processingTheme.primary;
-                            e.currentTarget.style.borderColor = processingTheme.primary;
-                        }}
-                    >
-                        <i className="fas fa-plus-circle"></i>
-                        Wet Transfer
-                    </Button>
-                )}
-
-            </div>
-
-            <Card className="shadow-sm">
-                <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-                    <span className='h5' style={{ color: processingTheme.primary }}>Processing Batches</span>
-                    <Button
-                        variant="link"
-                        size="sm"
-                        className="float-right"
-                        onClick={() => setRefreshKey(prevKey => prevKey + 1)}
-                        style={{ color: processingTheme.primary }}
-                    >
-                        <i className="fas fa-sync-alt"></i> Refresh
-                    </Button>
-                </Card.Header>
-                <Card.Body className="p-0">
-                    <div className="table-responsive">
-                        <table className="table table-hover mb-0">
-                            <thead style={{ backgroundColor: processingTheme.neutral }}>
-                                <tr>
-                                    <th>Batch No</th>
-                                    <th>Total KGs</th>
-                                    {!hideGradeColumn && <th>Grade</th>}
-                                    <th>CWS</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {processingBatches.length === 0 ? (
-                                    <tr>
-                                        <td
-                                            colSpan={hideGradeColumn ? 5 : 6}
-                                            className="text-center py-4"
-                                            style={{
-                                                backgroundColor: processingTheme.tableHover,
-                                                color: processingTheme.primary,
-                                                fontSize: '1.1em'
-                                            }}
-                                        >
-                                            <i className="fas fa-info-circle mr-2"></i>
-                                            No processing batches found
-                                        </td>
-                                    </tr>
-                                ) : (processingBatches.map((batch) => (
-                                    <tr key={batch.id} style={{ cursor: 'pointer' }}
-                                        onClick={() => startProcessing(batch.batches)}
-                                        className="position-relative"
-                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = processingTheme.tableHover}
-                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}
-                                    >
-                                        <td>{batch.batchNo}</td>
-                                        <td>{batch?.totalKgs.toLocaleString()} kg</td>
-                                        {!hideGradeColumn && <td>{batch.grade || "N/A"}</td>}
-                                        <td>{batch.cws}</td>
-                                        <td>
-                                            <span
-                                                className="badge"
-                                                style={{
-                                                    backgroundColor:
-                                                        batch.status === 'PROCESSING' ? processingTheme.secondary :
-                                                            batch.status === 'PENDING' ? '#FFC107' :
-                                                                processingTheme.primary,
-                                                    color: 'white',
-                                                    padding: '6px 10px'
-                                                }}
-                                            >
-                                                {batch.status}
-                                            </span>
-                                        </td>
-                                        <td onClick={(e) => e.stopPropagation()}>
-                                            <Button
-                                                variant="outline-primary"
-                                                size="sm"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    startProcessing(batch.batches);
-                                                }}
-                                                style={{
-                                                    color: processingTheme.primary,
-                                                    borderColor: processingTheme.primary,
-                                                    backgroundColor: 'transparent',
-                                                    transition: 'all 0.2s'
-                                                }}
-                                                onMouseOver={(e) => {
-                                                    e.currentTarget.style.backgroundColor = processingTheme.neutral;
-                                                }}
-                                                onMouseOut={(e) => {
-                                                    e.currentTarget.style.backgroundColor = 'transparent';
-                                                }}
-                                            >
-                                                <i className="fas fa-box mr-1"></i> Bag Off
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                )))}
-                            </tbody>
-                        </table>
-                    </div>
-                </Card.Body>
-            </Card>
-        </div>
-    );
-};
-
 const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete }) => {
     const [existingProcessing, setExistingProcessing] = useState(null);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -538,6 +182,41 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         return submissions;
     };
 
+    // const calculateTotalsByProcessingType = () => {
+    //     const totals = {
+    //         'HONEY': { H1: 0 },
+    //         'NATURAL': { N1: 0, N2: 0, B1: 0, B2: 0 },
+    //         'FULLY WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
+    //         'FULLY_WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
+    //     };
+
+    //     savedBaggingOffs.forEach(record => {
+    //         if (record.processingType === 'HONEY') {
+    //             if (record.outputKgs.H1) {
+    //                 totals['HONEY'].H1 += parseFloat(record.outputKgs.H1);
+    //             }
+    //         } else if (record.processingType === 'NATURAL') {
+    //             Object.keys(record.outputKgs).forEach(key => {
+    //                 if (record.outputKgs[key]) {
+    //                     totals['NATURAL'][key] = (totals['NATURAL'][key] || 0) + parseFloat(record.outputKgs[key]);
+    //                 }
+    //             });
+    //         } else if (record.processingType === 'FULLY WASHED') {
+    //             Object.keys(record.outputKgs).forEach(key => {
+    //                 if (record.outputKgs[key]) {
+    //                     totals['FULLY WASHED'][key] = (totals['FULLY WASHED'][key] || 0) + parseFloat(record.outputKgs[key]);
+    //                 }
+    //             });
+    //         }
+    //     });
+
+    //     return totals;
+    // };
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
     const calculateTotalsByProcessingType = () => {
         const totals = {
             'HONEY': { H1: 0 },
@@ -568,6 +247,65 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
 
         return totals;
     };
+
+    // In the render method, display the detailed data in the table
+    <Table size="sm" bordered hover>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Processing Type</th>
+                <th>Grades/Output</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {savedBaggingOffs.map((record, index) => (
+                <tr key={record.id || index}>
+                    <td>{formatDate(record.date)}</td>
+                    <td>{record.processingType}</td>
+                    <td>
+                        {Object.entries(record.outputKgs)
+                            .filter(([_, value]) => value && parseFloat(value) > 0)
+                            .map(([grade, value]) => (
+                                <div key={grade}>{grade}: {parseFloat(value).toFixed(2)} KGs</div>
+                            ))
+                        }
+                    </td>
+                    <td>{record.status}</td>
+                    <td>
+                        {record.status !== 'COMPLETED' && (
+                            <>
+                                <Button
+                                    variant="outline-sucafina"
+                                    size="sm"
+                                    onClick={() => handleEdit(record)}
+                                    style={{
+                                        color: processingTheme.primary,
+                                        borderColor: processingTheme.primary,
+                                        marginRight: '5px'
+                                    }}
+                                >
+                                    <i className="bi bi-pencil-square"></i>
+                                </Button>
+                                <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleDelete(record.id)}
+                                    style={{
+                                        color: '#dc3545',
+                                        borderColor: '#dc3545'
+                                    }}
+                                >
+                                    <i className="bi bi-trash"></i>
+                                </Button>
+                            </>
+                        )}
+                    </td>
+                </tr>
+            ))}
+        </tbody>
+    </Table>
 
     const prepareOutputData = (processingType, batchNo) => {
         const isSecondaryBatch = batchNo.endsWith('-2') || batchNo.endsWith('B');
@@ -741,10 +479,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         resetOutputs();
     };
 
-    const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    };
+
 
     return (
         <Modal show={show} onHide={handleClose} size="lg">
@@ -809,8 +544,8 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                     <th>Date</th>
                                     <th>Processing Type</th>
                                     <th>Grades/Output</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    {/* <th>Status</th> */}
+                                    {/* <th>Actions</th> */}
                                 </tr>
                             </thead>
                             <tbody>
@@ -826,8 +561,8 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                 ))
                                             }
                                         </td>
-                                        <td>{record.status}</td>
-                                        <td>
+                                        {/* <td>{record.status}</td> */}
+                                        {/* <td>
                                             {record.status !== 'COMPLETED' && (
                                                 <>
                                                     <Button
@@ -855,7 +590,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                     </Button>
                                                 </>
                                             )}
-                                        </td>
+                                        </td> */}
                                     </tr>
                                 ))}
                             </tbody>
@@ -918,8 +653,65 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                     </Form.Group>
 
                     {/* Honey Processing Section */}
+                    {/* {(!isEditing || (isEditing && editingRecord?.processingType === 'HONEY')) &&
+                        (batches?.[0]?.processingType?.toUpperCase() === 'HONEY' || batches?.[0]?.processingType?.toUpperCase() === 'FULLY WASHED') && (
+                            <>
+                                <div className="mb-4">
+                                    <Form.Label style={{ color: processingTheme.primary }}>
+                                        Honey Processing Output
+                                    </Form.Label>
+                                    <Row>
+                                        <Col md={12}>
+                                            <Form.Control
+                                                type="number"
+                                                placeholder="H1 KGs"
+                                                value={honeyOutputKgs.H1}
+                                                onChange={(e) => handleHoneyOutputChange(e.target.value)}
+                                                required
+                                                style={{
+                                                    borderColor: processingTheme.secondary,
+                                                    ':focus': { borderColor: processingTheme.primary }
+                                                }}
+                                            />
+                                        </Col>
+                                    </Row>
+                                </div>
+
+                                <div className="mb-3">
+                                    <div className="d-flex justify-content-between align-items-center mb-2">
+                                        <Form.Label style={{ color: processingTheme.primary, marginBottom: 0 }}>
+                                            Fully Washed Processing Output
+                                        </Form.Label>
+                                        <span style={{
+                                            fontSize: '0.875rem',
+                                            color: processingTheme.accent
+                                        }}>
+                                            Was processed as Fully Washed
+                                        </span>
+                                    </div>
+                                    <Row>
+                                        {['A0', 'A1', 'A2', 'A3'].map((field) => (
+                                            <Col md={3} key={field} className="mb-2">
+                                                <Form.Control
+                                                    type="number"
+                                                    placeholder={`${field} KGs`}
+                                                    value={fullyWashedOutputKgs[field]}
+                                                    onChange={(e) => handleFullyWashedOutputChange(field, e.target.value)}
+                                                    required
+                                                    style={{
+                                                        borderColor: processingTheme.secondary,
+                                                        ':focus': { borderColor: processingTheme.primary }
+                                                    }}
+                                                />
+                                            </Col>
+                                        ))}
+                                    </Row>
+                                </div>
+                            </>
+                        )} */}
+
                     {(!isEditing || (isEditing && editingRecord?.processingType === 'HONEY')) &&
-                        batches?.[0]?.processingType?.toUpperCase() === 'HONEY' && (
+                        (batches?.[0]?.processingType?.toUpperCase() === 'HONEY') && (
                             <>
                                 <div className="mb-4">
                                     <Form.Label style={{ color: processingTheme.primary }}>
@@ -1047,7 +839,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         )}
 
                     {/* Fully Washed Processing Section */}
-                    {(!isEditing || (isEditing && editingRecord?.processingType === 'FULLY WASHED')) &&
+                    {(!isEditing || (isEditing && editingRecord?.processingType === 'FULLY WASHED' || isEditing && editingRecord?.processingType === 'HONEY')) &&
                         batches?.[0]?.processingType?.toUpperCase() === 'FULLY_WASHED' && (
                             <div className="mb-3">
                                 <Form.Label style={{ color: processingTheme.primary }}>
@@ -1190,5 +982,311 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         </Modal>
     );
 };
+const LoadingSkeleton = () => {
+    const placeholderStyle = {
+        opacity: 0.4,
+        backgroundColor: processingTheme.secondary
+    };
+
+    return (
+        <Card className="shadow-sm">
+            <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
+                <Placeholder as="h2" animation="glow">
+                    <Placeholder xs={4} style={placeholderStyle} />
+                </Placeholder>
+            </Card.Header>
+            <Card.Body className="p-0">
+                <div className="table-responsive">
+                    <table className="table mb-0">
+                        <thead style={{ backgroundColor: processingTheme.neutral }}>
+                            <tr>
+                                <th>Batch No</th>
+                                <th>Total KGs</th>
+                                <th>CWS</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[...Array(5)].map((_, index) => (
+                                <tr key={index}>
+                                    <td>
+                                        <Placeholder animation="glow">
+                                            <Placeholder xs={6} style={placeholderStyle} />
+                                        </Placeholder>
+                                    </td>
+                                    <td>
+                                        <Placeholder animation="glow">
+                                            <Placeholder xs={4} style={placeholderStyle} />
+                                        </Placeholder>
+                                    </td>
+                                    <td>
+                                        <Placeholder animation="glow">
+                                            <Placeholder xs={3} style={placeholderStyle} />
+                                        </Placeholder>
+                                    </td>
+                                    <td>
+                                        <Placeholder animation="glow">
+                                            <Placeholder xs={5} style={placeholderStyle} />
+                                        </Placeholder>
+                                    </td>
+                                    <td>
+                                        <Button
+                                            variant="outline-primary"
+                                            size="sm"
+                                            disabled
+                                            style={{
+                                                color: processingTheme.primary,
+                                                borderColor: processingTheme.primary,
+                                                opacity: 0.4,
+                                                backgroundColor: 'transparent',
+                                                cursor: 'default'
+                                            }}
+                                        >
+                                            Bag Off
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </Card.Body>
+        </Card>
+    );
+};
+
+
+const ProcessingList = () => {
+    const [processingBatches, setProcessingBatches] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [selectedBatches, setSelectedBatches] = useState([]);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const userInfo = JSON.parse(localStorage.getItem('user'));
+    const cwsInfo = JSON.parse(localStorage.getItem('cws'));
+    const navigate = useNavigate();
+
+    const shouldHideGradeColumn = (batches) => {
+        if (!batches || batches.length === 0) return false;
+        return batches.some(batch => batch.batchNo && batch.batchNo.includes('-'));
+    };
+
+    useEffect(() => {
+        fetchProcessingBatches();
+    }, [refreshKey]);
+
+    const fetchProcessingBatches = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get(`${API_URL}/processing/cws/${userInfo.cwsId}`);
+            const mappedBatches = res.data
+                .filter(processing => processing.status !== 'COMPLETED')
+                .map(processing => ({
+                    id: processing.id,
+                    batchNo: processing.batchNo,
+                    totalKgs: processing.totalKgs,
+                    grade: processing.grade,
+                    cws: processing.cws.name,
+                    status: processing.status,
+                    processingType: processing.processingType,
+                    batches: [processing]
+                }));
+            setProcessingBatches(mappedBatches);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching processing batches:', error);
+            setError(error.response?.data?.message || 'Error fetching processing batches');
+            setLoading(false);
+        }
+    };
+
+    const startProcessing = (batches) => {
+        setSelectedBatches(batches);
+        setShowModal(true);
+    };
+
+    const handleBatchCompletion = (batchNo) => {
+        setProcessingBatches(prev =>
+            prev.filter(batch => batch.batchNo !== batchNo)
+        );
+        // Trigger a refresh after a short delay to ensure server consistency
+        setTimeout(() => setRefreshKey(prevKey => prevKey + 1), 500);
+    };
+
+    const handleProcessSubmit = async (processingDetailsArray) => {
+        try {
+            if (!userInfo?.cwsId) {
+                throw new Error('User CWS ID not found');
+            }
+
+            for (const processingDetails of processingDetailsArray) {
+                const { existingProcessing, batches, ...otherDetails } = processingDetails;
+
+                const submissionData = {
+                    ...otherDetails,
+                    batchNo: batches[0].batchNo,
+                    cwsId: userInfo.cwsId,
+                    existingProcessing: existingProcessing ? { id: existingProcessing.id } : null
+                };
+
+                await axios.post(`${API_URL}/bagging-off`, submissionData);
+            }
+
+            setShowModal(false);
+            setRefreshKey(prevKey => prevKey + 1);
+
+            // Use a toast notification instead of an alert
+            // If you have a toast library like react-toastify
+            // toast.success('Bagging off processed successfully');
+            alert('Bagging off processed successfully');
+        } catch (error) {
+            console.error('Bagging off submission error:', error);
+            alert(error.response?.data?.message || 'Failed to process bagging off');
+        }
+    };
+
+    // const navigateToWetTransfer = () => {
+    //     navigate('/wet-transfer');
+    // };
+    // const navigateToWetTransferReceiver = () => {
+    //     navigate('/wet-transfer-receiver');
+    // };
+
+    const hideGradeColumn = shouldHideGradeColumn(processingBatches);
+
+    if (loading) return <LoadingSkeleton />;
+    if (error) return (
+        <div className="alert alert-danger">
+            <i className="fas fa-exclamation-triangle mr-2"></i>
+            {error}
+            <button
+                className="btn btn-sm btn-outline-danger ml-3"
+                onClick={() => setRefreshKey(prevKey => prevKey + 1)}
+            >
+                Retry
+            </button>
+        </div>
+    );
+
+    return (
+        <div className="container-fluid py-4">
+            <ProcessingBatchModal
+                show={showModal}
+                handleClose={() => setShowModal(false)}
+                batches={selectedBatches}
+                onSubmit={handleProcessSubmit}
+                onComplete={handleBatchCompletion}
+            />
+
+            <div className="d-flex justify-content-between mb-3 align-items-center">
+                <h4 style={{ color: processingTheme.primary }}>Processing Management</h4>
+            </div>
+
+            <Card className="shadow-sm">
+                <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
+                    <span className='h5' style={{ color: processingTheme.primary }}>Processing Batches</span>
+                    <Button
+                        variant="link"
+                        size="sm"
+                        className="float-right"
+                        onClick={() => setRefreshKey(prevKey => prevKey + 1)}
+                        style={{ color: processingTheme.primary }}
+                    >
+                        <i className="fas fa-sync-alt"></i> Refresh
+                    </Button>
+                </Card.Header>
+                <Card.Body className="p-0">
+                    <div className="table-responsive">
+                        <table className="table table-hover mb-0">
+                            <thead style={{ backgroundColor: processingTheme.neutral }}>
+                                <tr>
+                                    <th>Batch No</th>
+                                    <th>Total KGs</th>
+                                    {!hideGradeColumn && <th>Grade</th>}
+                                    <th>CWS</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {processingBatches.length === 0 ? (
+                                    <tr>
+                                        <td
+                                            colSpan={hideGradeColumn ? 5 : 6}
+                                            className="text-center py-4"
+                                            style={{
+                                                backgroundColor: processingTheme.tableHover,
+                                                color: processingTheme.primary,
+                                                fontSize: '1.1em'
+                                            }}
+                                        >
+                                            <i className="fas fa-info-circle mr-2"></i>
+                                            No processing batches found
+                                        </td>
+                                    </tr>
+                                ) : (processingBatches.map((batch) => (
+                                    <tr key={batch.id} style={{ cursor: 'pointer' }}
+                                        onClick={() => startProcessing(batch.batches)}
+                                        className="position-relative"
+                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = processingTheme.tableHover}
+                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}
+                                    >
+                                        <td>{batch.batchNo}</td>
+                                        <td>{batch?.totalKgs.toLocaleString()} kg</td>
+                                        {!hideGradeColumn && <td>{batch.grade || "N/A"}</td>}
+                                        <td>{batch.cws}</td>
+                                        <td>
+                                            <span
+                                                className="badge"
+                                                style={{
+                                                    backgroundColor:
+                                                        batch.status === 'PROCESSING' ? processingTheme.secondary :
+                                                            batch.status === 'PENDING' ? '#FFC107' :
+                                                                processingTheme.primary,
+                                                    color: 'white',
+                                                    padding: '6px 10px'
+                                                }}
+                                            >
+                                                {batch.status}
+                                            </span>
+                                        </td>
+                                        <td onClick={(e) => e.stopPropagation()}>
+                                            <Button
+                                                variant="outline-primary"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    startProcessing(batch.batches);
+                                                }}
+                                                style={{
+                                                    color: processingTheme.primary,
+                                                    borderColor: processingTheme.primary,
+                                                    backgroundColor: 'transparent',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                                onMouseOver={(e) => {
+                                                    e.currentTarget.style.backgroundColor = processingTheme.neutral;
+                                                }}
+                                                onMouseOut={(e) => {
+                                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                                }}
+                                            >
+                                                <i className="fas fa-box mr-1"></i> Bag Off
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                )))}
+                            </tbody>
+                        </table>
+                    </div>
+                </Card.Body>
+            </Card>
+        </div>
+    );
+};
+
+
 
 export default ProcessingList;

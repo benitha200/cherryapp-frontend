@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Button, Modal, Placeholder, Form, Alert, InputGroup, Badge, Accordion, Row, Col } from 'react-bootstrap';
 import API_URL from '../../constants/Constants';
+import BagOffModal from './BagOffModal';
 
 const processingTheme = {
     primary: '#008080',    // Sucafina teal
@@ -75,12 +76,9 @@ const WetTransferReceiver = () => {
     const [activeTab, setActiveTab] = useState('pending');
     const [expandedBatches, setExpandedBatches] = useState({});
     const [refreshKey, setRefreshKey] = useState(0);
-    const [selectedQualityAttributes, setSelectedQualityAttributes] = useState({
-        moisture: '',
-        defectPercentage: '',
-        cleanCupScore: ''
-    });
     const userInfo = JSON.parse(localStorage.getItem('user'));
+    const [showBagOffModal, setShowBagOffModal] = useState(false);
+    const [selectedBagOffBatch, setSelectedBagOffBatch] = useState(null);
 
     useEffect(() => {
         fetchTransfers();
@@ -98,15 +96,15 @@ const WetTransferReceiver = () => {
 
             setPendingTransfers(pending);
             setCompletedTransfers(completed);
-            
+
             // Group pending transfers by batchNo
             const pendingByBatch = groupTransfersByBatch(pending);
             setGroupedPendingTransfers(pendingByBatch);
-            
+
             // Group completed transfers by batchNo
             const completedByBatch = groupTransfersByBatch(completed);
             setGroupedCompletedTransfers(completedByBatch);
-            
+
             setLoading(false);
         } catch (error) {
             setError('Error fetching wet transfers');
@@ -130,7 +128,7 @@ const WetTransferReceiver = () => {
                     transfers: []
                 };
             }
-            
+
             acc[transfer.batchNo].transfers.push(transfer);
             return acc;
         }, {});
@@ -139,10 +137,10 @@ const WetTransferReceiver = () => {
     const handleReceiveTransfers = async () => {
         try {
             // Get all transfer IDs from selected batches
-            const transferIds = selectedBatches.flatMap(batchNo => 
+            const transferIds = selectedBatches.flatMap(batchNo =>
                 groupedPendingTransfers[batchNo].transfers.map(t => t.id)
             );
-            
+
             await Promise.all(transferIds.map(transferId => {
                 const transfer = pendingTransfers.find(t => t.id === transferId);
                 return axios.post(`${API_URL}/wet-transfer/receive`, {
@@ -150,21 +148,13 @@ const WetTransferReceiver = () => {
                     receivedDate: new Date().toISOString(),
                     receivingCwsId: userInfo.cwsId,
                     sourceCwsId: transfer.sourceCwsId,
-                    notes: transferNotes,
-                    moisture: selectedQualityAttributes.moisture,
-                    defectPercentage: selectedQualityAttributes.defectPercentage,
-                    cleanCupScore: selectedQualityAttributes.cleanCupScore
+                    notes: transferNotes
                 });
             }));
 
             // Reset state and refresh data
             setSelectedBatches([]);
             setTransferNotes('');
-            setSelectedQualityAttributes({
-                moisture: '',
-                defectPercentage: '',
-                cleanCupScore: ''
-            });
             setShowReceiveModal(false);
             setRefreshKey(prev => prev + 1); // Trigger a refresh
             alert('Transfers received successfully');
@@ -178,7 +168,7 @@ const WetTransferReceiver = () => {
         if (window.confirm(`Are you sure you want to reject all transfers from batch ${batchNo}?`)) {
             try {
                 const transferIds = groupedPendingTransfers[batchNo].transfers.map(t => t.id);
-                
+
                 await Promise.all(transferIds.map(transferId => {
                     return axios.post(`${API_URL}/wet-transfer/reject`, {
                         transferId: transferId,
@@ -213,6 +203,12 @@ const WetTransferReceiver = () => {
         }
     };
 
+    const handleBagOffClick = (batchNo, e) => {
+        e.stopPropagation();
+        setSelectedBagOffBatch(batchNo);
+        setShowBagOffModal(true);
+    };
+
     const handleSelectAllBatches = (isSelected) => {
         const visibleBatches = Object.keys(getFilteredBatches());
 
@@ -237,7 +233,7 @@ const WetTransferReceiver = () => {
                     batch.processingType?.toLowerCase().includes(searchTermLower) ||
                     batch.sourceCws?.name?.toLowerCase().includes(searchTermLower) ||
                     batch.status?.toLowerCase().includes(searchTermLower) ||
-                    batch.transfers.some(t => 
+                    batch.transfers.some(t =>
                         t.grade?.toLowerCase().includes(searchTermLower)
                     )
                 );
@@ -276,12 +272,12 @@ const WetTransferReceiver = () => {
             </Badge>
         );
     };
-    
+
     // Calculate total output KGs for a batch
     const calculateTotalOutputKgs = (transfers) => {
         return transfers.reduce((sum, transfer) => sum + parseFloat(transfer.outputKgs), 0).toFixed(2);
     };
-    
+
     // Get grade summary for a batch
     const getGradeSummary = (transfers) => {
         return transfers.map(t => `${t.grade} (${parseFloat(t.outputKgs).toFixed(2)} kg)`).join(', ');
@@ -298,7 +294,7 @@ const WetTransferReceiver = () => {
         <div className="container-fluid py-4">
             {/* Pending Transfers Panel */}
             <div className="d-flex justify-content-between mb-3">
-                <h4 style={{ color: processingTheme.primary }}>Wet Transfer Management</h4>
+                <h4 style={{ color: processingTheme.primary }}>Wet Transfer</h4>
                 <div>
                     <Button
                         variant={activeTab === 'pending' ? 'primary' : 'outline-primary'}
@@ -453,7 +449,8 @@ const WetTransferReceiver = () => {
                                     <th>Grades</th>
                                     <th>Date</th>
                                     <th>Status</th>
-                                    {activeTab === 'pending' && <th>Actions</th>}
+                                    <th>Actions</th>
+                                    {/* {activeTab === 'pending' && <th>Actions</th>} */}
                                 </tr>
                             </thead>
                             <tbody>
@@ -543,6 +540,22 @@ const WetTransferReceiver = () => {
                                                             </div>
                                                         </td>
                                                     )}
+                                                    {activeTab !== 'pending' && (
+                                                        <td>
+                                                            <div className="d-flex">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline-success"
+                                                                    className="me-1"
+                                                                    onClick={(e) => {
+                                                                        handleBagOffClick(batchNo, e);
+                                                                    }}
+                                                                >
+                                                                    Bag Off
+                                                                </Button>
+                                                            </div>
+                                                        </td>
+                                                    )}
                                                 </tr>
                                                 {isExpanded && (
                                                     <tr className="expanded-row">
@@ -558,37 +571,24 @@ const WetTransferReceiver = () => {
                                                                                 <th>Output KGs</th>
                                                                                 <th>Moisture %</th>
                                                                                 <th>Status</th>
-                                                                                {batch.status !== 'PENDING' && (
-                                                                                    <>
-                                                                                        <th>Received/Rejected Date</th>
-                                                                                        <th>Notes</th>
-                                                                                    </>
-                                                                                )}
+                                                                               
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
                                                                             {batch.transfers.map(transfer => (
                                                                                 <tr key={transfer.id}>
-                                                                                    <td>WT-{transfer.id}</td>
+                                                                                    {/* <td>WT-{transfer.id}</td> */}
+                                                                                    <td>{transfer.batchNo}-{transfer.grade}</td>
                                                                                     <td>{transfer.grade}</td>
                                                                                     <td>{parseFloat(transfer.outputKgs).toFixed(2)} kg</td>
                                                                                     <td>{parseFloat(transfer.moistureContent).toFixed(1)}%</td>
                                                                                     <td>{getStatusBadge(transfer.status)}</td>
-                                                                                    {batch.status !== 'PENDING' && (
-                                                                                        <>
-                                                                                            <td>
-                                                                                                {transfer.receivedDate && new Date(transfer.receivedDate).toLocaleDateString()}
-                                                                                                {transfer.rejectionDate && new Date(transfer.rejectionDate).toLocaleDateString()}
-                                                                                            </td>
-                                                                                            <td>{transfer.notes || (transfer.rejectionReason || '')}</td>
-                                                                                        </>
-                                                                                    )}
+                                                                                  
                                                                                 </tr>
                                                                             ))}
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
-                                                                
                                                                 {batch.status !== 'PENDING' && batch.transfers.some(t => t.moistureAtReceival || t.defectPercentage || t.cleanCupScore) && (
                                                                     <div className="mt-3">
                                                                         <h6>Quality Assessment</h6>
@@ -597,18 +597,13 @@ const WetTransferReceiver = () => {
                                                                                 <thead>
                                                                                     <tr>
                                                                                         <th>Grade</th>
-                                                                                        <th>Measured Moisture</th>
-                                                                                        <th>Defect Percentage</th>
-                                                                                        <th>Clean Cup Score</th>
                                                                                     </tr>
                                                                                 </thead>
                                                                                 <tbody>
                                                                                     {batch.transfers.map(transfer => (
                                                                                         <tr key={`quality-${transfer.id}`}>
                                                                                             <td>{transfer.grade}</td>
-                                                                                            <td>{transfer.moistureAtReceival ? `${transfer.moistureAtReceival}%` : 'N/A'}</td>
-                                                                                            <td>{transfer.defectPercentage ? `${transfer.defectPercentage}%` : 'N/A'}</td>
-                                                                                            <td>{transfer.cleanCupScore || 'N/A'}</td>
+
                                                                                         </tr>
                                                                                     ))}
                                                                                 </tbody>
@@ -642,7 +637,7 @@ const WetTransferReceiver = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <Alert variant="info">
-                        You are about to receive {selectedBatches.length} batch{selectedBatches.length !== 1 ? 'es' : ''} 
+                        You are about to receive {selectedBatches.length} batch{selectedBatches.length !== 1 ? 'es' : ''}
                         with a total of {selectedBatches.reduce((count, batchNo) => count + groupedPendingTransfers[batchNo].transfers.length, 0)} transfer{selectedBatches.reduce((count, batchNo) => count + groupedPendingTransfers[batchNo].transfers.length, 0) !== 1 ? 's' : ''}.
                     </Alert>
 
@@ -680,67 +675,6 @@ const WetTransferReceiver = () => {
                         </Accordion.Item>
                     </Accordion>
 
-                    <Row className="mb-3">
-                        <Col md={12}>
-                            <Form.Group>
-                                <Form.Label><strong>Quality Assessment</strong></Form.Label>
-                                <Row>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Measured Moisture (%)</Form.Label>
-                                            <Form.Control
-                                                type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="100"
-                                                value={selectedQualityAttributes.moisture}
-                                                onChange={(e) => setSelectedQualityAttributes({
-                                                    ...selectedQualityAttributes,
-                                                    moisture: e.target.value
-                                                })}
-                                                placeholder="Enter moisture %"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Defect Percentage (%)</Form.Label>
-                                            <Form.Control
-                                                type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="100"
-                                                value={selectedQualityAttributes.defectPercentage}
-                                                onChange={(e) => setSelectedQualityAttributes({
-                                                    ...selectedQualityAttributes,
-                                                    defectPercentage: e.target.value
-                                                })}
-                                                placeholder="Enter defect %"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Clean Cup Score</Form.Label>
-                                            <Form.Control
-                                                type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="100"
-                                                value={selectedQualityAttributes.cleanCupScore}
-                                                onChange={(e) => setSelectedQualityAttributes({
-                                                    ...selectedQualityAttributes,
-                                                    cleanCupScore: e.target.value
-                                                })}
-                                                placeholder="Enter cup score"
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-                            </Form.Group>
-                        </Col>
-                    </Row>
-
                     <Form.Group className="mb-3">
                         <Form.Label>Receiving Notes</Form.Label>
                         <Form.Control
@@ -753,14 +687,14 @@ const WetTransferReceiver = () => {
                     </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button 
-                        variant="secondary" 
+                    <Button
+                        variant="secondary"
                         onClick={() => setShowReceiveModal(false)}
                     >
                         Cancel
                     </Button>
-                    <Button 
-                        variant="primary" 
+                    <Button
+                        variant="primary"
                         onClick={handleReceiveTransfers}
                         style={{
                             backgroundColor: processingTheme.primary,
@@ -771,6 +705,18 @@ const WetTransferReceiver = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            <BagOffModal
+                show={showBagOffModal}
+                onHide={() => {
+                    setShowBagOffModal(false);
+                    setSelectedBagOffBatch(null);
+                    // Optionally refresh data after a successful bag off
+                    setRefreshKey(prev => prev + 1);
+                }}
+                batchNo={selectedBagOffBatch}
+                processingTheme={processingTheme}
+            />
         </div>
     );
 };

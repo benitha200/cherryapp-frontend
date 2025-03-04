@@ -84,68 +84,60 @@ const WetTransfer = () => {
 
     // Define allowed grades based on processing type
     const getOutputGradesForProcessingType = (processingType, grade) => {
-        if (grade === 'A') {
-            if (processingType === 'Honey') {
-                return ['H1', 'A0', 'A1'];
-            } else if (processingType === 'Fully Washed') {
-                return ['A0', 'A1'];
-            }
-        }
-
-        if (processingType === 'Natural') {
-            return ['N1', 'N2'];
-        }
-
         // Default case
-        return ['H1', 'N1', 'N2', 'A0', 'A1'];
+        return ['A0', 'A1'];
     };
+
+    const getFilteredBatches = () => {
+        const searchTermLower = searchTerm.toLowerCase();
+        return Object.keys(groupedRecords).filter(uniqueKey => {
+            const record = groupedRecords[uniqueKey][0];
+            const batchNo = record.batchNo; // Extract batchNo from the unique key
+            
+            // Filter out batches where batchNo ends with "B"
+            if (batchNo.endsWith("B")) {
+                return false;
+            }
+
+            return batchNo.toLowerCase().includes(searchTermLower) ||
+                record.processingType.toLowerCase().includes(searchTermLower) ||
+                record.grade.toLowerCase().includes(searchTermLower);
+        });
+    };
+
+    const filteredBatches = getFilteredBatches();
 
     useEffect(() => {
         fetchProcessingRecords();
         fetchCwsList();
     }, []);
 
+    // Get processing types for a batch
+    const getProcessingTypesForBatch = (batchKey) => {
+        const records = groupedRecords[batchKey] || [];
+        return [...new Set(records.map(record => record.processingType))];
+    };
+
     useEffect(() => {
         // Extract all available grades from selected batches based on processing type
         const grades = {};
-        selectedBatches.forEach(batchKey => {
-            const batchRecords = groupedRecords[batchKey] || [];
+        selectedBatches.forEach(uniqueKey => {
+            const batchRecords = groupedRecords[uniqueKey] || [];
             batchRecords.forEach(record => {
                 const processingType = record.processingType;
                 const gradePrefix = record.grade.charAt(0);
                 const allowedGrades = getOutputGradesForProcessingType(processingType, gradePrefix);
-
+    
                 allowedGrades.forEach(grade => {
                     if (!grades[grade]) {
                         grades[grade] = true;
                     }
                 });
-
-                // Initialize moisture values for each grade if not already set
-                allowedGrades.forEach(grade => {
-                    if (!moistureValues[`${batchKey}-${grade}`]) {
-                        setMoistureValues(prev => ({
-                            ...prev,
-                            [`${batchKey}-${grade}`]: '12.0' // Default moisture value
-                        }));
-                    }
-                });
-
-                // Initialize output quantities for each grade if not already set
-                allowedGrades.forEach(grade => {
-                    if (grade.startsWith('H') && !honeyOutputKgs[grade]) {
-                        setHoneyOutputKgs(prev => ({ ...prev, [grade]: '' }));
-                    } else if ((grade.startsWith('N') || grade.startsWith('B')) && !naturalOutputKgs[grade]) {
-                        setNaturalOutputKgs(prev => ({ ...prev, [grade]: '' }));
-                    } else if (!fullyWashedOutputKgs[grade]) {
-                        setFullyWashedOutputKgs(prev => ({ ...prev, [grade]: '' }));
-                    }
-                });
             });
         });
-
+    
         setAvailableGrades(Object.keys(grades));
-
+    
         // Initialize selected grades if not already set
         const newSelectedGrades = {};
         Object.keys(grades).forEach(grade => {
@@ -153,38 +145,95 @@ const WetTransfer = () => {
                 newSelectedGrades[grade] = true;
             }
         });
-
+    
         setSelectedGrades(prev => ({ ...prev, ...newSelectedGrades }));
-
+    }, [selectedBatches, groupedRecords]);
+    
+    useEffect(() => {
+        // Initialize moisture values for each grade if not already set
+        const newMoistureValues = { ...moistureValues };
+        let moistureValuesChanged = false;
+    
+        selectedBatches.forEach(uniqueKey => {
+            const batchRecords = groupedRecords[uniqueKey] || [];
+            batchRecords.forEach(record => {
+                const processingType = record.processingType;
+                const gradePrefix = record.grade.charAt(0);
+                const allowedGrades = getOutputGradesForProcessingType(processingType, gradePrefix);
+    
+                allowedGrades.forEach(grade => {
+                    const key = `${uniqueKey}-${grade}`;
+                    if (!newMoistureValues[key]) {
+                        newMoistureValues[key] = '0.0'; // Default moisture value
+                        moistureValuesChanged = true;
+                    }
+                });
+            });
+        });
+    
+        if (moistureValuesChanged) {
+            setMoistureValues(newMoistureValues);
+        }
+    }, [selectedBatches, groupedRecords]);
+    
+    useEffect(() => {
+        // Initialize output quantities for each grade if not already set
+        const newHoneyOutputKgs = { ...honeyOutputKgs };
+        const newNaturalOutputKgs = { ...naturalOutputKgs };
+        const newFullyWashedOutputKgs = { ...fullyWashedOutputKgs };
+        let outputKgsChanged = false;
+    
+        selectedBatches.forEach(uniqueKey => {
+            const batchRecords = groupedRecords[uniqueKey] || [];
+            batchRecords.forEach(record => {
+                const processingType = record.processingType;
+                const gradePrefix = record.grade.charAt(0);
+                const allowedGrades = getOutputGradesForProcessingType(processingType, gradePrefix);
+    
+                allowedGrades.forEach(grade => {
+                    if (grade.startsWith('H') && !newHoneyOutputKgs[grade]) {
+                        newHoneyOutputKgs[grade] = '';
+                        outputKgsChanged = true;
+                    } else if ((grade.startsWith('N') || grade.startsWith('B')) && !newNaturalOutputKgs[grade]) {
+                        newNaturalOutputKgs[grade] = '';
+                        outputKgsChanged = true;
+                    } else if (!newFullyWashedOutputKgs[grade]) {
+                        newFullyWashedOutputKgs[grade] = '';
+                        outputKgsChanged = true;
+                    }
+                });
+            });
+        });
+    
+        if (outputKgsChanged) {
+            setHoneyOutputKgs(newHoneyOutputKgs);
+            setNaturalOutputKgs(newNaturalOutputKgs);
+            setFullyWashedOutputKgs(newFullyWashedOutputKgs);
+        }
+    }, [selectedBatches, groupedRecords]);
+    
+    useEffect(() => {
         // Calculate total selected KGs
         calculateTotalSelectedKgs();
-    }, [selectedBatches, groupedRecords, honeyOutputKgs, naturalOutputKgs, fullyWashedOutputKgs]);
-
-    // Update selectAllChecked when all visible batches are selected
-    useEffect(() => {
-        const visibleBatches = getFilteredBatches();
-        const allSelected = visibleBatches.length > 0 &&
-            visibleBatches.every(batch => selectedBatches.includes(batch));
-        setSelectAllChecked(allSelected);
-    }, [selectedBatches, searchTerm]);
+    }, [selectedBatches, selectedGrades, honeyOutputKgs, naturalOutputKgs, fullyWashedOutputKgs]);
 
     const calculateTotalSelectedKgs = () => {
         // First check if there are any output KGs entered
         let hasOutputKgsEntered = false;
-        
+
         // Check if any output KGs have been entered for any selected grade
         Object.keys(selectedGrades).forEach(grade => {
             if (selectedGrades[grade]) {
                 const kgsValue = grade.startsWith('H') ? honeyOutputKgs[grade] :
                     grade.startsWith('N') || grade.startsWith('B') ? naturalOutputKgs[grade] :
-                    fullyWashedOutputKgs[grade];
-                
+                        fullyWashedOutputKgs[grade];
+
                 if (kgsValue && parseFloat(kgsValue) > 0) {
                     hasOutputKgsEntered = true;
                 }
             }
         });
-        
+
         // If output KGs are entered, use those values instead of the original batch totals
         if (hasOutputKgsEntered) {
             let total = 0;
@@ -192,8 +241,8 @@ const WetTransfer = () => {
                 if (selectedGrades[grade]) {
                     const kgsValue = grade.startsWith('H') ? honeyOutputKgs[grade] :
                         grade.startsWith('N') || grade.startsWith('B') ? naturalOutputKgs[grade] :
-                        fullyWashedOutputKgs[grade];
-                    
+                            fullyWashedOutputKgs[grade];
+
                     if (kgsValue && !isNaN(parseFloat(kgsValue))) {
                         total += parseFloat(kgsValue);
                     }
@@ -203,8 +252,8 @@ const WetTransfer = () => {
         } else {
             // Fall back to the original calculation if no output KGs entered
             let total = 0;
-            selectedBatches.forEach(batchKey => {
-                const batchRecords = groupedRecords[batchKey] || [];
+            selectedBatches.forEach(uniqueKey => {
+                const batchRecords = groupedRecords[uniqueKey] || [];
                 batchRecords.forEach(record => {
                     if (selectedGrades[record.grade]) {
                         total += parseFloat(record.totalKgs);
@@ -219,20 +268,18 @@ const WetTransfer = () => {
         try {
             const response = await axios.get(`${API_URL}/processing/cws/${userInfo.cwsId}`);
 
-            // Filter records that are IN_PROGRESS - we only want to transfer batches that are being processed
-            const inProgressRecords = response.data.filter(record => record.status === "IN_PROGRESS");
+            // Filter records where processingType is FULLY_WASHED and status is IN_PROGRESS
+            const filteredRecords = response.data.filter(record =>
+                record.status === "IN_PROGRESS" &&
+                (record.processingType === "FULLY_WASHED" || record.processingType === "FULLY WASHED")
+            );
 
-            // Group records by base batch number (ignoring suffixes like A, B, -1, -2)
-            const grouped = inProgressRecords.reduce((acc, record) => {
-                const baseBatchNo = record.batchNo.replace(/[A-Za-z-]\d*$/, ''); // Remove suffixes
-                if (!acc[baseBatchNo]) {
-                    acc[baseBatchNo] = [];
-                }
-                acc[baseBatchNo].push(record);
+            // Group by batchNo and ensure unique keys by appending the record id
+            setGroupedRecords(filteredRecords.reduce((acc, record) => {
+                const uniqueKey = `${record.batchNo}-${record.id}`; // Combine batchNo and id
+                acc[uniqueKey] = [record]; // Use the unique key
                 return acc;
-            }, {});
-
-            setGroupedRecords(grouped);
+            }, {}));
             setLoading(false);
         } catch (error) {
             setError('Error fetching processing records');
@@ -245,11 +292,11 @@ const WetTransfer = () => {
         try {
             // Fetch all CWS locations except the current one
             const response = await axios.get(`${API_URL}/cws`);
-            const filteredCws = response.data.filter(cws => 
+            const filteredCws = response.data.filter(cws =>
                 cws.id !== userInfo.cwsId && cws.name !== "TEST"
             );
             setCwsList(filteredCws);
-            
+
             // Set default destination CWS if available
             if (filteredCws.length > 0) {
                 setSelectedDestinationCws(filteredCws[0].id);
@@ -259,20 +306,12 @@ const WetTransfer = () => {
         }
     };
 
-    const handleBatchSelectionChange = (batchKey, isSelected) => {
+    const handleBatchSelectionChange = (uniqueKey, isSelected) => {
         if (isSelected) {
-            setSelectedBatches(prev => [...prev, batchKey]);
+            setSelectedBatches(prev => [...prev, uniqueKey]);
         } else {
-            setSelectedBatches(prev => prev.filter(key => key !== batchKey));
+            setSelectedBatches(prev => prev.filter(key => key !== uniqueKey));
         }
-    };
-
-    const handleBatchToggleExpand = (batchKey, e) => {
-        e.stopPropagation();
-        setExpandedBatches(prev => ({
-            ...prev,
-            [batchKey]: !prev[batchKey]
-        }));
     };
 
     const handleSelectAllBatches = (isSelected) => {
@@ -302,7 +341,7 @@ const WetTransfer = () => {
         }));
     };
 
-    const handleMoistureChange = (batchKey, grade, value) => {
+    const handleMoistureChange = (uniqueKey, grade, value) => {
         // Validate moisture content (between 0-100)
         const moisture = parseFloat(value);
         if (isNaN(moisture) || moisture < 0 || moisture > 100) {
@@ -311,7 +350,7 @@ const WetTransfer = () => {
 
         setMoistureValues(prev => ({
             ...prev,
-            [`${batchKey}-${grade}`]: value
+            [`${uniqueKey}-${grade}`]: value
         }));
     };
 
@@ -323,8 +362,8 @@ const WetTransfer = () => {
         try {
             const recordsToTransfer = [];
 
-            selectedBatches.forEach(batchKey => {
-                const batchRecords = groupedRecords[batchKey];
+            selectedBatches.forEach(uniqueKey => {
+                const batchRecords = groupedRecords[uniqueKey];
                 batchRecords.forEach(record => {
                     const processingType = record.processingType;
                     const gradePrefix = record.grade.charAt(0);
@@ -336,7 +375,7 @@ const WetTransfer = () => {
                             recordsToTransfer.push({
                                 ...record,
                                 grade: grade,
-                                moistureContent: parseFloat(moistureValues[`${batchKey}-${grade}`] || 12.0),
+                                moistureContent: parseFloat(moistureValues[`${uniqueKey}-${grade}`] || 0.0),
                                 outputKgs: parseFloat(
                                     grade.startsWith('H') ? honeyOutputKgs[grade] :
                                         grade.startsWith('N') || grade.startsWith('B') ? naturalOutputKgs[grade] :
@@ -377,6 +416,7 @@ const WetTransfer = () => {
             alert('Failed to complete wet transfer');
         }
     };
+
     // Get unique processing types from records
     const getUniqueProcessingTypes = (records) => {
         const uniqueTypes = [...new Set(records.map(record => record.processingType))];
@@ -391,8 +431,8 @@ const WetTransfer = () => {
     const getGradeTotals = () => {
         const totals = {};
 
-        selectedBatches.forEach(batchKey => {
-            const batchRecords = groupedRecords[batchKey] || [];
+        selectedBatches.forEach(uniqueKey => {
+            const batchRecords = groupedRecords[uniqueKey] || [];
             batchRecords.forEach(record => {
                 const grade = record.grade;
                 if (!totals[grade]) {
@@ -409,8 +449,8 @@ const WetTransfer = () => {
     const getAllowedGradesForSelectedBatches = () => {
         const allowedGrades = new Set();
 
-        selectedBatches.forEach(batchKey => {
-            const batchRecords = groupedRecords[batchKey] || [];
+        selectedBatches.forEach(uniqueKey => {
+            const batchRecords = groupedRecords[uniqueKey] || [];
             batchRecords.forEach(record => {
                 const processingType = record.processingType;
                 const gradePrefix = record.grade.charAt(0);
@@ -423,50 +463,13 @@ const WetTransfer = () => {
         return Array.from(allowedGrades);
     };
 
-    // Filter batches based on search term
-    const getFilteredBatches = () => {
-        const searchTermLower = searchTerm.toLowerCase();
-        return Object.keys(groupedRecords).filter(batchKey => {
-            // Search in the batch number
-            if (batchKey.toLowerCase().includes(searchTermLower)) {
-                return true;
-            }
-
-            // Search in sub-batch numbers
-            const subBatches = groupedRecords[batchKey].map(record => record.batchNo);
-            if (subBatches.some(subBatch => subBatch.toLowerCase().includes(searchTermLower))) {
-                return true;
-            }
-
-            // Search in processing types
-            const processingTypes = [...new Set(groupedRecords[batchKey].map(record => record.processingType))];
-            if (processingTypes.some(type => type.toLowerCase().includes(searchTermLower))) {
-                return true;
-            }
-
-            // Search in grades
-            const grades = [...new Set(groupedRecords[batchKey].map(record => record.grade))];
-            if (grades.some(grade => grade.toLowerCase().includes(searchTermLower))) {
-                return true;
-            }
-
-            return false;
-        });
-    };
-
-    // Get processing types for a batch
-    const getProcessingTypesForBatch = (batchKey) => {
-        const records = groupedRecords[batchKey] || [];
-        return [...new Set(records.map(record => record.processingType))];
-    };
-
     if (loading) return <LoadingSkeleton />;
     if (error) return <div className="alert alert-danger">{error}</div>;
 
-    const filteredBatches = getFilteredBatches();
     const gradeTotals = getGradeTotals();
     const sourceCwsName = selectedBatches.length > 0 && groupedRecords[selectedBatches[0]][0].cws?.name;
     const destinationCwsName = cwsList.find(cws => cws.id === selectedDestinationCws)?.name;
+
 
     return (
         <div className="container-fluid py-4">
@@ -514,20 +517,20 @@ const WetTransfer = () => {
                                         <div className="text-muted">No batches selected</div>
                                     ) : (
                                         <div className="d-flex flex-wrap">
-                                            {selectedBatches.map(batchKey => (
+                                            {selectedBatches.map(uniqueKey => (
                                                 <Badge
-                                                    key={batchKey}
+                                                    key={uniqueKey}
                                                     bg="light"
                                                     text="dark"
                                                     className="me-2 mb-2 p-2"
                                                     style={{ backgroundColor: processingTheme.neutral }}
                                                 >
-                                                    {batchKey} ({groupedRecords[batchKey].reduce((sum, r) => sum + r.totalKgs, 0).toFixed(2)} kg)
+                                                    {groupedRecords[uniqueKey][0].batchNo} ({groupedRecords[uniqueKey].reduce((sum, r) => sum + r.totalKgs, 0).toFixed(2)} kg)
                                                     <Button
                                                         size="sm"
                                                         variant="link"
                                                         className="p-0 ms-1"
-                                                        onClick={() => handleBatchSelectionChange(batchKey, false)}
+                                                        onClick={() => handleBatchSelectionChange(uniqueKey, false)}
                                                         style={{ color: processingTheme.primary }}
                                                     >
                                                         ×
@@ -545,7 +548,7 @@ const WetTransfer = () => {
                                         <strong>Output Grades</strong>
                                         <div>
                                             <Button
-                                                variant="outline-primary"
+                                                variant="outline-sucafina"
                                                 size="sm"
                                                 className="me-2"
                                                 onClick={() => {
@@ -570,7 +573,7 @@ const WetTransfer = () => {
                                                     <th style={{ width: '30px' }}></th>
                                                     <th>Grade</th>
                                                     <th>Processing Type</th>
-                                                    <th>Output KGs</th>
+                                                    <th>Transfered KGs</th>
                                                     <th>Moisture %</th>
                                                 </tr>
                                             </thead>
@@ -627,7 +630,7 @@ const WetTransfer = () => {
                                                                     type="number"
                                                                     size="sm"
                                                                     style={{ width: '80px' }}
-                                                                    value={moistureValues[`${selectedBatches[0]}-${grade}`] || '12.0'}
+                                                                    value={moistureValues[`${selectedBatches[0]}-${grade}`] || '0.0'}
                                                                     onChange={(e) => handleMoistureChange(selectedBatches[0], grade, e.target.value)}
                                                                     step="0.1"
                                                                     min="0"
@@ -683,7 +686,7 @@ const WetTransfer = () => {
                 <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
                     <div className="d-flex justify-content-between align-items-center">
                         <span className="h5" style={{ color: processingTheme.primary }}>
-                            Available Batches for Wet Transfer ({Object.keys(groupedRecords).length})
+                            Available Batches for Wet Transfer 
                         </span>
                         <div className="d-flex">
                             <InputGroup>
@@ -742,16 +745,16 @@ const WetTransfer = () => {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredBatches.map((baseBatchNo) => {
-                                        const records = groupedRecords[baseBatchNo];
-                                        const isExpanded = expandedBatches[baseBatchNo];
-                                        const isSelected = selectedBatches.includes(baseBatchNo);
+                                    filteredBatches.map((uniqueKey) => {
+                                        const records = groupedRecords[uniqueKey];
+                                        const isExpanded = expandedBatches[uniqueKey];
+                                        const isSelected = selectedBatches.includes(uniqueKey);
 
                                         return (
-                                            <React.Fragment key={baseBatchNo}>
+                                            <React.Fragment key={uniqueKey}>
                                                 <tr
                                                     className={isSelected ? 'table-active' : ''}
-                                                    onClick={() => handleBatchSelectionChange(baseBatchNo, !isSelected)} style={{ cursor: 'pointer' }}
+                                                    onClick={() => handleBatchSelectionChange(uniqueKey, !isSelected)} style={{ cursor: 'pointer' }}
                                                 >
                                                     <td>
                                                         <Form.Check
@@ -759,30 +762,18 @@ const WetTransfer = () => {
                                                             checked={isSelected}
                                                             onChange={(e) => {
                                                                 e.stopPropagation();
-                                                                handleBatchSelectionChange(baseBatchNo, e.target.checked);
+                                                                handleBatchSelectionChange(uniqueKey, e.target.checked);
                                                             }}
                                                         />
                                                     </td>
-                                                    <td>
-                                                        <div className="d-flex align-items-center">
-                                                            <span className="me-2">{baseBatchNo}</span>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline-secondary"
-                                                                className="py-0 px-1"
-                                                                onClick={(e) => handleBatchToggleExpand(baseBatchNo, e)}
-                                                            >
-                                                                {isExpanded ? '−' : '+'}
-                                                            </Button>
-                                                        </div>
-                                                    </td>
+                                                    <td>{records[0].batchNo}</td>
                                                     <td>{getUniqueProcessingTypes(records)}</td>
                                                     <td>{records.reduce((total, r) => total + parseFloat(r.totalKgs || 0), 0).toFixed(2)} kg</td>
                                                     <td>
                                                         {[...new Set(records.map(r => r.grade))].join(', ')}
                                                     </td>
                                                     <td>{records[0]?.cws?.name || 'Unknown'}</td>
-                                                    <td>{new Date(records[0]?.date).toLocaleDateString()}</td>
+                                                    <td>{new Date(records[0]?.startDate).toLocaleDateString()}</td>
                                                     <td>
                                                         <Badge
                                                             bg="info"
@@ -818,7 +809,7 @@ const WetTransfer = () => {
                                                                                 <td>{record.processingType}</td>
                                                                                 <td>{parseFloat(record.totalKgs).toFixed(2)} kg</td>
                                                                                 <td>{record.grade}</td>
-                                                                                <td>{new Date(record.StartDate).toLocaleDateString()}</td>
+                                                                                <td>{new Date(record.startDate).toLocaleDateString()}</td>
                                                                             </tr>
                                                                         ))}
                                                                     </tbody>
@@ -876,11 +867,11 @@ const WetTransfer = () => {
                                     <tbody>
                                         {selectedBatches
                                             .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                                            .map(batch => {
-                                                const records = groupedRecords[batch];
+                                            .map(uniqueKey => {
+                                                const records = groupedRecords[uniqueKey];
                                                 return (
-                                                    <tr key={batch}>
-                                                        <td>{batch}</td>
+                                                    <tr key={uniqueKey}>
+                                                        <td>{records[0].batchNo}</td>
                                                         <td>{[...new Set(records.map(r => r.processingType))].join(', ')}</td>
                                                         <td>{records.reduce((sum, r) => sum + parseFloat(r.totalKgs), 0).toFixed(2)} kg</td>
                                                         <td>{[...new Set(records.map(r => r.grade))].join(', ')}</td>
@@ -900,7 +891,7 @@ const WetTransfer = () => {
                                         <tr>
                                             <th>Grade</th>
                                             <th>Processing Type</th>
-                                            <th>Output KGs</th>
+                                            <th>Transfered KGs</th>
                                             <th>Moisture %</th>
                                         </tr>
                                     </thead>
@@ -928,7 +919,7 @@ const WetTransfer = () => {
                                                                 fullyWashedOutputKgs[grade] || 0} kg
                                                     </td>
                                                     <td>
-                                                        {moistureValues[`${selectedBatches[0]}-${grade}`] || '12.0'}%
+                                                        {moistureValues[`${selectedBatches[0]}-${grade}`] || '0.0'}%
                                                     </td>
                                                 </tr>
                                             );

@@ -12,6 +12,7 @@
 // const Sidebar = () => {
 //   const [isOpen, setIsOpen] = useState(true);
 //   const [isMobile, setIsMobile] = useState(false);
+//   const [settingsOpen, setSettingsOpen] = useState(false);
 //   const navigate = useNavigate();
 //   const location = useLocation();
 //   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -33,10 +34,17 @@
 //     navigate('/login');
 //   };
 
-
 //   // Base menu items
 //   let menuItems = [
 //     { path: '/', icon: 'house-door', text: 'Dashboard' },
+//   ];
+
+//   // Settings menu items for admin
+//   const settingsItems = [
+//     { path: '/cws', icon: 'journal', text: 'CWS' },
+//     { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
+//     { path: '/pricing', icon: 'cash', text: 'Pricing' },
+//     { path: '/users', icon: 'people', text: 'Users' },
 //   ];
 
 //   // Add role-specific menu items
@@ -46,10 +54,6 @@
 //       { path: '/purchases-all', icon: 'coin', text: 'Add Purchase' },
 //       { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
 //       { path: '/processing-all', icon: 'hourglass-split', text: 'Processing' },
-//       { path: '/pricing', icon: 'cash', text: 'Pricing' },
-//       { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
-//       { path: '/cws', icon: 'journal', text: 'CWS' },
-//       { path: '/users', icon: 'people', text: 'Users' },
 //       { path: '/cherry-purchase-report', icon: 'pie-chart', text: 'Report' },
 //     ];
 //   } else if (user.role === 'SUPERVISOR' || user.role === 'OPERATIONS' || user.role === 'FINANCE' || user.role === 'MD') {
@@ -66,6 +70,25 @@
 //       { path: '/transfer', icon: 'truck', text: 'Transfer' },
 //     ];
 //   }
+
+//   const renderNavLink = ({ path, icon, text }) => (
+//     <NavLink
+//       key={path}
+//       to={path}
+//       className={({ isActive }) => `
+//         d-flex align-items-center px-4 py-2 text-decoration-none text-white
+//         ${isActive ? 'active-link' : ''}
+//       `}
+//       style={({ isActive }) => ({
+//         backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+//         transition: 'background-color 0.2s ease',
+//       })}
+//       onClick={() => isMobile && setIsOpen(false)}
+//     >
+//       <i className={`bi bi-${icon} me-3`}></i>
+//       {text}
+//     </NavLink>
+//   );
 
 //   return (
 //     <>
@@ -109,24 +132,30 @@
 
 //         {/* Navigation Links */}
 //         <nav className="flex-grow-1 py-3">
-//           {menuItems.map(({ path, icon, text }) => (
-//             <NavLink
-//               key={path}
-//               to={path}
-//               className={({ isActive }) => `
-//                 d-flex align-items-center px-4 py-2 text-decoration-none text-white
-//                 ${isActive ? 'active-link' : ''}
-//               `}
-//               style={({ isActive }) => ({
-//                 backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-//                 transition: 'background-color 0.2s ease',
-//               })}
-//               onClick={() => isMobile && setIsOpen(false)}
-//             >
-//               <i className={`bi bi-${icon} me-3`}></i>
-//               {text}
-//             </NavLink>
-//           ))}
+//           {menuItems.map(renderNavLink)}
+          
+//           {/* Settings Section for Admin */}
+//           {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
+//             <div>
+//               <button
+//                 className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
+//                 style={{ 
+//                   backgroundColor: 'transparent',
+//                   cursor: 'pointer'
+//                 }}
+//                 onClick={() => setSettingsOpen(!settingsOpen)}
+//               >
+//                 <i className="bi bi-gear me-3"></i>
+//                 Settings
+//                 <i className={`bi bi-chevron-${settingsOpen ? 'down' : 'right'} ms-auto`}></i>
+//               </button>
+//               {settingsOpen && (
+//                 <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
+//                   {settingsItems.map(renderNavLink)}
+//                 </div>
+//               )}
+//             </div>
+//           )}
 //         </nav>
 
 //         {/* Logout Section */}
@@ -181,6 +210,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const cwsInfo = JSON.parse(localStorage.getItem('cws') || '{}');
 
   useEffect(() => {
     const checkWidth = () => {
@@ -232,7 +262,13 @@ const Sidebar = () => {
       ...menuItems,
       { path: '/purchases', icon: 'cart', text: 'Purchases' },
       { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
+      { 
+        path: cwsInfo?.is_wet_parchment_sender ? '/wet-transfer' : '/wet-transfer-receiver', 
+        icon: 'bag-check', 
+        text: 'Wet Transfer' 
+      },
       { path: '/transfer', icon: 'truck', text: 'Transfer' },
+      
     ];
   }
 
