@@ -812,7 +812,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                     >
                                                         <i className="bi bi-pencil-square"></i>
                                                     </Button>
-                                                    <Button
+                                                    {/* <Button
                                                         variant="outline-danger"
                                                         size="sm"
                                                         onClick={() => handleDelete(record.id)}
@@ -822,7 +822,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                         }}
                                                     >
                                                         <i className="bi bi-trash"></i>
-                                                    </Button>
+                                                    </Button> */}
                                                 </>
                                             )}
                                         </td>
