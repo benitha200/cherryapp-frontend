@@ -837,7 +837,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                             <Table size="sm" bordered>
                                 <thead>
                                     <tr>
-                                        <th>Processing Type</th>
+                                        {/* <th>Processing Type</th> */}
                                         <th>Grade</th>
                                         <th>Total KGs</th>
                                     </tr>
@@ -852,7 +852,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                 if (totals[procType][grade] > 0) {
                                                     rows.push(
                                                         <tr key={`${procType}-${grade}`}>
-                                                            {idx === 0 ? <td rowSpan={Object.keys(totals[procType]).filter(g => totals[procType][g] > 0).length}>{procType}</td> : null}
+                                                            {/* {idx === 0 ? <td rowSpan={Object.keys(totals[procType]).filter(g => totals[procType][g] > 0).length}>{procType}</td> : null} */}
                                                             <td>{grade}</td>
                                                             <td>{totals[procType][grade].toFixed(2)} KGs</td>
                                                         </tr>
