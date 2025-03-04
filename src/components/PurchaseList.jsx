@@ -1002,41 +1002,24 @@ const PurchaseList = () => {
       const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
       const batchBase = purchase.batchNo.slice(0, -1);
 
-      
-      console.table(processingEntries)
-      console.log("batchBase:", batchBase);
-
       const hasFirstVariant = processingEntries.some(entry => entry.batchNo === `${batchBase}-1`);
       const hasSecondVariant = processingEntries.some(entry => entry.batchNo === `${batchBase}-2`);
-      console.log("hasFirstVariant:", hasFirstVariant);
-      console.log("hasSecondVariant:", hasSecondVariant);
 
       const hasBothVariants = hasFirstVariant && hasSecondVariant;
-      console.log("hasBothVariants:", hasBothVariants);
+
 
       const trimmedEntries = processingEntries.map(entry => ({
         ...entry,
         batchNo: entry.batchNo.trim()
       }));
-      console.log(trimmedEntries)
+
 
 
       // Hide if both variants are in processing
       if (hasBothVariants) {
         return false;
       }
-      console.log(purchase.grade)
-      console.log(yesterdayString)
-
-      console.log("isGradeProcessing:", isGradeProcessing(purchase.grade, yesterdayString));
-
-      console.log("processingBatchNumbers:", processingBatchNumbers);
-      console.log("purchase.batchNo:", purchase.batchNo);
-      console.log("is in processingBatchNumbers:", processingBatchNumbers.includes(purchase.batchNo));
-
-
       const shouldInclude = purchaseDate === yesterdayString &&
-        !isGradeProcessing(purchase.grade, yesterdayString) &&
         !processingBatchNumbers.includes(purchase.batchNo.slice(0, -1));
 
       console.log("Should include this purchase?", shouldInclude);
