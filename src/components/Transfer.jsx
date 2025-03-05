@@ -29,7 +29,7 @@ const LoadingSkeleton = () => {
           <table className="table table-hover mb-0">
             <thead>
               <tr>
-                {['Batch No', 'Processing Type', 'Total KGs', 'Output KGs', 'Total Output KGs', 'Outturn', 'CWS', 'Date', 'Status'].map((header) => (
+                {['Batch No', 'Processing Type', 'Total KGs', 'Output KGs', 'Total Output KGs','CWS', 'Date', 'Status'].map((header) => (
                   <th key={header}>
                     <Placeholder animation="glow">
                       <Placeholder xs={6} style={placeholderStyle} />
@@ -581,7 +581,7 @@ const Transfer = () => {
                   <th>Total Processing KGs</th>
                   <th style={{ minWidth: '180px' }}>Output KGs</th>
                   <th>Total Output KGs</th>
-                  <th>Outturn</th>
+                  {/* <th>Outturn</th> */}
                   <th>CWS</th>
                   <th>Date</th>
                   <th>Status</th>
@@ -624,7 +624,7 @@ const Transfer = () => {
                         </td>
                         <td style={{ position: 'sticky', left: '30px', backgroundColor: isSelected ? '#e2e6ea' : 'white' }}>
                           <div className="d-flex align-items-center">
-                            <Button
+                            {/* <Button
                               variant="link"
                               className="p-0 me-2"
                               onClick={(e) => handleBatchToggleExpand(baseBatchNo, e)}
@@ -633,7 +633,7 @@ const Transfer = () => {
                               <span style={{ fontSize: '16px' }}>
                                 {isExpanded ? '−' : '+'}
                               </span>
-                            </Button>
+                            </Button> */}
                             <div>
                               <strong>{baseBatchNo}</strong>
                               <div className="small text-muted">
@@ -660,9 +660,9 @@ const Transfer = () => {
                         <td>
                           {totalOutputKgs.toFixed(2)} kg
                         </td>
-                        <td>
+                        {/* <td>
                           {calculateOutturn(records)}%
-                        </td>
+                        </td> */}
                         <td>{records[0].processing.cws.name}</td>
                         <td>{new Date(records[0].date).toLocaleDateString()}</td>
                         <td>
