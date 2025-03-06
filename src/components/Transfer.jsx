@@ -29,7 +29,7 @@ const LoadingSkeleton = () => {
           <table className="table table-hover mb-0">
             <thead>
               <tr>
-                {['Batch No', 'Processing Type', 'Total KGs', 'Output KGs', 'Total Output KGs','CWS', 'Date', 'Status'].map((header) => (
+                {['Batch No', 'Processing Type', 'Total KGs', 'Output KGs', 'Total Output KGs', 'CWS', 'Date', 'Status'].map((header) => (
                   <th key={header}>
                     <Placeholder animation="glow">
                       <Placeholder xs={6} style={placeholderStyle} />
@@ -292,16 +292,16 @@ const Transfer = () => {
 
   const calculateOutturn = (records) => {
     const uniqueProcessingIds = [...new Set(records.map(record => record.processingId))];
-    
+
     const totalProcessingKgs = uniqueProcessingIds.reduce((sum, processingId) => {
       const record = records.find(r => r.processingId === processingId);
       return sum + record.processing.totalKgs;
     }, 0);
-    
+
     const totalOutputKgs = records.reduce((sum, record) => {
       return sum + record.totalOutputKgs;
     }, 0);
-    
+
     return totalProcessingKgs > 0 ? ((totalOutputKgs / totalProcessingKgs) * 100).toFixed(2) : 'N/A';
   };
 
@@ -594,10 +594,10 @@ const Transfer = () => {
                     });
                     return acc;
                   }, {});
-                
+
                   // Total output KGs
                   const totalOutputKgs = records.reduce((sum, record) => sum + record.totalOutputKgs, 0);
-                
+
                   return (
                     <React.Fragment key={baseBatchNo}>
                       <tr
@@ -630,7 +630,18 @@ const Transfer = () => {
                           {getUniqueProcessingTypes(records)}
                         </td>
                         <td>
-                          {records[0].processing.totalKgs.toFixed(2)} kg
+                          {(() => {
+                            // Get unique processing IDs
+                            const uniqueProcessingIds = [...new Set(records.map(record => record.processingId))];
+
+                            // Sum up total KGs from each unique processing
+                            const totalProcessingKgs = uniqueProcessingIds.reduce((sum, processingId) => {
+                              const record = records.find(r => r.processingId === processingId);
+                              return sum + record.processing.totalKgs;
+                            }, 0);
+
+                            return `${totalProcessingKgs.toFixed(2)} kg`;
+                          })()}
                         </td>
                         <td>
                           {Object.entries(aggregatedOutputKgs)
@@ -661,7 +672,7 @@ const Transfer = () => {
                           </span>
                         </td>
                       </tr>
-                
+
                       {isExpanded && (
                         <tr className="table-light">
                           <td colSpan={10} className="p-0">

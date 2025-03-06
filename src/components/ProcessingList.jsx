@@ -70,6 +70,22 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         setEditingRecord(null);
     };
 
+    const isValidKgValue = (value) => {
+        // Allow empty string for clearing the input
+        if (value === '') return true;
+
+        // Convert to number and check if it's NaN
+        const num = parseFloat(value);
+        if (isNaN(num)) return false;
+
+        // Check if it's a whole number
+        if (Number.isInteger(num)) return true;
+
+        // Check if it has .5 decimal
+        return Math.abs(num * 10 % 10) === 5;
+    };
+
+
     const resetOutputs = () => {
         setHoneyOutputKgs({ H1: '' });
         setNaturalOutputKgs({
@@ -104,22 +120,48 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         }
     }, [show, batches]);
 
+    // const handleHoneyOutputChange = (value) => {
+    //     setHoneyOutputKgs({ H1: value });
+    // };
+
+    // const handleNaturalOutputChange = (field, value) => {
+    //     setNaturalOutputKgs(prev => ({
+    //         ...prev,
+    //         [field]: value
+    //     }));
+    // };
+
+    // const handleFullyWashedOutputChange = (field, value) => {
+    //     setFullyWashedOutputKgs(prev => ({
+    //         ...prev,
+    //         [field]: value
+    //     }));
+    // };
+
     const handleHoneyOutputChange = (value) => {
-        setHoneyOutputKgs({ H1: value });
+        if (isValidKgValue(value)) {
+            setHoneyOutputKgs({ H1: value });
+        }
     };
 
+    // Function to handle Natural output changes with validation
     const handleNaturalOutputChange = (field, value) => {
-        setNaturalOutputKgs(prev => ({
-            ...prev,
-            [field]: value
-        }));
+        if (isValidKgValue(value)) {
+            setNaturalOutputKgs(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        }
     };
 
+    // Function to handle Fully Washed output changes with validation
     const handleFullyWashedOutputChange = (field, value) => {
-        setFullyWashedOutputKgs(prev => ({
-            ...prev,
-            [field]: value
-        }));
+        if (isValidKgValue(value)) {
+            setFullyWashedOutputKgs(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        }
     };
 
     const fetchExistingProcessingAndBaggingOffs = async (batchNo) => {
@@ -834,7 +876,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                 )}
 
                 <Form>
-                    <Form.Group className="mb-3">
+                    <Form.Group className="mb-1">
                         <Form.Label style={{ color: processingTheme.primary }}>Bagging Off Date</Form.Label>
                         <Form.Control
                             type="date"
@@ -847,6 +889,9 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                             }}
                         />
                     </Form.Group>
+                    {/* <Form.Text className="text-warning mb-3">
+                        Use whole numbers or .5 decimals only (e.g., 120, 120.5)
+                    </Form.Text> */}
 
 
                     {/* Honey Processing Section */}
@@ -855,7 +900,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                             <>
                                 <div className="mb-4">
                                     <Form.Label style={{ color: processingTheme.primary }}>
-                                        Honey Processing Output
+                                        Honey Processing Output (e.g., 120, 120.5)
                                     </Form.Label>
                                     <Row>
                                         <Col md={12}>
@@ -870,6 +915,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                     borderColor: processingTheme.secondary,
                                                     ':focus': { borderColor: processingTheme.primary }
                                                 }}
+                                                isInvalid={honeyOutputKgs.H1 !== '' && !isValidKgValue(honeyOutputKgs.H1)}
                                             />
                                         </Col>
                                     </Row>
@@ -918,7 +964,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         (isEditing && editingRecord?.processingType === 'FULLY WASHED')) && (
                             <div className="mb-3">
                                 <Form.Label style={{ color: processingTheme.primary }}>
-                                    Fully Washed Processing Output
+                                    Fully Washed Processing Output (e.g., 120, 120.5)
                                 </Form.Label>
                                 <Row>
                                     {/* Check for batch ending with -2 or B */}
@@ -1019,7 +1065,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         (isEditing && editingRecord?.processingType === 'NATURAL')) && (
                             <div className="mb-4">
                                 <Form.Label style={{ color: processingTheme.primary }}>
-                                    Natural Processing Output
+                                    Natural Processing Output (e.g., 120, 120.5)
                                 </Form.Label>
                                 <Row>
                                     {/* Check if batch number ends with -2 or B */}
@@ -1037,6 +1083,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                         borderColor: processingTheme.secondary,
                                                         ':focus': { borderColor: processingTheme.primary }
                                                     }}
+                                                    isInvalid={naturalOutputKgs.N1 !== '' && !isValidKgValue(naturalOutputKgs.N1)}
                                                 />
                                             </Col>
                                             <Col md={6}>
