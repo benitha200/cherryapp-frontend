@@ -291,24 +291,22 @@ const Transfer = () => {
 
 
   const calculateOutturn = (records) => {
-    const totalProcessingKgs = records.reduce((sum, record) => {
-      if (record.processingType !== 'NATURAL') {
-        return sum + record.processing.totalKgs;
-      }
-      return sum;
+    const uniqueProcessingIds = [...new Set(records.map(record => record.processingId))];
+    
+    const totalProcessingKgs = uniqueProcessingIds.reduce((sum, processingId) => {
+      const record = records.find(r => r.processingId === processingId);
+      return sum + record.processing.totalKgs;
     }, 0);
-
+    
     const totalOutputKgs = records.reduce((sum, record) => {
-      if (record.processingType !== 'NATURAL') {
-        return sum + record.totalOutputKgs;
-      }
-      return sum;
+      return sum + record.totalOutputKgs;
     }, 0);
-
+    
     return totalProcessingKgs > 0 ? ((totalOutputKgs / totalProcessingKgs) * 100).toFixed(2) : 'N/A';
   };
 
-  // Function to get unique processing types from records
+
+
   const getUniqueProcessingTypes = (records) => {
     const uniqueTypes = [...new Set(records.map(record => record.processingType))];
     return uniqueTypes.map(type => (
@@ -318,11 +316,7 @@ const Transfer = () => {
     ));
   };
 
-  // Function to calculate total processing KGs
-  const calculateTotalProcessingKgs = (records) => {
-    const total = records.reduce((sum, record) => sum + record.processing.totalKgs, 0);
-    return `${total.toFixed(2)} kg`;
-  };
+
 
   // Get total KGs per grade for selected batches
   const getGradeTotals = () => {
@@ -581,7 +575,7 @@ const Transfer = () => {
                   <th>Total Processing KGs</th>
                   <th style={{ minWidth: '180px' }}>Output KGs</th>
                   <th>Total Output KGs</th>
-                  {/* <th>Outturn</th> */}
+                  <th>Outturn</th>
                   <th>CWS</th>
                   <th>Date</th>
                   <th>Status</th>
@@ -624,16 +618,6 @@ const Transfer = () => {
                         </td>
                         <td style={{ position: 'sticky', left: '30px', backgroundColor: isSelected ? '#e2e6ea' : 'white' }}>
                           <div className="d-flex align-items-center">
-                            {/* <Button
-                              variant="link"
-                              className="p-0 me-2"
-                              onClick={(e) => handleBatchToggleExpand(baseBatchNo, e)}
-                              style={{ color: processingTheme.primary }}
-                            >
-                              <span style={{ fontSize: '16px' }}>
-                                {isExpanded ? '−' : '+'}
-                              </span>
-                            </Button> */}
                             <div>
                               <strong>{baseBatchNo}</strong>
                               <div className="small text-muted">
@@ -658,11 +642,11 @@ const Transfer = () => {
                             ))}
                         </td>
                         <td>
-                          {totalOutputKgs.toFixed(2)} kg
+                          {totalOutputKgs.toFixed(1)} kg
                         </td>
-                        {/* <td>
+                        <td>
                           {calculateOutturn(records)}%
-                        </td> */}
+                        </td>
                         <td>{records[0].processing.cws.name}</td>
                         <td>{new Date(records[0].date).toLocaleDateString()}</td>
                         <td>

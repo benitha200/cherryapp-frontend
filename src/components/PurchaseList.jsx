@@ -1951,6 +1951,7 @@ const PurchaseList = () => {
                                 <>
                                   <input
                                     type="number"
+                                    min="0"
                                     className={`form-control form-control-sm ${isInvalid ? "is-warning" : ""}`}
                                     value={specialBatchKgs[batch.batchNo] ?? (processingEntry?.totalKgs || '')}
                                     onChange={(e) => handleBatchKgChange(batch.batchNo, e.target.value)}
