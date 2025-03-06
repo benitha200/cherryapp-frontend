@@ -337,7 +337,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         switch (processingType) {
             case 'NATURAL':
                 return isSecondaryBatch ?
-                    { B1: naturalOutputKgs.B1, B2: naturalOutputKgs.B2 } :
+                    { N1: naturalOutputKgs.N1, N2: naturalOutputKgs.N2 } :
                     { N1: naturalOutputKgs.N1, N2: naturalOutputKgs.N2 };
             case 'FULLY WASHED':
             case 'FULLY_WASHED':
@@ -1230,8 +1230,8 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                             <Col md={6}>
                                                 <Form.Control
                                                     type="number"
-                                                    placeholder="B1 KGs"
-                                                    value={naturalOutputKgs.B1}
+                                                    placeholder="N1 KGs"
+                                                    value={naturalOutputKgs.N1}
                                                     onChange={(e) => handleNaturalOutputChange('B1', e.target.value)}
                                                     required
                                                     style={{
@@ -1243,8 +1243,8 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                             <Col md={6}>
                                                 <Form.Control
                                                     type="number"
-                                                    placeholder="B2 KGs"
-                                                    value={naturalOutputKgs.B2}
+                                                    placeholder="N2 KGs"
+                                                    value={naturalOutputKgs.N2}
                                                     onChange={(e) => handleNaturalOutputChange('B2', e.target.value)}
                                                     required
                                                     style={{
