@@ -22,7 +22,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
 
     const [honeyOutputKgs, setHoneyOutputKgs] = useState({ H1: '' });
     const [naturalOutputKgs, setNaturalOutputKgs] = useState({
-        N1: '', N2: '', B1: '', B2: ''
+        N1: '', N2: ''
     });
     const [fullyWashedOutputKgs, setFullyWashedOutputKgs] = useState({
         A0: '', A1: '', A2: '', A3: '', B1: '', B2: ''
@@ -153,93 +153,12 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         }
     };
 
-    // const prepareSubmissionData = (processingType, status) => {
-    //     if (!batches?.[0]?.batchNo) return [];
-
-    //     const submissions = [];
-    //     const batchNo = batches[0].batchNo;
-
-    //     if (processingType === 'HONEY') {
-    //         if (honeyOutputKgs.H1) {
-    //             submissions.push({
-    //                 date: selectedDate,
-    //                 outputKgs: honeyOutputKgs,
-    //                 processingType: 'HONEY',
-    //                 existingProcessing, // Ensure this is included
-    //                 batchNo,
-    //                 status,
-    //                 progressive: progressiveMode,
-    //                 recordId: isEditing && editingRecord?.processingType === 'HONEY' ? editingRecord.id : null
-    //             });
-    //         }
-
-    //         // Add fully washed submission if applicable
-    //         if (Object.values(fullyWashedOutputKgs).some(v => v !== '')) {
-    //             submissions.push({
-    //                 date: selectedDate,
-    //                 outputKgs: fullyWashedOutputKgs,
-    //                 processingType: 'FULLY WASHED',
-    //                 existingProcessing, // Ensure this is included
-    //                 batchNo,
-    //                 status,
-    //                 progressive: progressiveMode,
-    //                 recordId: isEditing && editingRecord?.processingType === 'FULLY WASHED' ? editingRecord.id : null
-    //             });
-    //         }
-    //     } else {
-    //         const outputData = prepareOutputData(processingType, batchNo);
-    //         if (Object.values(outputData).some(v => v !== '')) {
-    //             submissions.push({
-    //                 date: selectedDate,
-    //                 outputKgs: outputData,
-    //                 processingType,
-    //                 existingProcessing, // Ensure this is included
-    //                 batchNo,
-    //                 status,
-    //                 progressive: progressiveMode,
-    //                 recordId: isEditing ? editingRecord?.id : null
-    //             });
-    //         }
-    //     }
-
-    //     return submissions;
-    // };
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
-    // const calculateTotalsByProcessingType = () => {
-    //     const totals = {
-    //         'HONEY': { H1: 0 },
-    //         'NATURAL': { N1: 0, N2: 0, B1: 0, B2: 0 },
-    //         'FULLY WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
-    //         'FULLY_WASHED': { A0: 0, A1: 0, A2: 0, A3: 0, B1: 0, B2: 0 },
-    //     };
-
-    //     savedBaggingOffs.forEach(record => {
-    //         if (record.processingType === 'HONEY') {
-    //             if (record.outputKgs.H1) {
-    //                 totals['HONEY'].H1 += parseFloat(record.outputKgs.H1);
-    //             }
-    //         } else if (record.processingType === 'NATURAL') {
-    //             Object.keys(record.outputKgs).forEach(key => {
-    //                 if (record.outputKgs[key]) {
-    //                     totals['NATURAL'][key] = (totals['NATURAL'][key] || 0) + parseFloat(record.outputKgs[key]);
-    //                 }
-    //             });
-    //         } else if (record.processingType === 'FULLY WASHED') {
-    //             Object.keys(record.outputKgs).forEach(key => {
-    //                 if (record.outputKgs[key]) {
-    //                     totals['FULLY WASHED'][key] = (totals['FULLY WASHED'][key] || 0) + parseFloat(record.outputKgs[key]);
-    //                 }
-    //             });
-    //         }
-    //     });
-
-    //     return totals;
-    // };
 
 
     const calculateTotalsByProcessingType = () => {
@@ -640,38 +559,6 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         }
     };
 
-    // const handleEdit = (record) => {
-    //     setIsEditing(true);
-    //     setEditingRecord(record);
-    //     setSelectedDate(new Date(record.date).toISOString().split('T')[0]);
-
-    //     // Reset all outputs first
-    //     resetOutputs();
-
-    //     // Set the outputs based on the record being edited
-    //     if (record.processingType === 'HONEY') {
-    //         setHoneyOutputKgs(record.outputKgs);
-    //     } else if (record.processingType === 'NATURAL') {
-    //         // Only set the fields that exist in the record
-    //         const updatedNaturalOutputs = { ...naturalOutputKgs };
-    //         Object.keys(record.outputKgs).forEach(key => {
-    //             if (record.outputKgs[key]) {
-    //                 updatedNaturalOutputs[key] = record.outputKgs[key];
-    //             }
-    //         });
-    //         setNaturalOutputKgs(updatedNaturalOutputs);
-    //     } else if (record.processingType === 'FULLY WASHED') {
-    //         // Only set the fields that exist in the record
-    //         const updatedFullyWashedOutputs = { ...fullyWashedOutputKgs };
-    //         Object.keys(record.outputKgs).forEach(key => {
-    //             if (record.outputKgs[key]) {
-    //                 updatedFullyWashedOutputs[key] = record.outputKgs[key];
-    //             }
-    //         });
-    //         setFullyWashedOutputKgs(updatedFullyWashedOutputs);
-    //     }
-    // };
-
     const prepareSubmissionData = (processingType, status) => {
         if (!batches?.[0]?.batchNo) return [];
 
@@ -1026,66 +913,6 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         )}
 
 
-                    {/* Honey Processing Section */}
-                    {/* {((!isEditing && batches?.[0]?.processingType?.toUpperCase() === 'HONEY') ||
-                        (isEditing && editingRecord?.processingType === 'HONEY')) && (
-                            <>
-                                <div className="mb-4">
-                                    <Form.Label style={{ color: processingTheme.primary }}>
-                                        Honey Processing Output
-                                    </Form.Label>
-                                    <Row>
-                                        <Col md={12}>
-                                            <Form.Control
-                                                type="number"
-                                                step="0.5"
-                                                placeholder="H1 KGs"
-                                                value={honeyOutputKgs.H1}
-                                                onChange={(e) => handleHoneyOutputChange(e.target.value)}
-                                                required
-                                                style={{
-                                                    borderColor: processingTheme.secondary,
-                                                    ':focus': { borderColor: processingTheme.primary }
-                                                }}
-                                            />
-                                        </Col>
-                                    </Row>
-                                </div>
-
-                                <div className="mb-3">
-                                    <div className="d-flex justify-content-between align-items-center mb-2">
-                                        <Form.Label style={{ color: processingTheme.primary, marginBottom: 0 }}>
-                                            Fully Washed Processing Output
-                                        </Form.Label>
-                                        <span style={{
-                                            fontSize: '0.875rem',
-                                            color: processingTheme.accent
-                                        }}>
-                                            Was processed as Fully Washed
-                                        </span>
-                                    </div>
-                                    <Row>
-                                        {['A0', 'A1', 'A2', 'A3'].map((field) => (
-                                            <Col md={3} key={field} className="mb-2">
-                                                <Form.Control
-                                                    type="number"
-                                                    step="0.5"
-                                                    placeholder={`${field} KGs`}
-                                                    value={fullyWashedOutputKgs[field]}
-                                                    onChange={(e) => handleFullyWashedOutputChange(field, e.target.value)}
-                                                    required
-                                                    style={{
-                                                        borderColor: processingTheme.secondary,
-                                                        ':focus': { borderColor: processingTheme.primary }
-                                                    }}
-                                                />
-                                            </Col>
-                                        ))}
-                                    </Row>
-                                </div>
-                            </>
-                        )} */}
-
                     {/* Fully Washed Processing Section */}
                     {((!isEditing && batches?.[0]?.processingType?.toUpperCase() === 'FULLY_WASHED') ||
                         (isEditing && editingRecord?.processingType === 'FULLY WASHED')) && (
@@ -1195,7 +1022,8 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                     Natural Processing Output
                                 </Form.Label>
                                 <Row>
-                                    {(batches[0].batchNo.endsWith('-1') || batches[0].batchNo.endsWith('A')) ? (
+                                    {/* Check if batch number ends with -2 or B */}
+                                    {(batches?.[0]?.batchNo?.endsWith('-2') || batches?.[0]?.batchNo?.endsWith('B')) ? (
                                         <>
                                             <Col md={6}>
                                                 <Form.Control
@@ -1232,7 +1060,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                     type="number"
                                                     placeholder="N1 KGs"
                                                     value={naturalOutputKgs.N1}
-                                                    onChange={(e) => handleNaturalOutputChange('B1', e.target.value)}
+                                                    onChange={(e) => handleNaturalOutputChange('N1', e.target.value)}
                                                     required
                                                     style={{
                                                         borderColor: processingTheme.secondary,
@@ -1245,7 +1073,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                     type="number"
                                                     placeholder="N2 KGs"
                                                     value={naturalOutputKgs.N2}
-                                                    onChange={(e) => handleNaturalOutputChange('B2', e.target.value)}
+                                                    onChange={(e) => handleNaturalOutputChange('N2', e.target.value)}
                                                     required
                                                     style={{
                                                         borderColor: processingTheme.secondary,
@@ -1259,103 +1087,6 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                             </div>
                         )}
 
-
-
-                    {/* {(!isEditing || (isEditing && editingRecord?.processingType === 'FULLY WASHED' || isEditing && editingRecord?.processingType === 'HONEY')) &&
-                        batches?.[0]?.processingType?.toUpperCase() === 'FULLY_WASHED' && (
-                            <div className="mb-3">
-                                <Form.Label style={{ color: processingTheme.primary }}>
-                                    Fully Washed Processing Output
-                                </Form.Label>
-                                <Row>
-                                    {batches[0].batchNo.endsWith('-2') || batches[0].batchNo.endsWith('B') ? (
-                                        <>
-                                            <Col md={6}>
-                                                <Form.Control
-                                                    type="number"
-                                                    placeholder="B1 KGs"
-                                                    value={fullyWashedOutputKgs.B1}
-                                                    onChange={(e) => handleFullyWashedOutputChange('B1', e.target.value)}
-                                                    required
-                                                    style={{
-                                                        borderColor: processingTheme.secondary,
-                                                        ':focus': { borderColor: processingTheme.primary }
-                                                    }}
-                                                />
-                                            </Col>
-                                            <Col md={6}>
-                                                <Form.Control
-                                                    type="number"
-                                                    placeholder="B2 KGs"
-                                                    value={fullyWashedOutputKgs.B2}
-                                                    onChange={(e) => handleFullyWashedOutputChange('B2', e.target.value)}
-                                                    required
-                                                    style={{
-                                                        borderColor: processingTheme.secondary,
-                                                        ':focus': { borderColor: processingTheme.primary }
-                                                    }}
-                                                />
-                                            </Col>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Col md={3} className="mb-2">
-                                                <Form.Control
-                                                    type="number"
-                                                    placeholder="A0 KGs"
-                                                    value={fullyWashedOutputKgs.A0}
-                                                    onChange={(e) => handleFullyWashedOutputChange('A0', e.target.value)}
-                                                    required
-                                                    style={{
-                                                        borderColor: processingTheme.secondary,
-                                                        ':focus': { borderColor: processingTheme.primary }
-                                                    }}
-                                                />
-                                            </Col>
-                                            <Col md={3} className="mb-2">
-                                                <Form.Control
-                                                    type="number"
-                                                    placeholder="A1 KGs"
-                                                    value={fullyWashedOutputKgs.A1}
-                                                    onChange={(e) => handleFullyWashedOutputChange('A1', e.target.value)}
-                                                    required
-                                                    style={{
-                                                        borderColor: processingTheme.secondary,
-                                                        ':focus': { borderColor: processingTheme.primary }
-                                                    }}
-                                                />
-                                            </Col>
-                                            <Col md={3} className="mb-2">
-                                                <Form.Control
-                                                    type="number"
-                                                    placeholder="A2 KGs"
-                                                    value={fullyWashedOutputKgs.A2}
-                                                    onChange={(e) => handleFullyWashedOutputChange('A2', e.target.value)}
-                                                    required
-                                                    style={{
-                                                        borderColor: processingTheme.secondary,
-                                                        ':focus': { borderColor: processingTheme.primary }
-                                                    }}
-                                                />
-                                            </Col>
-                                            <Col md={3} className="mb-2">
-                                                <Form.Control
-                                                    type="number"
-                                                    placeholder="A3 KGs"
-                                                    value={fullyWashedOutputKgs.A3}
-                                                    onChange={(e) => handleFullyWashedOutputChange('A3', e.target.value)}
-                                                    required
-                                                    style={{
-                                                        borderColor: processingTheme.secondary,
-                                                        ':focus': { borderColor: processingTheme.primary }
-                                                    }}
-                                                />
-                                            </Col>
-                                        </>
-                                    )}
-                                </Row>
-                            </div>
-                        )} */}
                 </Form>
             </Modal.Body>
             <Modal.Footer style={{ backgroundColor: processingTheme.neutral }}>
