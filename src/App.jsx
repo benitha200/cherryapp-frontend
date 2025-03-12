@@ -23,6 +23,7 @@ import MyAccount from './components/Auth/MyAccount.jsx';
 import ProcessingListAll from './components/Admin/Cherry/ProcessingListAll.jsx';
 import WetTransfer from './components/Cws/WetTransfer.jsx';
 import WetTransferReceiver from './components/Cws/WetTransferReceiver.jsx';
+import BaggingOffList from './components/Admin/Reports/BaggingOffList.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -50,6 +51,22 @@ const AppContent = () => {
           transition: 'margin-left 0.3s ease-in-out'
         }}
       >
+        <div 
+  className="alert m-2 text-center" 
+  role="alert"
+  style={{ 
+    fontWeight: 'bold', 
+    fontSize: '16px',
+    backgroundColor: '#BF0000', 
+    color: 'white',
+    border: '2px solid darkred',
+    boxShadow: '0 0 10px rgba(148, 4, 4, 0.5)'
+  }}
+>
+  <i className="bi bi-exclamation-triangle-fill me-2"></i>
+  This is for Testing purpose only
+</div>
+
         <div className="container-fluid p-4">
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -152,6 +169,14 @@ const AppContent = () => {
               element={
                 <PrivateRoute>
                   <CherryPurchaseReportDetailed />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/bagg-off-list"
+              element={
+                <PrivateRoute>
+                  <BaggingOffList />
                 </PrivateRoute>
               }
             />
