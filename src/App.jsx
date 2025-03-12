@@ -51,21 +51,22 @@ const AppContent = () => {
           transition: 'margin-left 0.3s ease-in-out'
         }}
       >
-        <div 
-  className="alert m-2 text-center" 
+{/* <div
+  className="alert m-2 text-center"
   role="alert"
-  style={{ 
-    fontWeight: 'bold', 
+  style={{
+    fontWeight: 'bold',
     fontSize: '16px',
-    backgroundColor: '#BF0000', 
+    backgroundColor: '#BF0000',
     color: 'white',
     border: '2px solid darkred',
-    boxShadow: '0 0 10px rgba(148, 4, 4, 0.5)'
+    boxShadow: '0 0 10px rgba(148, 4, 4, 0.5)',
+    animation: 'blinking 1.5s infinite'
   }}
 >
   <i className="bi bi-exclamation-triangle-fill me-2"></i>
   This is for Testing purpose only
-</div>
+</div> */}
 
         <div className="container-fluid p-4">
           <Routes>
