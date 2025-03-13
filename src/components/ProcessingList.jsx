@@ -837,7 +837,7 @@ const ProcessingList = () => {
                                         <td style={{ padding: '12px 16px' }}>
                                             <span className="font-weight-medium">{batch?.totalKgs?.toLocaleString() || 0}</span> kg
                                         </td>
-                                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                                        <td style={{ padding: '12px 16px' }}>
                                             {renderGradeBadge(batch.grade)}
                                         </td>
                                         <td style={{ padding: '12px 16px' }}>
@@ -866,10 +866,10 @@ const ProcessingList = () => {
                                                     padding: '0.375rem 0.75rem'
                                                 }}
                                                 onMouseOver={(e) => {
-                                                    e.currentTarget.style.backgroundColor = processingTheme.neutral;
+                                                    e.currentTarget.style.backgroundColor = processingTheme.secondary;
                                                 }}
                                                 onMouseOut={(e) => {
-                                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                                    e.currentTarget.style.backgroundColor = processingTheme.secondary;
                                                 }}
                                             >
                                                 <i className="fas fa-box mr-1"></i> Bag Off
