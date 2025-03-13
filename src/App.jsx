@@ -24,6 +24,7 @@ import ProcessingListAll from './components/Admin/Cherry/ProcessingListAll.jsx';
 import WetTransfer from './components/Cws/WetTransfer.jsx';
 import WetTransferReceiver from './components/Cws/WetTransferReceiver.jsx';
 import BaggingOffList from './components/Admin/Reports/BaggingOffList.jsx';
+import BaggingOffReport from './components/Admin/Reports/BaggingOffReport.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -178,6 +179,14 @@ const AppContent = () => {
               element={
                 <PrivateRoute>
                   <BaggingOffList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/bagging-off-report"
+              element={
+                <PrivateRoute>
+                  <BaggingOffReport />
                 </PrivateRoute>
               }
             />
