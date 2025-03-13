@@ -507,11 +507,11 @@ const ProcessingList = () => {
 
         switch (processingType) {
             case 'FULLY_WASHED':
-                color = '#00707C';
+                color='#3FA3C5';
                 text = 'FULLY_WASHED';
                 break;
             case 'NATURAL':
-                color = '#4FB3B3';
+                color=processingTheme.secondary;
                 text = 'NATURAL';
                 break;
             default:
@@ -851,16 +851,16 @@ const ProcessingList = () => {
                                         </td>
                                         <td style={{ padding: '10px 16px' }} onClick={(e) => e.stopPropagation()}>
                                             <Button
-                                                variant="outline-primary"
+                                                variant="primary"
                                                 size="sm"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     startProcessing(batch.batches);
                                                 }}
                                                 style={{
-                                                    color: processingTheme.primary,
+                                                    color: processingTheme.neutral,
                                                     borderColor: processingTheme.primary,
-                                                    backgroundColor: 'transparent',
+                                                    backgroundColor:  processingTheme.primary,
                                                     transition: 'all 0.2s',
                                                     borderRadius: '4px',
                                                     padding: '0.375rem 0.75rem'
