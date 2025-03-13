@@ -1206,11 +1206,11 @@ const PurchaseList = () => {
     return "No batches available for processing";
   };
 
-  useEffect(() => {
-    console.log('Yesterday string:', yesterdayString);
-    console.log('All purchases:', purchases);
-    console.log('Yesterday purchases:', getYesterdayPurchases());
-  }, [purchases]);
+  // useEffect(() => {
+  //   console.log('Yesterday string:', yesterdayString);
+  //   console.log('All purchases:', purchases);
+  //   console.log('Yesterday purchases:', getYesterdayPurchases());
+  // }, [purchases]);
 
 
 
