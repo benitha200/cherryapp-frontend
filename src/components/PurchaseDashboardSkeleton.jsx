@@ -91,6 +91,22 @@ const ChartSkeleton = () => (
 const PurchasesDashboardSkeleton = () => {
   return (
     <div className="container-fluid p-4" style={{ backgroundColor: '#f8fafa' }}>
+
+        <div className="col-12">
+          <h5 className="text-sucafina">Grade A Summary</h5>
+        </div>
+      <div className="row g-4 mb-4">
+        {[1, 2, 3, 4].map((_, index) => (
+          <div key={index} className="col-12 col-md-6 col-lg-3">
+            <DashboardCardSkeleton />
+          </div>
+        ))}
+      </div>
+
+      <div className="col-12">
+          <h5 className="text-sucafina">Grade A Summary</h5>
+        </div>
+        
       <div className="row g-4 mb-4">
         {[1, 2, 3, 4].map((_, index) => (
           <div key={index} className="col-12 col-md-6 col-lg-3">

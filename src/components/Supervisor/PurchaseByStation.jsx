@@ -251,96 +251,6 @@ const PurchaseByStation = () => {
 
     return (
         <div className="container-fluid py-4">
-            {/* <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="mb-0">Purchases By Station</h2>
-
-                <div className="d-flex gap-3 align-items-end">
-                    <div>
-                        <label className="form-label" style={{ color: theme.primary }}>Select Date (Optional)</label>
-                        <DatePicker
-                            selected={selectedDate}
-                            onChange={date => setSelectedDate(date)}
-                            className="form-control"
-                            dateFormat="yyyy-MM-dd"
-                            isClearable
-                            placeholderText="All Time"
-                            style={{
-                                borderColor: theme.primary,
-                                '&:focus': {
-                                    borderColor: theme.secondary,
-                                    boxShadow: `0 0 0 0.2rem ${theme.neutral}`
-                                }
-                            }}
-                        />
-                    </div>
-
-                    <div className="dropdown" style={{ width: '400px' }}>
-                        <label className="form-label" style={{ color: theme.primary }}>Filter by CWS</label>
-                        <div className="position-relative">
-                            <button
-                                className="form-select d-flex justify-content-between align-items-center"
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                type="button"
-                                aria-expanded={isDropdownOpen}
-                                style={{
-                                    borderColor: theme.primary,
-                                    color: theme.primary,
-                                    backgroundColor: isDropdownOpen ? theme.neutral : 'white',
-                                    width: '100%'
-                                }}
-                            >
-                                {selectedCws ? cwsList.find(cws => cws.id.toString() === selectedCws)?.name : 'All CWS'}
-                            </button>
-
-                            <div
-                                className={`dropdown-menu w-100 ${isDropdownOpen ? 'show' : ''}`}
-                                style={{
-                                    maxHeight: '300px',
-                                    overflowY: 'auto',
-                                    borderColor: theme.primary,
-                                    width: '100%'
-                                }}
-                            >
-                                <div className="px-3 py-2">
-                                    <input
-                                        type="text"
-                                        className="form-control form-control-sm"
-                                        placeholder="Search CWS..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        onClick={(e) => e.stopPropagation()}
-                                        style={{ borderColor: theme.primary }}
-                                    />
-                                </div>
-                                <div className="dropdown-divider"></div>
-                                <button
-                                    className={`dropdown-item ${!selectedCws ? 'active' : ''}`}
-                                    onClick={() => handleCwsSelect('')}
-                                    style={{
-                                        backgroundColor: !selectedCws ? theme.primary : 'transparent',
-                                        color: !selectedCws ? 'white' : 'inherit'
-                                    }}
-                                >
-                                    All CWS
-                                </button>
-                                {filteredCwsList.map(cws => (
-                                    <button
-                                        key={cws.id}
-                                        className={`dropdown-item ${selectedCws === cws.id.toString() ? 'active' : ''}`}
-                                        onClick={() => handleCwsSelect(cws.id.toString())}
-                                        style={{
-                                            backgroundColor: selectedCws === cws.id.toString() ? theme.primary : 'transparent',
-                                            color: selectedCws === cws.id.toString() ? 'white' : 'inherit'
-                                        }}
-                                    >
-                                        {cws.name}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div> */}
 
             <div className="mb-4">
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
@@ -506,7 +416,7 @@ const PurchaseByStation = () => {
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    Array(5).fill(0).map((_, index) => (
+                                    Array(20).fill(0).map((_, index) => (
                                         <SkeletonRow key={index} cols={8} />
                                     ))
                                 ) : error ? (

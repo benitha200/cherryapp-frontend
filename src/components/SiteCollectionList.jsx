@@ -21,7 +21,7 @@ const SiteCollectionList = () => {
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({ name: '', cwsId: '' });
   const [searchTerm, setSearchTerm] = useState('');
-  const skeletonRows = Array(5).fill(0);
+  const skeletonRows = Array(100).fill(0);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);

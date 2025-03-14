@@ -385,6 +385,35 @@ const CherryPurchaseReportDetailed = () => {
                 </div>
             )}
 
+            {loading && (
+                <div className="row mb-4">
+                    <div className="col-md-3">
+                        <div className="card" style={{ backgroundColor: theme.neutral }}>
+                            <div className="card-body">
+                                <h6 className="card-title">Total Records</h6>
+                                <h4 className="card-text">-</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-3">
+                        <div className="card" style={{ backgroundColor: theme.neutral }}>
+                            <div className="card-body">
+                                <h6 className="card-title">Total KGs</h6>
+                                <h4 className="card-text">-</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-md-3">
+                        <div className="card" style={{ backgroundColor: theme.neutral }}>
+                            <div className="card-body">
+                                <h6 className="card-title">Total Amount</h6>
+                                <h4 className="card-text">-</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Results Table */}
             <div className="card">
                 <div className="card-body">
@@ -408,7 +437,7 @@ const CherryPurchaseReportDetailed = () => {
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    Array(5).fill(0).map((_, index) => (
+                                    Array(20).fill(0).map((_, index) => (
                                         <SkeletonRow key={index} cols={12} />
                                     ))
                                 ) : error ? (

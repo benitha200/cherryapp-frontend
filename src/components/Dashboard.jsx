@@ -152,23 +152,23 @@ const PurchasesDashboard = () => {
       {/* Grade A Summary Cards */}
       <div className="row g-4 mb-4">
         <div className="col-12">
-          <h5 className="text-sucafina mb-3">Grade A Summary</h5>
+          <h5 className="text-sucafina">Grade A Summary</h5>
         </div>
-        <div className="col-12 col-md-6 col-lg-4">
+        <div className="col-12 col-md-6 col-lg-4 mt-2">
           <DashboardCard 
             title="Grade A Coffee Weight (kg)" 
             value={stats.gradeATotalKgs.toLocaleString()} 
             iconClass="bi-basket" 
           />
         </div>
-        <div className="col-12 col-md-6 col-lg-4">
+        <div className="col-12 col-md-6 col-lg-4 mt-2">
           <DashboardCard 
             title="Grade A Purchase Value" 
             value={`${stats.gradeATotalPrice.toLocaleString()}`} 
             iconClass="bi-cash-stack" 
           />
         </div>
-        <div className="col-12 col-md-6 col-lg-4">
+        <div className="col-12 col-md-6 col-lg-4 mt-2">
           <DashboardCard 
             title="Grade A Avg Price per KG" 
             value={`${stats.gradeAAveragePricePerKg.toLocaleString()}`} 
@@ -182,21 +182,21 @@ const PurchasesDashboard = () => {
         <div className="col-12">
           <h5 className="text-sucafina mb-3">Grade B Summary</h5>
         </div>
-        <div className="col-12 col-md-6 col-lg-4">
+        <div className="col-12 col-md-6 col-lg-4 mt-2">
           <DashboardCard 
             title="Grade B Coffee Weight (kg)" 
             value={stats.gradeBTotalKgs.toFixed(2)} 
             iconClass="bi-basket-fill" 
           />
         </div>
-        <div className="col-12 col-md-6 col-lg-4">
+        <div className="col-12 col-md-6 col-lg-4 mt-2">
           <DashboardCard 
             title="Grade B Purchase Value" 
             value={`${stats.gradeBTotalPrice.toLocaleString()}`} 
             iconClass="bi-cash-stack" 
           />
         </div>
-        <div className="col-12 col-md-6 col-lg-4">
+        <div className="col-12 col-md-6 col-lg-4 mt-2">
           <DashboardCard 
             title="Grade B Avg Price per KG" 
             value={`${stats.gradeBAveragePricePerKg.toFixed(2)}`} 

@@ -434,7 +434,7 @@ const CwsList = () => {
     havespeciality: false 
   });
   const [searchTerm, setSearchTerm] = useState('');
-  const skeletonRows = Array(5).fill(0);
+  const skeletonRows = Array(50).fill(0);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
