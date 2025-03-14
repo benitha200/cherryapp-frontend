@@ -28,6 +28,7 @@ const Users = () => {
         role: '',
         cwsId: ''
     });
+    const [loading, setLoading] = useState(false); // Loading state
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +40,7 @@ const Users = () => {
     }, []);
 
     const fetchUsers = async () => {
+        setLoading(true); // Set loading to true before fetching
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(`${API_URL}/auth/users`, {
@@ -47,10 +49,13 @@ const Users = () => {
             setUsers(response.data);
         } catch (error) {
             setError('Failed to fetch users');
+        } finally {
+            setLoading(false); // Set loading to false after fetching
         }
     };
 
     const fetchCWS = async () => {
+        setLoading(true); // Set loading to true before fetching
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(`${API_URL}/cws`, {
@@ -59,6 +64,8 @@ const Users = () => {
             setCwsList(response.data);
         } catch (error) {
             setError('Failed to fetch CWS list');
+        } finally {
+            setLoading(false); // Set loading to false after fetching
         }
     };
 
@@ -129,7 +136,7 @@ const Users = () => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             try {
                 const token = localStorage.getItem('token');
-                await axios.delete(`${API_URL}/admin/users/${userId}`, {
+                await axios.delete(`${API_URL}/auth/users/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setSuccess('User deleted successfully');
@@ -139,6 +146,18 @@ const Users = () => {
             }
         }
     };
+
+    const SkeletonRow = ({ cols }) => (
+        <tr>
+            {Array(cols).fill(0).map((_, index) => (
+                <td key={index}>
+                    <div className="placeholder-glow">
+                        <span className="placeholder col-12"></span>
+                    </div>
+                </td>
+            ))}
+        </tr>
+    );
 
     return (
         <div className="container-fluid">
@@ -271,96 +290,104 @@ const Users = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {currentItems.map((user) => (
-                                            <tr key={user.id} style={{ '--bs-table-hover-bg': theme.tableHover }}>
-                                                <td>
-                                                    {editId === user.id ? (
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            value={editData.username}
-                                                            onChange={(e) => setEditData({ ...editData, username: e.target.value })}
-                                                        />
-                                                    ) : (
-                                                        user.username
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    {editId === user.id ? (
-                                                        <select
-                                                            className="form-select"
-                                                            value={editData.role}
-                                                            onChange={(e) => setEditData({ ...editData, role: e.target.value })}
-                                                        >
-                                                             <option value="CWS_MANAGER">CWS Manager</option>
-                                                        <option value="ADMIN">Admin</option>
-                                                        <option value="MD">MD</option>
-                                                        <option value="FINANCE">Finance</option>
-                                                        <option value="OPERATIONS">Operations</option>
-                                                        <option value="SUPERVISOR">Supervisor</option>
-                                                        </select>
-                                                    ) : (
-                                                        user.role
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    {editId === user.id ? (
-                                                        <select
-                                                            className="form-select"
-                                                            value={editData.cwsId}
-                                                            onChange={(e) => setEditData({ ...editData, cwsId: e.target.value })}
-                                                        >
-                                                            <option value="">Select CWS</option>
-                                                            {cwsList.map((cws) => (
-                                                                <option key={cws.id} value={cws.id}>
-                                                                    {cws.name}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    ) : (
-                                                        user.cws?.name || 'N/A'
-                                                    )}
-                                                </td>
-                                                <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                                                <td>
-                                                    {editId === user.id ? (
-                                                        <div className="btn-group">
-                                                            <button
-                                                                className="btn btn-sm text-white"
-                                                                style={{ backgroundColor: theme.secondary }}
-                                                                onClick={() => handleSaveEdit(user)}
+                                        {loading ? (
+                                            // Show skeleton rows while loading
+                                            Array(20).fill(0).map((_, index) => (
+                                                <SkeletonRow key={index} cols={5} />
+                                            ))
+                                        ) : (
+                                            // Render actual data when not loading
+                                            currentItems.map((user) => (
+                                                <tr key={user.id} style={{ '--bs-table-hover-bg': theme.tableHover }}>
+                                                    <td>
+                                                        {editId === user.id ? (
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                value={editData.username}
+                                                                onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                                                            />
+                                                        ) : (
+                                                            user.username
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {editId === user.id ? (
+                                                            <select
+                                                                className="form-select"
+                                                                value={editData.role}
+                                                                onChange={(e) => setEditData({ ...editData, role: e.target.value })}
                                                             >
-                                                                <i className="bi bi-check-lg"></i>
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-sm"
-                                                                style={{ backgroundColor: theme.neutral, color: theme.primary }}
-                                                                onClick={handleCancelEdit}
+                                                                <option value="CWS_MANAGER">CWS Manager</option>
+                                                                <option value="ADMIN">Admin</option>
+                                                                <option value="MD">MD</option>
+                                                                <option value="FINANCE">Finance</option>
+                                                                <option value="OPERATIONS">Operations</option>
+                                                                <option value="SUPERVISOR">Supervisor</option>
+                                                            </select>
+                                                        ) : (
+                                                            user.role
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {editId === user.id ? (
+                                                            <select
+                                                                className="form-select"
+                                                                value={editData.cwsId}
+                                                                onChange={(e) => setEditData({ ...editData, cwsId: e.target.value })}
                                                             >
-                                                                <i className="bi bi-x-lg"></i>
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="btn-group">
-                                                            <button
-                                                                className="btn btn-sm text-white"
-                                                                style={{ backgroundColor: theme.primary }}
-                                                                onClick={() => handleEdit(user)}
-                                                            >
-                                                                <i className="bi bi-pencil-square"></i>
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-sm text-white"
-                                                                style={{ backgroundColor: theme.accent }}
-                                                                onClick={() => handleDeleteUser(user.id)}
-                                                            >
-                                                                <i className="bi bi-trash3-fill"></i>
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                                <option value="">Select CWS</option>
+                                                                {cwsList.map((cws) => (
+                                                                    <option key={cws.id} value={cws.id}>
+                                                                        {cws.name}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        ) : (
+                                                            user.cws?.name || 'N/A'
+                                                        )}
+                                                    </td>
+                                                    <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                                                    <td>
+                                                        {editId === user.id ? (
+                                                            <div className="btn-group">
+                                                                <button
+                                                                    className="btn btn-sm text-white"
+                                                                    style={{ backgroundColor: theme.secondary }}
+                                                                    onClick={() => handleSaveEdit(user)}
+                                                                >
+                                                                    <i className="bi bi-check-lg"></i>
+                                                                </button>
+                                                                <button
+                                                                    className="btn btn-sm"
+                                                                    style={{ backgroundColor: theme.neutral, color: theme.primary }}
+                                                                    onClick={handleCancelEdit}
+                                                                >
+                                                                    <i className="bi bi-x-lg"></i>
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="btn-group">
+                                                                <button
+                                                                    className="btn btn-sm text-white"
+                                                                    style={{ backgroundColor: theme.primary }}
+                                                                    onClick={() => handleEdit(user)}
+                                                                >
+                                                                    <i className="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button
+                                                                    className="btn btn-sm text-white"
+                                                                    style={{ backgroundColor: theme.accent }}
+                                                                    onClick={() => handleDeleteUser(user.id)}
+                                                                >
+                                                                    <i className="bi bi-trash3-fill"></i>
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
