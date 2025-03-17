@@ -155,14 +155,14 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
             <tbody>
               <tr>
                 <td className="fw-bold" style={{ width: '30%' }}>Station Name</td>
-                <td>{stationName}</td>
+                <td><span className='fw-semibold'>{stationName}</span></td>
               </tr>
               <tr>
-                <td className="fw-bold">Total Input KGs (Without NATURAL)</td>
+                <td className="fw-bold">Total Input KGs <br/><span className='text-sucafina fw-semibold'>( Without NATURAL)</span></td>
                 <td>{nonNaturalInputKgs ? nonNaturalInputKgs.toLocaleString() : '0'}</td>
               </tr>
               <tr>
-                <td className="fw-bold">Total Output KGs (Without NATURAL)</td>
+                <td className="fw-bold">Total Output KGs <br/><span className='text-sucafina fw-semibold'>(Without NATURAL)</span></td>
                 <td>{nonNaturalOutputKgs ? nonNaturalOutputKgs.toLocaleString() : '0'}</td>
               </tr>
               <tr>
