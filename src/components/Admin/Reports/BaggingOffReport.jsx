@@ -54,6 +54,7 @@ const BaggingOffReport = () => {
     const [selectedItem, setSelectedItem] = useState(null);
 
     const handleRowClick = (item) => {
+        console.log(item);
         setSelectedItem(item);
         setShowDetailModal(true);
     };
@@ -75,8 +76,8 @@ const BaggingOffReport = () => {
     });
 
     const [overallMetrics, setOverallMetrics] = useState({
-        totalInputKgs: 0,
-        totalOutputKgs: 0,
+        totalNonNaturalInputKgs: 0,
+        totalNonNaturalOutputKgs: 0,
         overallNonNaturalOutturn: 0,
         totalBatches: 0,
         totalStations: 0,
@@ -103,8 +104,8 @@ const BaggingOffReport = () => {
                 setBatchReports(batchResponse.data.reports);
                 setOverallMetrics(prev => ({
                     ...prev,
-                    totalInputKgs: batchResponse.data.overallMetrics.totalInputKgs,
-                    totalOutputKgs: batchResponse.data.overallMetrics.totalOutputKgs,
+                    totalNonNaturalInputKgs: batchResponse.data.overallMetrics.totalNonNaturalInputKgs,
+                    totalNonNaturalOutputKgs: batchResponse.data.overallMetrics.totalNonNaturalOutputKgs,
                     overallNonNaturalOutturn: batchResponse.data.overallMetrics.overallNonNaturalOutturn,
                     totalBatches: batchResponse.data.totalRecords
                 }));
@@ -229,9 +230,9 @@ const BaggingOffReport = () => {
                     <body>
                         <div class="title">Batch Bagging Off Report</div>
                         <div>Total Batches: ${summaries.totalRecords}</div>
-                        <div>Total Input KGs: ${summaries.totalInputKgs.toLocaleString()}</div>
-                        <div>Total Output KGs: ${summaries.totalOutputKgs.toLocaleString()}</div>
-                        <div>Overall Outturn: ${summaries.overallNonNaturalOutturn}%</div>
+                        <div>Total Input KGs: ${summaries.totalNonNaturalInputKgs.toLocaleString()}</div>
+                        <div>Total Output KGs: ${summaries.totalNonNaturalOutputKgs.toLocaleString()}</div>
+                        <div>Overall Outturn (Without NATURAL): ${summaries.overallNonNaturalOutturn}%</div>
                         <table>
                             <thead>
                                 <tr>
@@ -280,9 +281,9 @@ const BaggingOffReport = () => {
                     <body>
                         <div class="title">Station-wise Bagging Off Summary</div>
                         <div>Total Stations: ${summaries.totalRecords}</div>
-                        <div>Total Input KGs: ${summaries.totalInputKgs.toLocaleString()}</div>
-                        <div>Total Output KGs: ${summaries.totalOutputKgs.toLocaleString()}</div>
-                        <div>Overall Outturn: ${summaries.overallNonNaturalOutturn}%</div>
+                        <div>Total Input KGs: ${summaries.totalNonNaturalInputKgs.toLocaleString()}</div>
+                        <div>Total Output KGs: ${summaries.totalNonNaturalOutputKgs.toLocaleString()}</div>
+                        <div>Overall Outturn (Without NATURAL): ${summaries.overallNonNaturalOutturn}%</div>
                         <table>
                             <thead>
                                 <tr>
@@ -300,8 +301,8 @@ const BaggingOffReport = () => {
                                 ${filteredData.map(summary => `
                                     <tr>
                                         <td>${summary.stationName}</td>
-                                        <td>${summary.totalInputKgs}</td>
-                                        <td>${summary.totalOutputKgs}</td>
+                                        <td>${summary.totalNonNaturalInputKgs}</td>
+                                        <td>${summary.totalNonNaturalOutputKgs}</td>
                                         <td>${summary.outturn}</td>
                                         <td>${Object.entries(summary.processingTypes).map(([type, kgs]) => `${type}: ${kgs} KGs`).join(', ')}</td>
                                         <td>${Object.entries(summary.gradeBreakdown).map(([grade, kgs]) => `${grade}: ${kgs} KGs`).join(', ')}</td>
@@ -371,8 +372,8 @@ const BaggingOffReport = () => {
     
             csvData = filteredData.map(summary => [
                 summary.stationName,
-                summary.totalInputKgs,
-                summary.totalOutputKgs,
+                summary.totalNonNaturalInputKgs,
+                summary.totalNonNaturalOutputKgs,
                 summary.outturn,
                 Object.entries(summary.processingTypes).map(([type, kgs]) => `${type}: ${kgs} KGs`).join('; '),
                 Object.entries(summary.gradeBreakdown).map(([grade, kgs]) => `${grade}: ${kgs} KGs`).join('; '),
@@ -402,15 +403,15 @@ const BaggingOffReport = () => {
     const calculateSummaries = () => {
         if (reportType === 'batch') {
             return {
-                totalInputKgs: overallMetrics.totalInputKgs,
-                totalOutputKgs: overallMetrics.totalOutputKgs,
+                totalNonNaturalInputKgs: overallMetrics.totalNonNaturalInputKgs,
+                totalNonNaturalOutputKgs: overallMetrics.totalNonNaturalOutputKgs,
                 overallNonNaturalOutturn: overallMetrics.overallNonNaturalOutturn,
                 totalRecords: overallMetrics.totalBatches
             };
         } else {
             return {
-                totalInputKgs: overallMetrics.totalInputKgs,
-                totalOutputKgs: overallMetrics.totalOutputKgs,
+                totalNonNaturalInputKgs: overallMetrics.totalNonNaturalInputKgs,
+                totalNonNaturalOutputKgs: overallMetrics.totalNonNaturalOutputKgs,
                 overallNonNaturalOutturn: overallMetrics.overallNonNaturalOutturn,
                 totalRecords: overallMetrics.totalStations,
                 totalBatches: overallMetrics.totalBatches,
@@ -502,8 +503,8 @@ const BaggingOffReport = () => {
                             onClick={() => handleRowClick(summary)}
                         >
                             <td>{summary.stationName}</td>
-                            <td className="text-end">{summary.totalInputKgs.toLocaleString()}</td>
-                            <td className="text-end">{summary.totalOutputKgs.toLocaleString()}</td>
+                            <td className="text-end">{summary.nonNaturalInputKgs.toLocaleString()}</td>
+                            <td className="text-end">{summary.nonNaturalOutputKgs.toLocaleString()}</td>
                             <td className="text-end">{summary.outturn}%</td>
                         </tr>
                     ))
@@ -684,7 +685,7 @@ const BaggingOffReport = () => {
                         <div className="card" style={{ backgroundColor: theme.neutral }}>
                             <div className="card-body">
                                 <h6 className="card-title">Total Input KGs</h6>
-                                <h4 className="card-text">{summaries.totalInputKgs.toLocaleString()}</h4>
+                                <h4 className="card-text">{summaries.totalNonNaturalInputKgs.toLocaleString()}</h4>
                             </div>
                         </div>
                     </div>
@@ -692,14 +693,14 @@ const BaggingOffReport = () => {
                         <div className="card" style={{ backgroundColor: theme.neutral }}>
                             <div className="card-body">
                                 <h6 className="card-title">Total Output KGs</h6>
-                                <h4 className="card-text">{summaries.totalOutputKgs.toLocaleString()}</h4>
+                                <h4 className="card-text">{summaries.totalNonNaturalOutputKgs.toLocaleString()}</h4>
                             </div>
                         </div>
                     </div>
                     <div className="col-md-3">
                         <div className="card" style={{ backgroundColor: theme.neutral }}>
                             <div className="card-body">
-                                <h6 className="card-title">Overall Outturn</h6>
+                                <h6 className="card-title">Overall Outturn (Without NATURAL)</h6>
                                 <h4 className="card-text">{summaries.overallNonNaturalOutturn}%</h4>
                             </div>
                         </div>
@@ -737,7 +738,7 @@ const BaggingOffReport = () => {
                     <div className="col-md-3">
                         <div className="card" style={{ backgroundColor: theme.neutral }}>
                             <div className="card-body">
-                                <h6 className="card-title">Overall Outturn</h6>
+                                <h6 className="card-title">Overall Outturn (Without NATURAL)</h6>
                                 <h4 className="card-text">-</h4>
                             </div>
                         </div>

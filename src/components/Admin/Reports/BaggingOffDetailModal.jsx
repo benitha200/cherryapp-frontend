@@ -139,8 +139,8 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
   const renderStationDetails = () => {
     const { 
       stationName, 
-      totalInputKgs, 
-      totalOutputKgs, 
+      nonNaturalInputKgs, 
+      nonNaturalOutputKgs, 
       outturn, 
       processingTypes = {}, 
       gradeBreakdown = {}, 
@@ -158,12 +158,12 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
                 <td>{stationName}</td>
               </tr>
               <tr>
-                <td className="fw-bold">Total Input KGs</td>
-                <td>{totalInputKgs ? totalInputKgs.toLocaleString() : '0'}</td>
+                <td className="fw-bold">Total Input KGs (Without NATURAL)</td>
+                <td>{nonNaturalInputKgs ? nonNaturalInputKgs.toLocaleString() : '0'}</td>
               </tr>
               <tr>
-                <td className="fw-bold">Total Output KGs</td>
-                <td>{totalOutputKgs ? totalOutputKgs.toLocaleString() : '0'}</td>
+                <td className="fw-bold">Total Output KGs (Without NATURAL)</td>
+                <td>{nonNaturalOutputKgs ? nonNaturalOutputKgs.toLocaleString() : '0'}</td>
               </tr>
               <tr>
                 <td className="fw-bold">Outturn</td>
@@ -176,20 +176,12 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
                   {outturn ? `${outturn}%` : '0%'}
                 </td>
               </tr>
-              <tr>
-                <td className="fw-bold">Total Batches</td>
-                <td>{data?.totalBatches || 0}</td>
-              </tr>
-              <tr>
-                <td className="fw-bold">Total Processings</td>
-                <td>{data?.totalProcessings || 0}</td>
-              </tr>
             </tbody>
           </Table>
         </div>
   
         <div className="mb-4">
-          <h5>Processing Types</h5>
+          <h5> Output By Processing Types</h5>
           <Table bordered hover>
             <thead>
               <tr>
@@ -214,7 +206,7 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
         </div>
   
         <div className="mb-4">
-          <h5>Grade Breakdown</h5>
+          <h5>Output Grade Breakdown</h5>
           <Table bordered hover>
             <thead>
               <tr>
