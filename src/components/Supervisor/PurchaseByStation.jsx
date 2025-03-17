@@ -171,37 +171,6 @@ const PurchaseByStation = () => {
         }
     }, [selectedDate, cwsList]);
 
-    // const updateFilteredPurchases = (purchases, cwsId) => {
-    //     const filtered = cwsId
-    //         ? purchases.filter(p => {
-    //             const cws = cwsList.find(cws => cws.id.toString() === cwsId);
-    //             return cws ? p.cwsName === cws.name : false;
-    //         })
-    //         : purchases;
-
-    //     setFilteredPurchases(filtered);
-
-    //     const newTotals = filtered.reduce((acc, item) => ({
-    //         totalKgs: acc.totalKgs + item.totalKgs,
-    //         totalPrice: acc.totalPrice + item.totalPrice,
-    //         totalCherryPrice: acc.totalCherryPrice + item.totalCherryPrice,
-    //         totalTransportFee: acc.totalTransportFee + item.totalTransportFee,
-    //         totalCommissionFee: acc.totalCommissionFee + item.totalCommissionFee,
-    //         averagePricePerKg: acc.totalKgs > 0 ? acc.totalPrice / acc.totalKgs : 0
-    //     }), {
-    //         totalKgs: 0,
-    //         totalPrice: 0,
-    //         totalCherryPrice: 0,
-    //         totalTransportFee: 0,
-    //         totalCommissionFee: 0,
-    //         averagePricePerKg: 0
-    //     });
-
-    //     setTotals(newTotals);
-    //     setCurrentPage(1);
-    // };
-
-    // Add this to your state variables at the top
 
 
     // Modify your updateFilteredPurchases function to update the station count
@@ -405,6 +374,7 @@ const PurchaseByStation = () => {
                         <table className="table table-hover">
                             <thead>
                                 <tr style={{ backgroundColor: theme.neutral }}>
+                                    <th className='fw-semibold'>#</th>
                                     <th>CWS Name</th>
                                     <th className="text-end">Average Price/Kg</th>
                                     <th className="text-end">Total KGs</th>
@@ -426,6 +396,7 @@ const PurchaseByStation = () => {
                                 ) : currentItems.length > 0 ? (
                                     currentItems.map((purchase, index) => (
                                         <tr key={index}>
+                                            <td className='fw-semibold'>{index+1}</td>
                                             <td>{purchase.cwsName}</td>
                                             <td className="text-end">{purchase.averagePricePerKg.toFixed(2)}</td>
                                             <td className="text-end">{purchase.totalKgs.toLocaleString()}</td>

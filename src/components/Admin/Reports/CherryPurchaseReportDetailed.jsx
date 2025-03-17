@@ -167,6 +167,7 @@ const CherryPurchaseReportDetailed = () => {
                     <table>
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Date</th>
                                 <th>CWS Name</th>
                                 <th>Batch No</th>
@@ -182,8 +183,9 @@ const CherryPurchaseReportDetailed = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            ${purchases.map(purchase => `
+                            ${purchases.map((purchase,index) => `
                                 <tr>
+                                    <td>${index+1}</td>
                                     <td>${new Date(purchase.purchaseDate).toLocaleDateString()}</td>
                                     <td>${purchase.cws.name}</td>
                                     <td>${purchase.batchNo}</td>
@@ -421,6 +423,7 @@ const CherryPurchaseReportDetailed = () => {
                         <table className="table table-hover">
                             <thead>
                                 <tr style={{ backgroundColor: theme.neutral }}>
+                                    <th>#</th>  
                                     <th>Date</th>
                                     <th>CWS Name</th>
                                     <th>Batch No</th>
@@ -438,15 +441,16 @@ const CherryPurchaseReportDetailed = () => {
                             <tbody>
                                 {loading ? (
                                     Array(20).fill(0).map((_, index) => (
-                                        <SkeletonRow key={index} cols={12} />
+                                        <SkeletonRow key={index} cols={13} />
                                     ))
                                 ) : error ? (
                                     <tr>
                                         <td colSpan="8" className="text-center text-danger">{error}</td>
                                     </tr>
                                 ) : currentItems.length > 0 ? (
-                                    currentItems.map((purchase) => (
+                                    currentItems.map((purchase,index) => (
                                         <tr key={purchase.id}>
+                                            <td>{index+1}</td>
                                             <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
                                             <td>{purchase.cws.name}</td>
                                             <td>{purchase.batchNo}</td>
