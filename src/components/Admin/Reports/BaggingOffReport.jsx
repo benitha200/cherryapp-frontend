@@ -74,6 +74,15 @@ const BaggingOffReport = () => {
         processingTypes: []
     });
 
+    const [overallMetrics, setOverallMetrics] = useState({
+        totalInputKgs: 0,
+        totalOutputKgs: 0,
+        overallOutturn: 0,
+        totalBatches: 0,
+        totalStations: 0,
+        totalProcessings: 0
+    });
+
     useEffect(() => {
         fetchReports();
     }, []);
@@ -92,6 +101,13 @@ const BaggingOffReport = () => {
 
             if (batchResponse.data.reports) {
                 setBatchReports(batchResponse.data.reports);
+                setOverallMetrics(prev => ({
+                    ...prev,
+                    totalInputKgs: batchResponse.data.overallMetrics.totalInputKgs,
+                    totalOutputKgs: batchResponse.data.overallMetrics.totalOutputKgs,
+                    overallOutturn: batchResponse.data.overallMetrics.overallOutturn,
+                    totalBatches: batchResponse.data.totalRecords
+                }));
 
                 // Extract unique filter options
                 const stations = [...new Set(batchResponse.data.reports.map(report => report.batchInfo.station))];
@@ -110,6 +126,12 @@ const BaggingOffReport = () => {
 
             if (stationResponse.data.stationSummaries) {
                 setStationSummaries(stationResponse.data.stationSummaries);
+                setOverallMetrics(prev => ({
+                    ...prev,
+                    totalStations: stationResponse.data.overall.totalStations,
+                    totalBatches: stationResponse.data.overall.totalBatches,
+                    totalProcessings: stationResponse.data.overall.totalProcessings
+                }));
             }
         } catch (err) {
             setError(err.response?.data?.error || 'Error fetching bagging-off reports');
@@ -118,6 +140,7 @@ const BaggingOffReport = () => {
             setLoading(false);
         }
     };
+
 
     const applyFilters = (data) => {
         return data.filter(item => {
@@ -187,10 +210,10 @@ const BaggingOffReport = () => {
     // Downloads
     const downloadTableAsExcel = () => {
         if (filteredData.length === 0) return;
-
+    
         const filename = `bagging_off_${reportType}_report_${new Date().toISOString().slice(0, 10)}.xls`;
         let htmlContent = '';
-
+    
         if (reportType === 'batch') {
             htmlContent = `
                 <html>
@@ -205,7 +228,10 @@ const BaggingOffReport = () => {
                     </head>
                     <body>
                         <div class="title">Batch Bagging Off Report</div>
-                        
+                        <div>Total Batches: ${summaries.totalRecords}</div>
+                        <div>Total Input KGs: ${summaries.totalInputKgs.toLocaleString()}</div>
+                        <div>Total Output KGs: ${summaries.totalOutputKgs.toLocaleString()}</div>
+                        <div>Overall Outturn: ${summaries.overallOutturn}%</div>
                         <table>
                             <thead>
                                 <tr>
@@ -253,7 +279,10 @@ const BaggingOffReport = () => {
                     </head>
                     <body>
                         <div class="title">Station-wise Bagging Off Summary</div>
-                        
+                        <div>Total Stations: ${summaries.totalRecords}</div>
+                        <div>Total Input KGs: ${summaries.totalInputKgs.toLocaleString()}</div>
+                        <div>Total Output KGs: ${summaries.totalOutputKgs.toLocaleString()}</div>
+                        <div>Overall Outturn: ${summaries.overallOutturn}%</div>
                         <table>
                             <thead>
                                 <tr>
@@ -286,7 +315,7 @@ const BaggingOffReport = () => {
                 </html>
             `;
         }
-
+    
         const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -299,11 +328,11 @@ const BaggingOffReport = () => {
 
     const downloadTableAsCSV = () => {
         if (filteredData.length === 0) return;
-
+    
         const filename = `bagging_off_${reportType}_report_${new Date().toISOString().slice(0, 10)}.csv`;
         let headers = [];
         let csvData = [];
-
+    
         if (reportType === 'batch') {
             headers = [
                 'Batch No',
@@ -316,7 +345,7 @@ const BaggingOffReport = () => {
                 'Total Output KGs',
                 'Outturn',
             ];
-
+    
             csvData = filteredData.map(report => [
                 report.batchInfo.batchNo,
                 report.batchInfo.station,
@@ -339,7 +368,7 @@ const BaggingOffReport = () => {
                 'Total Batches',
                 'Total Processings'
             ];
-
+    
             csvData = filteredData.map(summary => [
                 summary.stationName,
                 summary.totalInputKgs,
@@ -351,13 +380,13 @@ const BaggingOffReport = () => {
                 summary.totalProcessings
             ]);
         }
-
+    
         // Combine headers and data
         const csvContent = [
             headers.join(','),
             ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
         ].join('\n');
-
+    
         // Create and download the file
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -369,26 +398,24 @@ const BaggingOffReport = () => {
         document.body.removeChild(link);
     };
 
-    // Calculate total summaries for current view
+
     const calculateSummaries = () => {
         if (reportType === 'batch') {
-            return filteredData.reduce((totals, report) => {
-                return {
-                    totalInputKgs: totals.totalInputKgs + report.batchInfo.totalInputKgs,
-                    totalOutputKgs: totals.totalOutputKgs + report.batchInfo.totalOutputKgs,
-                    totalRecords: totals.totalRecords + 1
-                };
-            }, { totalInputKgs: 0, totalOutputKgs: 0, totalRecords: 0 });
+            return {
+                totalInputKgs: overallMetrics.totalInputKgs,
+                totalOutputKgs: overallMetrics.totalOutputKgs,
+                overallOutturn: overallMetrics.overallOutturn,
+                totalRecords: overallMetrics.totalBatches
+            };
         } else {
-            return filteredData.reduce((totals, summary) => {
-                return {
-                    totalInputKgs: totals.totalInputKgs + summary.totalInputKgs,
-                    totalOutputKgs: totals.totalOutputKgs + summary.totalOutputKgs,
-                    totalRecords: totals.totalRecords + 1,
-                    totalBatches: totals.totalBatches + summary.totalBatches,
-                    totalProcessings: totals.totalProcessings + summary.totalProcessings
-                };
-            }, { totalInputKgs: 0, totalOutputKgs: 0, totalRecords: 0, totalBatches: 0, totalProcessings: 0 });
+            return {
+                totalInputKgs: overallMetrics.totalInputKgs,
+                totalOutputKgs: overallMetrics.totalOutputKgs,
+                overallOutturn: overallMetrics.overallOutturn,
+                totalRecords: overallMetrics.totalStations,
+                totalBatches: overallMetrics.totalBatches,
+                totalProcessings: overallMetrics.totalProcessings
+            };
         }
     };
 
@@ -450,6 +477,7 @@ const BaggingOffReport = () => {
             </tbody>
         </table>
     );
+    
 
     const renderStationTable = () => (
         <table className="table table-hover">
@@ -645,7 +673,9 @@ const BaggingOffReport = () => {
                     <div className="col-md-3">
                         <div className="card" style={{ backgroundColor: theme.neutral }}>
                             <div className="card-body">
-                                <h6 className="card-title">Total Records</h6>
+                                <h6 className="card-title">
+                                    {reportType === 'batch' ? 'Total Batches' : 'Total Stations'}
+                                </h6>
                                 <h4 className="card-text">{summaries.totalRecords}</h4>
                             </div>
                         </div>
@@ -666,16 +696,14 @@ const BaggingOffReport = () => {
                             </div>
                         </div>
                     </div>
-                    {reportType === 'station' && (
-                        <div className="col-md-3">
-                            <div className="card" style={{ backgroundColor: theme.neutral }}>
-                                <div className="card-body">
-                                    <h6 className="card-title">Total Batches</h6>
-                                    <h4 className="card-text">{summaries.totalBatches}</h4>
-                                </div>
+                    <div className="col-md-3">
+                        <div className="card" style={{ backgroundColor: theme.neutral }}>
+                            <div className="card-body">
+                                <h6 className="card-title">Overall Outturn</h6>
+                                <h4 className="card-text">{summaries.overallOutturn}%</h4>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
             {loading && (
@@ -683,7 +711,9 @@ const BaggingOffReport = () => {
                     <div className="col-md-3">
                         <div className="card" style={{ backgroundColor: theme.neutral }}>
                             <div className="card-body">
-                                <h6 className="card-title">Total Records</h6>
+                                <h6 className="card-title">
+                                    {reportType === 'batch' ? 'Total Batches' : 'Total Stations'}
+                                </h6>
                                 <h4 className="card-text">-</h4>
                             </div>
                         </div>
@@ -704,16 +734,14 @@ const BaggingOffReport = () => {
                             </div>
                         </div>
                     </div>
-                    {reportType === 'station' && (
-                        <div className="col-md-3">
-                            <div className="card" style={{ backgroundColor: theme.neutral }}>
-                                <div className="card-body">
-                                    <h6 className="card-title">Total Batches</h6>
-                                    <h4 className="card-text">-</h4>
-                                </div>
+                    <div className="col-md-3">
+                        <div className="card" style={{ backgroundColor: theme.neutral }}>
+                            <div className="card-body">
+                                <h6 className="card-title">Overall Outturn</h6>
+                                <h4 className="card-text">-</h4>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
 
