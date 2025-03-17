@@ -77,7 +77,7 @@ const BaggingOffReport = () => {
     const [overallMetrics, setOverallMetrics] = useState({
         totalInputKgs: 0,
         totalOutputKgs: 0,
-        overallOutturn: 0,
+        overallNonNaturalOutturn: 0,
         totalBatches: 0,
         totalStations: 0,
         totalProcessings: 0
@@ -105,7 +105,7 @@ const BaggingOffReport = () => {
                     ...prev,
                     totalInputKgs: batchResponse.data.overallMetrics.totalInputKgs,
                     totalOutputKgs: batchResponse.data.overallMetrics.totalOutputKgs,
-                    overallOutturn: batchResponse.data.overallMetrics.overallOutturn,
+                    overallNonNaturalOutturn: batchResponse.data.overallMetrics.overallNonNaturalOutturn,
                     totalBatches: batchResponse.data.totalRecords
                 }));
 
@@ -231,7 +231,7 @@ const BaggingOffReport = () => {
                         <div>Total Batches: ${summaries.totalRecords}</div>
                         <div>Total Input KGs: ${summaries.totalInputKgs.toLocaleString()}</div>
                         <div>Total Output KGs: ${summaries.totalOutputKgs.toLocaleString()}</div>
-                        <div>Overall Outturn: ${summaries.overallOutturn}%</div>
+                        <div>Overall Outturn: ${summaries.overallNonNaturalOutturn}%</div>
                         <table>
                             <thead>
                                 <tr>
@@ -282,7 +282,7 @@ const BaggingOffReport = () => {
                         <div>Total Stations: ${summaries.totalRecords}</div>
                         <div>Total Input KGs: ${summaries.totalInputKgs.toLocaleString()}</div>
                         <div>Total Output KGs: ${summaries.totalOutputKgs.toLocaleString()}</div>
-                        <div>Overall Outturn: ${summaries.overallOutturn}%</div>
+                        <div>Overall Outturn: ${summaries.overallNonNaturalOutturn}%</div>
                         <table>
                             <thead>
                                 <tr>
@@ -404,14 +404,14 @@ const BaggingOffReport = () => {
             return {
                 totalInputKgs: overallMetrics.totalInputKgs,
                 totalOutputKgs: overallMetrics.totalOutputKgs,
-                overallOutturn: overallMetrics.overallOutturn,
+                overallNonNaturalOutturn: overallMetrics.overallNonNaturalOutturn,
                 totalRecords: overallMetrics.totalBatches
             };
         } else {
             return {
                 totalInputKgs: overallMetrics.totalInputKgs,
                 totalOutputKgs: overallMetrics.totalOutputKgs,
-                overallOutturn: overallMetrics.overallOutturn,
+                overallNonNaturalOutturn: overallMetrics.overallNonNaturalOutturn,
                 totalRecords: overallMetrics.totalStations,
                 totalBatches: overallMetrics.totalBatches,
                 totalProcessings: overallMetrics.totalProcessings
@@ -700,7 +700,7 @@ const BaggingOffReport = () => {
                         <div className="card" style={{ backgroundColor: theme.neutral }}>
                             <div className="card-body">
                                 <h6 className="card-title">Overall Outturn</h6>
-                                <h4 className="card-text">{summaries.overallOutturn}%</h4>
+                                <h4 className="card-text">{summaries.overallNonNaturalOutturn}%</h4>
                             </div>
                         </div>
                     </div>
