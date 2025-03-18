@@ -48,7 +48,7 @@ const BaggingOffReport = () => {
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(50);
 
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -426,6 +426,7 @@ const BaggingOffReport = () => {
         <table className="table table-hover">
             <thead>
                 <tr style={{ backgroundColor: theme.neutral }}>
+                    <th>#</th>
                     <th>Batch No</th>
                     <th>Station</th>
                     <th>Processing Type</th>
@@ -449,6 +450,7 @@ const BaggingOffReport = () => {
                             style={{ backgroundColor: index % 2 === 0 ? 'white' : theme.tableHover, cursor: 'pointer' }}
                             onClick={() => handleRowClick(report)}
                         >
+                            <td>{index}</td>
                             <td>{report.batchInfo.batchNo}</td>
                             <td>{report.batchInfo.station}</td>
                             <td>{report.batchInfo.processingType}</td>
@@ -484,6 +486,7 @@ const BaggingOffReport = () => {
         <table className="table table-hover">
             <thead>
                 <tr style={{ backgroundColor: theme.neutral }}>
+                    <th>#</th>
                     <th>Station</th>
                     <th className="text-end">Input KGs</th>
                     <th className="text-end">Output KGs</th>
@@ -502,6 +505,7 @@ const BaggingOffReport = () => {
                             style={{ backgroundColor: index % 2 === 0 ? 'white' : theme.tableHover, cursor: 'pointer' }}
                             onClick={() => handleRowClick(summary)}
                         >
+                            <td>{index}</td>
                             <td>{summary.stationName}</td>
                             <td className="text-end">{summary.nonNaturalInputKgs.toLocaleString()}</td>
                             <td className="text-end">{summary.nonNaturalOutputKgs.toLocaleString()}</td>
