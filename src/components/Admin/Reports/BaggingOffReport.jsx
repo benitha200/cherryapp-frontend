@@ -450,7 +450,7 @@ const BaggingOffReport = () => {
                             style={{ backgroundColor: index % 2 === 0 ? 'white' : theme.tableHover, cursor: 'pointer' }}
                             onClick={() => handleRowClick(report)}
                         >
-                            <td>{index}</td>
+                            <td>{index+1}</td>
                             <td>{report.batchInfo.batchNo}</td>
                             <td>{report.batchInfo.station}</td>
                             <td>{report.batchInfo.processingType}</td>
@@ -505,7 +505,7 @@ const BaggingOffReport = () => {
                             style={{ backgroundColor: index % 2 === 0 ? 'white' : theme.tableHover, cursor: 'pointer' }}
                             onClick={() => handleRowClick(summary)}
                         >
-                            <td>{index}</td>
+                            <td>{index+1}</td>
                             <td>{summary.stationName}</td>
                             <td className="text-end">{summary.nonNaturalInputKgs.toLocaleString()}</td>
                             <td className="text-end">{summary.nonNaturalOutputKgs.toLocaleString()}</td>
