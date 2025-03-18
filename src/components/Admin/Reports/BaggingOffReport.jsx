@@ -518,7 +518,7 @@ const BaggingOffReport = () => {
     return (
         <div className="container-fluid p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Bagging Off Report</h2>
+                <h2>Out Turns Report</h2>
                 {!loading && !error && filteredData.length > 0 && (
                     <div className="btn-group">
                         <button

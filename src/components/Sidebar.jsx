@@ -252,7 +252,7 @@ const Sidebar = () => {
   // Reports menu items
   const reportItems = [
     { path: '/cherry-purchase-report', icon: 'file-text', text: 'Purchase Report' },
-    { path: '/bagging-off-report', icon: 'file-earmark-text', text: 'Bagging Off Report' },
+    { path: '/bagging-off-report', icon: 'file-earmark-text', text: 'Out Turns Report' },
   ];
 
   // Settings menu items for admin
