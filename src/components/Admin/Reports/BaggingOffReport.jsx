@@ -211,10 +211,10 @@ const BaggingOffReport = () => {
     // Downloads
     const downloadTableAsExcel = () => {
         if (filteredData.length === 0) return;
-    
+
         const filename = `bagging_off_${reportType}_report_${new Date().toISOString().slice(0, 10)}.xls`;
         let htmlContent = '';
-    
+
         if (reportType === 'batch') {
             htmlContent = `
                 <html>
@@ -228,7 +228,7 @@ const BaggingOffReport = () => {
                         </style>
                     </head>
                     <body>
-                        <div class="title">Batch Bagging Off Report</div>
+                        <div class="title">Batch Out Turns Report</div>
                         <div>Total Batches: ${summaries.totalRecords}</div>
                         <div>Total Input KGs: ${summaries.totalNonNaturalInputKgs.toLocaleString()}</div>
                         <div>Total Output KGs: ${summaries.totalNonNaturalOutputKgs.toLocaleString()}</div>
@@ -316,7 +316,7 @@ const BaggingOffReport = () => {
                 </html>
             `;
         }
-    
+
         const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -329,11 +329,11 @@ const BaggingOffReport = () => {
 
     const downloadTableAsCSV = () => {
         if (filteredData.length === 0) return;
-    
+
         const filename = `bagging_off_${reportType}_report_${new Date().toISOString().slice(0, 10)}.csv`;
         let headers = [];
         let csvData = [];
-    
+
         if (reportType === 'batch') {
             headers = [
                 'Batch No',
@@ -346,7 +346,7 @@ const BaggingOffReport = () => {
                 'Total Output KGs',
                 'Outturn',
             ];
-    
+
             csvData = filteredData.map(report => [
                 report.batchInfo.batchNo,
                 report.batchInfo.station,
@@ -369,7 +369,7 @@ const BaggingOffReport = () => {
                 'Total Batches',
                 'Total Processings'
             ];
-    
+
             csvData = filteredData.map(summary => [
                 summary.stationName,
                 summary.totalNonNaturalInputKgs,
@@ -381,13 +381,13 @@ const BaggingOffReport = () => {
                 summary.totalProcessings
             ]);
         }
-    
+
         // Combine headers and data
         const csvContent = [
             headers.join(','),
             ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
         ].join('\n');
-    
+
         // Create and download the file
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -478,7 +478,7 @@ const BaggingOffReport = () => {
             </tbody>
         </table>
     );
-    
+
 
     const renderStationTable = () => (
         <table className="table table-hover">
@@ -614,23 +614,24 @@ const BaggingOffReport = () => {
                             </select>
                         </div>
 
-                        <div className="col-md-3">
-                            <label className="form-label">Processing Type</label>
-                            <select
-                                className="form-select"
-                                name="processingType"
-                                value={filters.processingType}
-                                onChange={handleFilterChange}
-                            >
-                                <option value="">All Types</option>
-                                {filterOptions.processingTypes.map((type, index) => (
-                                    <option key={index} value={type}>{type}</option>
-                                ))}
-                            </select>
-                        </div>
+
 
                         {reportType === 'batch' && (
                             <>
+                                <div className="col-md-3">
+                                    <label className="form-label">Processing Type</label>
+                                    <select
+                                        className="form-select"
+                                        name="processingType"
+                                        value={filters.processingType}
+                                        onChange={handleFilterChange}
+                                    >
+                                        <option value="">All Types</option>
+                                        {filterOptions.processingTypes.map((type, index) => (
+                                            <option key={index} value={type}>{type}</option>
+                                        ))}
+                                    </select>
+                                </div>
                                 <div className="col-md-3">
                                     <label className="form-label">Start Date</label>
                                     <input
@@ -751,7 +752,7 @@ const BaggingOffReport = () => {
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <h4 className="mb-0">
-                            {reportType === 'batch' ? 'Batch Bagging Off Report' : 'Station Bagging Off Summary'}
+                            {reportType === 'batch' ? 'Batch Out Turns Report' : 'Station Bagging Off Summary'}
                         </h4>
 
                         <div className="d-flex align-items-center">
