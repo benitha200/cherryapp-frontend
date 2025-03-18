@@ -459,7 +459,7 @@ const BaggingOffReport = () => {
                             <td
                                 style={{
                                     textAlign: 'right',
-                                    color: report.batchInfo.outturn >= 20 && report.batchInfo.outturn <= 25 ? theme.primary : 'red',
+                                    color: report.batchInfo.outturn >= 20.5 && report.batchInfo.outturn <= 25 ? theme.primary : 'red',
                                     backgroundColor: theme.neutral,
                                 }}
                             >
