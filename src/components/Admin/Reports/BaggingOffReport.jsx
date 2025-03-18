@@ -441,7 +441,7 @@ const BaggingOffReport = () => {
             <tbody>
                 {loading ? (
                     Array(10).fill(0).map((_, index) => (
-                        <SkeletonRow key={index} cols={9} />
+                        <SkeletonRow key={index} cols={10} />
                     ))
                 ) : currentItems.length > 0 ? (
                     currentItems.map((report, index) => (
@@ -496,7 +496,7 @@ const BaggingOffReport = () => {
             <tbody>
                 {loading ? (
                     Array(5).fill(0).map((_, index) => (
-                        <SkeletonRow key={index} cols={4} />
+                        <SkeletonRow key={index} cols={5} />
                     ))
                 ) : currentItems.length > 0 ? (
                     currentItems.map((summary, index) => (
