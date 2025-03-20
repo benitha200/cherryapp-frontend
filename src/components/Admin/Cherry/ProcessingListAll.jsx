@@ -288,8 +288,11 @@ const ProcessingListAll = () => {
             case 'completed':
                 backgroundColor = processingTheme.statusCompleted;
                 break;
-            case 'in progress':
-                backgroundColor = processingTheme.statusInProgress;
+            case 'in_progress':
+                backgroundColor = processingTheme.statusPending;
+                break;
+            case 'bagging_started':
+                backgroundColor = processingTheme.accent;
                 break;
             default:
                 backgroundColor = processingTheme.statusPending;

@@ -283,10 +283,15 @@ const Sidebar = () => {
       ...menuItems,
       { path: '/purchases', icon: 'cart', text: 'Purchases' },
       { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
-      { 
-        path: cwsInfo?.is_wet_parchment_sender ? '/wet-transfer' : '/wet-transfer-receiver', 
-        icon: 'bag-check', 
-        text: 'Wet Transfer' 
+      {
+        path: (() => {
+          if (cwsInfo?.is_wet_parchment_sender === 0) return null; 
+          if (cwsInfo?.is_wet_parchment_sender === 1) return '/wet-transfer';
+          return '/wet-transfer-receiver'; 
+        })(),
+        icon: 'bag-check',
+        text: 'Wet Transfer',
+        hidden: cwsInfo?.is_wet_parchment_sender === 0 
       },
       { path: '/transfer', icon: 'truck', text: 'Transport' },
     ];

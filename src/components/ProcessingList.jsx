@@ -279,9 +279,11 @@ const ProcessingList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [gradeFilter, setGradeFilter] = useState('ALL');
     const [processingTypeFilter, setProcessingTypeFilter] = useState('ALL');
+    const [statusFilter, setStatusFilter] = useState('ALL'); 
 
-    // Available processing types
+    // Available processing types and statuses
     const [availableProcessingTypes, setAvailableProcessingTypes] = useState([]);
+    const [availableStatuses, setAvailableStatuses] = useState([]); 
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -301,7 +303,7 @@ const ProcessingList = () => {
 
     useEffect(() => {
         applyFiltersAndSearch();
-    }, [processingBatches, searchTerm, gradeFilter, processingTypeFilter]);
+    }, [processingBatches, searchTerm, gradeFilter, processingTypeFilter, statusFilter]);
 
     useEffect(() => {
         setTotalPages(Math.ceil(filteredBatches.length / itemsPerPage));
@@ -313,6 +315,10 @@ const ProcessingList = () => {
             // Extract unique processing types
             const types = [...new Set(processingBatches.map(batch => batch.processingType))];
             setAvailableProcessingTypes(types);
+
+            // Extract unique statuses
+            const statuses = [...new Set(processingBatches.map(batch => batch.status))];
+            setAvailableStatuses(statuses);
 
             // Calculate summary metrics based on filters
             calculateSummaryMetrics(filteredBatches);
@@ -369,15 +375,19 @@ const ProcessingList = () => {
     const applyFiltersAndSearch = () => {
         let filtered = [...processingBatches];
 
-        // Apply status filter
+        // Apply grade filter
         if (gradeFilter !== 'ALL') {
             filtered = filtered.filter(batch => batch.grade === gradeFilter);
         }
    
-
         // Apply processing type filter
         if (processingTypeFilter !== 'ALL') {
             filtered = filtered.filter(batch => batch.processingType === processingTypeFilter);
+        }
+
+        // Apply status filter
+        if (statusFilter !== 'ALL') {
+            filtered = filtered.filter(batch => batch.status === statusFilter);
         }
 
         // Apply search term
@@ -399,6 +409,10 @@ const ProcessingList = () => {
 
     const handleProcessingTypeFilterChange = (type) => {
         setProcessingTypeFilter(type);
+    };
+
+    const handleStatusFilterChange = (status) => {
+        setStatusFilter(status);
     };
 
     const handleSearchChange = (e) => {
@@ -467,17 +481,17 @@ const ProcessingList = () => {
             case 'IN_PROGRESS':
                 color = '#6c757d';
                 icon = 'fas fa-spinner fa-spin';
-                text = 'IN_PROGRESS';
+                text = 'IN PROGRESS';
                 break;
             case 'COMPLETED':
                 color = '#28a745';
                 icon = 'fas fa-check-circle';
                 text = 'COMPLETED';
                 break;
-            case 'PENDING':
-                color = '#FFC107';
+            case 'BAGGING_STARTED':
+                color = processingTheme.accent;
                 icon = 'fas fa-clock';
-                text = 'PENDING';
+                text = 'BAGGING STARTED';
                 break;
             default:
                 color = processingTheme.primary;
@@ -703,6 +717,7 @@ const ProcessingList = () => {
                     batches={selectedBatches}
                     onSubmit={handleProcessSubmit}
                     onComplete={handleBatchCompletion}
+                    fetchProcessingBatches={fetchProcessingBatches}
                 />
             )}
 
@@ -722,7 +737,7 @@ const ProcessingList = () => {
             <Card className="shadow-sm mb-4">
                 <Card.Body className="p-4">
                     <Row className="mb-4 align-items-end">
-                        <Col md={4} className="mb-3 mb-md-0">
+                        <Col md={3} className="mb-3 mb-md-0">
                             <Form.Group>
                                 <Form.Control
                                     type="text"
@@ -732,7 +747,7 @@ const ProcessingList = () => {
                                 />
                             </Form.Group>
                         </Col>
-                        <Col md={3} className="mb-3 mb-md-0">
+                        <Col md={2} className="mb-3 mb-md-0">
                             <Form.Group>
                                 <Form.Select
                                     value={gradeFilter}
@@ -744,7 +759,7 @@ const ProcessingList = () => {
                                 </Form.Select>
                             </Form.Group>
                         </Col>
-                        <Col md={3} className="mb-3 mb-md-0">
+                        <Col md={2} className="mb-3 mb-md-0">
                             <Form.Group>
                                 <Form.Select
                                     value={processingTypeFilter}
@@ -759,9 +774,24 @@ const ProcessingList = () => {
                                 </Form.Select>
                             </Form.Group>
                         </Col>
+                        <Col md={3} className="mb-3 mb-md-0">
+                            <Form.Group>
+                                <Form.Select
+                                    value={statusFilter}
+                                    onChange={(e) => handleStatusFilterChange(e.target.value)}
+                                >
+                                    <option value="ALL">All Statuses</option>
+                                    {availableStatuses.map(status => (
+                                        <option key={status} value={status}>
+                                            {status.replace('_', ' ')}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
                         <Col md={2} className="d-flex justify-content-end">
                             <Button
-                                variant="outline-secondary"
+                                variant="outline-sucafina"
                                 onClick={() => setRefreshKey(prevKey => prevKey + 1)}
                                 style={{
                                     color: processingTheme.primary,
@@ -807,7 +837,7 @@ const ProcessingList = () => {
                                             <div className="my-3">
                                                 <i className="fas fa-box-open fa-3x mb-3"></i>
                                                 <p className="mb-0">No processing batches found</p>
-                                                {searchTerm || gradeFilter !== 'ALL' || processingTypeFilter !== 'ALL' ? (
+                                                {searchTerm || gradeFilter !== 'ALL' || processingTypeFilter !== 'ALL' || statusFilter !== 'ALL' ? (
                                                     <Button
                                                         variant="link"
                                                         size="sm"
@@ -815,6 +845,7 @@ const ProcessingList = () => {
                                                             setSearchTerm('');
                                                             setGradeFilter('ALL');
                                                             setProcessingTypeFilter('ALL');
+                                                            setStatusFilter('ALL');
                                                         }}
                                                     >
                                                         Clear filters
@@ -991,7 +1022,7 @@ const LoadingSkeleton = () => (
     </div>
 );
 
-const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete }) => {
+const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete,fetchProcessingBatches }) => {
     const [existingProcessing, setExistingProcessing] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
 
@@ -1095,23 +1126,6 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         }
     }, [show, batches]);
 
-    // const handleHoneyOutputChange = (value) => {
-    //     setHoneyOutputKgs({ H1: value });
-    // };
-
-    // const handleNaturalOutputChange = (field, value) => {
-    //     setNaturalOutputKgs(prev => ({
-    //         ...prev,
-    //         [field]: value
-    //     }));
-    // };
-
-    // const handleFullyWashedOutputChange = (field, value) => {
-    //     setFullyWashedOutputKgs(prev => ({
-    //         ...prev,
-    //         [field]: value
-    //     }));
-    // };
 
     const handleHoneyOutputChange = (value) => {
         if (isValidKgValue(value)) {
@@ -1248,17 +1262,6 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                 >
                                     <i className="bi bi-pencil-square"></i>
                                 </Button>
-                                {/* <Button
-                                    variant="outline-danger"
-                                    size="sm"
-                                    onClick={() => handleDelete(record.id)}
-                                    style={{
-                                        color: '#dc3545',
-                                        borderColor: '#dc3545'
-                                    }}
-                                >
-                                    <i className="bi bi-trash"></i>
-                                </Button> */}
                             </>
                         )}
                     </td>
@@ -1336,6 +1339,10 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
             // Refresh the bagging offs data
             await fetchExistingProcessingAndBaggingOffs(batches[0].batchNo);
 
+            if (fetchProcessingBatches && typeof fetchProcessingBatches === 'function') {
+                await fetchProcessingBatches(true);
+            }
+
             // Reset form and editing state
             resetOutputs();
             setIsEditing(false);
@@ -1364,53 +1371,6 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
             recordDateObj.getDate() === yesterday.getDate()
         );
     };
-
-    // const handleEdit = (record) => {
-    //     // Normalize the record to ensure consistent processingType
-    //     const normalizedRecord = {
-    //         ...record,
-    //         processingType: record.processingType
-    //     };
-
-    //     // Check if the record is from yesterday
-    //     if (!isYesterdayRecord(normalizedRecord.date)) {
-    //         setAlertTitle('Edit Restricted');
-    //         setAlertMessage('You can only edit records from yesterday.');
-    //         setShowAlertModal(true);
-    //         return;
-    //     }
-
-    //     console.log(normalizedRecord.processingType);
-
-    //     setIsEditing(true);
-    //     setEditingRecord(normalizedRecord);
-    //     setSelectedDate(new Date(normalizedRecord.date).toISOString().split('T')[0]);
-
-    //     // Reset all outputs first
-    //     resetOutputs();
-
-    //     // Set the outputs based on the record being edited
-    //     if (normalizedRecord.processingType === 'HONEY') {
-    //         setHoneyOutputKgs(normalizedRecord.outputKgs);
-    //     } else if (normalizedRecord.processingType === 'NATURAL') {
-    //         const updatedNaturalOutputs = { ...naturalOutputKgs };
-    //         Object.keys(normalizedRecord.outputKgs).forEach(key => {
-    //             if (normalizedRecord.outputKgs[key]) {
-    //                 updatedNaturalOutputs[key] = normalizedRecord.outputKgs[key];
-    //             }
-    //         });
-    //         setNaturalOutputKgs(updatedNaturalOutputs);
-    //     } else if (normalizedRecord.processingType === 'FULLY WASHED') {
-    //         const updatedFullyWashedOutputs = { ...fullyWashedOutputKgs };
-    //         Object.keys(normalizedRecord.outputKgs).forEach(key => {
-    //             if (normalizedRecord.outputKgs[key]) {
-    //                 updatedFullyWashedOutputs[key] = normalizedRecord.outputKgs[key];
-    //             }
-    //         });
-    //         console.log("Fully Washed Outputs:", normalizedRecord.outputKgs);
-    //         setFullyWashedOutputKgs(updatedFullyWashedOutputs);
-    //     }
-    // };
 
     const handleEdit = (record) => {
         // Normalize the record to ensure consistent processingType
@@ -1495,86 +1455,6 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
         }
     };
 
-    // const handleEdit = (record) => {
-    //     // Check if the record is from yesterday
-    //     if (!isYesterdayRecord(record.date)) {
-    //         setAlertTitle('Edit Restricted');
-    //         setAlertMessage('You can only edit records from yesterday.');
-    //         setShowAlertModal(true);
-    //         return;
-    //     }
-
-    //     console.log(record);
-
-    //     setIsEditing(true);
-    //     setEditingRecord(record);
-    //     setSelectedDate(new Date(record.date).toISOString().split('T')[0]);
-
-    //     // Reset all outputs first
-    //     resetOutputs();
-
-    //     // Set the outputs based on the record being edited
-    //     if (record.processingType === 'HONEY') {
-    //         setHoneyOutputKgs(record.outputKgs);
-    //     } else if (record.processingType === 'NATURAL') {
-    //         const updatedNaturalOutputs = { ...naturalOutputKgs };
-    //         Object.keys(record.outputKgs).forEach(key => {
-    //             if (record.outputKgs[key]) {
-    //                 updatedNaturalOutputs[key] = record.outputKgs[key];
-    //             }
-    //         });
-    //         setNaturalOutputKgs(updatedNaturalOutputs);
-    //     } else if (record.processingType === 'FULLY WASHED') {
-    //         const updatedFullyWashedOutputs = { ...fullyWashedOutputKgs };
-    //         Object.keys(record.outputKgs).forEach(key => {
-    //             if (record.outputKgs[key]) {
-    //                 updatedFullyWashedOutputs[key] = record.outputKgs[key];
-    //             }
-    //         });
-    //         setFullyWashedOutputKgs(updatedFullyWashedOutputs);
-    //     }
-    // };
-
-    // Modify handleDelete to only allow deleting yesterday's records
-    const handleDelete = async (recordId) => {
-        // Find the record to check its date
-        const recordToDelete = savedBaggingOffs.find(record => record.id === recordId);
-
-        if (!recordToDelete) {
-            alert('Record not found');
-            return;
-        }
-
-        // Check if the record is from yesterday
-        if (!isYesterdayRecord(recordToDelete.date)) {
-            setAlertTitle('Delete Restricted');
-            setAlertMessage('You can only delete records from yesterday.');
-            setShowAlertModal(true);
-            return;
-        }
-
-        if (!recordId) return;
-
-        // Confirm deletion with user
-        if (!window.confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            await axios.delete(`${API_URL}/bagging-off/${recordId}`);
-
-            // Refresh the bagging offs data
-            await fetchExistingProcessingAndBaggingOffs(batches[0].batchNo);
-
-            alert('Record deleted successfully');
-        } catch (error) {
-            console.error('Delete error:', error);
-            alert('Failed to delete record');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const prepareSubmissionData = (processingType, status) => {
         if (!batches?.[0]?.batchNo) return [];
