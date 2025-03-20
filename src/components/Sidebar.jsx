@@ -283,17 +283,13 @@ const Sidebar = () => {
       ...menuItems,
       { path: '/purchases', icon: 'cart', text: 'Purchases' },
       { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
+      { 
+        path: cwsInfo?.is_wet_parchment_sender ? '/wet-transfer' : '/wet-transfer-receiver', 
+        icon: 'bag-check', 
+        text: 'Wet Transfer' 
+      },
+      { path: '/transfer', icon: 'truck', text: 'Transport' },
     ];
-    
-    if (cwsInfo?.is_wet_parchment_sender !== 0) {
-      menuItems.push({
-        path: cwsInfo?.is_wet_parchment_sender === 1 ? '/wet-transfer' : '/wet-transfer-receiver',
-        icon: 'bag-check',
-        text: 'Wet Transfer'
-      });
-    }
-    
-    menuItems.push({ path: '/transfer', icon: 'truck', text: 'Transport' });
   }
 
   const renderNavLink = ({ path, icon, text }) => (
