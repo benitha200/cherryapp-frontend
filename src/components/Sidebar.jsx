@@ -278,18 +278,23 @@ const Sidebar = () => {
       { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
       // Report dropdown will be added separately
     ];
-  } else {
+  }else {
     menuItems = [
       ...menuItems,
       { path: '/purchases', icon: 'cart', text: 'Purchases' },
       { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
-      { 
-        path: cwsInfo?.is_wet_parchment_sender ? '/wet-transfer' : '/wet-transfer-receiver', 
-        icon: 'bag-check', 
-        text: 'Wet Transfer' 
-      },
-      { path: '/transfer', icon: 'truck', text: 'Transport' },
     ];
+    
+    // Only add Wet Transfer if the user is a sender or receiver
+    if (cwsInfo?.is_wet_parchment_sender !== 0) {
+      menuItems.push({
+        path: cwsInfo?.is_wet_parchment_sender === 1 ? '/wet-transfer' : '/wet-transfer-receiver',
+        icon: 'bag-check',
+        text: 'Wet Transfer'
+      });
+    }
+    
+    menuItems.push({ path: '/transfer', icon: 'truck', text: 'Transport' });
   }
 
   const renderNavLink = ({ path, icon, text }) => (
