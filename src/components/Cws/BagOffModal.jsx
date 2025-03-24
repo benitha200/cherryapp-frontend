@@ -304,12 +304,12 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
                       <td>{new Date(batchDetails.date).toLocaleDateString()}</td>
                      
                     </tr>
-                    <tr>
+                    {/* <tr>
                       <th>Moisture Content</th>
                       <td>{batchDetails.moistureContent || 'N/A'} %</td>
                       <th>Transfered KGs</th>
                       <td>{batchDetails.outputKgs ? parseFloat(batchDetails.outputKgs).toFixed(2) : 'N/A'} kg</td>
-                    </tr>
+                    </tr> */}
                   </tbody>
                 </table>
               </div>

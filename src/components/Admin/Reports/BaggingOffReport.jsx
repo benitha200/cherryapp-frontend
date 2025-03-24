@@ -581,9 +581,9 @@ const BaggingOffReport = () => {
                 <tr style={{ backgroundColor: theme.neutral }}>
                     <th>#</th>
                     <th>Station</th>
-                    <th className="text-end">Non NAT  Input Kgs </th>
-                    <th className="text-end">Non NAT Output Kgs</th>
-                    <th className="text-end">Non NAT Outturn</th>
+                    <th className="text-end">FW + HON  Input Kgs </th>
+                    <th className="text-end">FW + HON  Output Kgs</th>
+                    <th className="text-end">FW + HON  Outturn</th>
                     <th className="text-end">NAT  Input Kgs</th>
                     <th className="text-end">NAT Output Kgs</th>
                     <th className="text-end">NAT Outturn</th>
