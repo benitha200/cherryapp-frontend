@@ -45,6 +45,9 @@ const BaggingOffReport = () => {
     const [stationSummaries, setStationSummaries] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    
+    // Mapping to track which base batches have NATURAL processing
+    const [baseBatchHasNatural, setBaseBatchHasNatural] = useState({});
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +61,6 @@ const BaggingOffReport = () => {
         setSelectedItem(item);
         setShowDetailModal(true);
     };
-
 
     // Filter states
     const [filters, setFilters] = useState({
@@ -88,20 +90,47 @@ const BaggingOffReport = () => {
         fetchReports();
     }, []);
 
+    // Helper function to extract base batch number
+    const getBaseBatchNo = (batchNo) => {
+        // Handle both formats: with and without dash
+        return batchNo.includes('-') ? batchNo.split('-')[0] : batchNo;
+    };
+
     const fetchReports = async () => {
         setLoading(true);
         setError(null);
-
+    
         try {
             const token = localStorage.getItem('token');
-
+            
             // Fetch batch-wise reports
             const batchResponse = await axios.get(`${API_URL}/bagging-off/report/completed`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-
+    
             if (batchResponse.data.reports) {
-                setBatchReports(batchResponse.data.reports);
+                const reports = batchResponse.data.reports;
+                
+                // Step 1: Create a mapping of base batch numbers to their processing types
+                const naturalBatches = {};
+                
+                // First pass: Identify all batches with NATURAL processing
+                reports.forEach(report => {
+                    const batchInfo = report.batchInfo || report;
+                    console.log(batchInfo);
+                    const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
+                    console.log(baseBatchNo);
+                    if (batchInfo.processingType === "NATURAL") {
+                        naturalBatches[baseBatchNo] = true;
+                    }
+                });
+                
+                // Store the mapping
+                setBaseBatchHasNatural(naturalBatches);
+                
+                // Process reports without modifying them for data storage
+                setBatchReports(reports);
+                
                 setOverallMetrics(prev => ({
                     ...prev,
                     totalNonNaturalInputKgs: batchResponse.data.overallMetrics.totalNonNaturalInputKgs,
@@ -109,23 +138,46 @@ const BaggingOffReport = () => {
                     overallNonNaturalOutturn: batchResponse.data.overallMetrics.overallNonNaturalOutturn,
                     totalBatches: batchResponse.data.totalRecords
                 }));
-
-                // Extract unique filter options
-                const stations = [...new Set(batchResponse.data.reports.map(report => report.batchInfo.station))];
-                const processingTypes = [...new Set(batchResponse.data.reports.map(report => report.batchInfo.processingType))];
-
+    
+                // Extract unique filter options from the data
+                const stations = [...new Set(reports.map(report => (report.batchInfo || report).station))];
+                const processingTypes = [...new Set(reports.map(report => (report.batchInfo || report).processingType))];
+    
                 setFilterOptions({
                     stations,
                     processingTypes
                 });
             }
-
+    
             // Fetch station-wise summaries
             const stationResponse = await axios.get(`${API_URL}/bagging-off/report/summary`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-
+    
             if (stationResponse.data.stationSummaries) {
+                // Process summary data to update natural batch mapping
+                const summaries = stationResponse.data.stationSummaries;
+                
+                // Check if there's detailed batch info in the summaries
+                if (summaries.some(s => s.batches && s.batches.length > 0)) {
+                    const updatedNaturalBatches = { ...baseBatchHasNatural };
+                    
+                    // Look through all batches in summaries
+                    summaries.forEach(station => {
+                        if (station.batches && station.batches.length > 0) {
+                            station.batches.forEach(batch => {
+                                const baseBatchNo = getBaseBatchNo(batch.batchNo);
+                                if (batch.processingType === "NATURAL") {
+                                    updatedNaturalBatches[baseBatchNo] = true;
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Update the natural batches mapping with any new info from summaries
+                    setBaseBatchHasNatural(updatedNaturalBatches);
+                }
+                
                 setStationSummaries(stationResponse.data.stationSummaries);
                 setOverallMetrics(prev => ({
                     ...prev,
@@ -142,10 +194,9 @@ const BaggingOffReport = () => {
         }
     };
 
-
     const applyFilters = (data) => {
         return data.filter(item => {
-            const report = reportType === 'batch' ? item.batchInfo : item;
+            const report = reportType === 'batch' ? item.batchInfo || item : item;
 
             if (filters.batchNo && reportType === 'batch' && !report.batchNo.includes(filters.batchNo)) {
                 return false;
@@ -156,8 +207,23 @@ const BaggingOffReport = () => {
                 return false;
             }
 
-            if (filters.processingType && report.processingType !== filters.processingType) {
-                return false;
+            // For processingType filter, we need to consider our natural batch logic
+            if (filters.processingType) {
+                // If looking for NATURAL and this batch base is in our natural mapping, it passes
+                if (filters.processingType === "NATURAL") {
+                    const baseBatchNo = getBaseBatchNo(report.batchNo);
+                    if (!baseBatchHasNatural[baseBatchNo] && report.processingType !== "NATURAL") {
+                        return false;
+                    }
+                } 
+                // If looking for a non-NATURAL type, only show if the batch doesn't have any NATURAL processing
+                // and matches the requested processing type
+                else {
+                    const baseBatchNo = getBaseBatchNo(report.batchNo);
+                    if (baseBatchHasNatural[baseBatchNo] || report.processingType !== filters.processingType) {
+                        return false;
+                    }
+                }
             }
 
             if (filters.startDate && filters.endDate && reportType === 'batch') {
@@ -248,19 +314,26 @@ const BaggingOffReport = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${filteredData.map(report => `
+                                ${filteredData.map(report => {
+                                    const batchInfo = report.batchInfo || report;
+                                    const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
+                                    const displayProcessingType = baseBatchHasNatural[baseBatchNo] 
+                                        ? "NATURAL" 
+                                        : batchInfo.processingType;
+                                    
+                                    return `
                                     <tr>
-                                        <td>${report.batchInfo.batchNo}</td>
-                                        <td>${report.batchInfo.station}</td>
-                                        <td>${report.batchInfo.processingType}</td>
-                                        <td>${new Date(report.batchInfo.startDate).toLocaleDateString()}</td>
-                                        <td>${report.batchInfo.endDate ? new Date(report.batchInfo.endDate).toLocaleDateString() : 'N/A'}</td>
-                                        <td>${report.batchInfo.status}</td>
-                                        <td>${report.batchInfo.totalInputKgs}</td>
-                                        <td>${report.batchInfo.totalOutputKgs}</td>
-                                        <td>${report.batchInfo.outturn}</td>
+                                        <td>${batchInfo.batchNo}</td>
+                                        <td>${batchInfo.station}</td>
+                                        <td>${displayProcessingType}</td>
+                                        <td>${new Date(batchInfo.startDate).toLocaleDateString()}</td>
+                                        <td>${batchInfo.endDate ? new Date(batchInfo.endDate).toLocaleDateString() : 'N/A'}</td>
+                                        <td>${batchInfo.status}</td>
+                                        <td>${batchInfo.totalInputKgs || batchInfo.totalKgs}</td>
+                                        <td>${batchInfo.totalOutputKgs || batchInfo.totalKgs}</td>
+                                        <td>${batchInfo.outturn}%</td>
                                     </tr>
-                                `).join('')}
+                                `}).join('')}
                             </tbody>
                         </table>
                     </body>
@@ -347,17 +420,25 @@ const BaggingOffReport = () => {
                 'Outturn',
             ];
 
-            csvData = filteredData.map(report => [
-                report.batchInfo.batchNo,
-                report.batchInfo.station,
-                report.batchInfo.processingType,
-                new Date(report.batchInfo.startDate).toLocaleDateString(),
-                report.batchInfo.endDate ? new Date(report.batchInfo.endDate).toLocaleDateString() : 'N/A',
-                report.batchInfo.status,
-                report.batchInfo.totalInputKgs,
-                report.batchInfo.totalOutputKgs,
-                report.batchInfo.outturn
-            ]);
+            csvData = filteredData.map(report => {
+                const batchInfo = report.batchInfo || report;
+                const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
+                const displayProcessingType = baseBatchHasNatural[baseBatchNo] 
+                    ? "NATURAL" 
+                    : batchInfo.processingType;
+                
+                return [
+                    batchInfo.batchNo,
+                    batchInfo.station,
+                    displayProcessingType,
+                    new Date(batchInfo.startDate).toLocaleDateString(),
+                    batchInfo.endDate ? new Date(batchInfo.endDate).toLocaleDateString() : 'N/A',
+                    batchInfo.status,
+                    batchInfo.totalInputKgs || batchInfo.totalKgs,
+                    batchInfo.totalOutputKgs || batchInfo.totalKgs,
+                    batchInfo.outturn
+                ];
+            });
         } else {
             headers = [
                 'Station Name',
@@ -399,7 +480,6 @@ const BaggingOffReport = () => {
         document.body.removeChild(link);
     };
 
-
     const calculateSummaries = () => {
         if (reportType === 'batch') {
             return {
@@ -422,64 +502,77 @@ const BaggingOffReport = () => {
 
     const summaries = calculateSummaries();
 
-    const renderBatchTable = () => (
-        <table className="table table-hover">
-            <thead>
-                <tr style={{ backgroundColor: theme.neutral }}>
-                    <th>#</th>
-                    <th>Batch No</th>
-                    <th>Station</th>
-                    <th>Processing Type</th>
-                    <th className="text-end">Total Input KGs</th>
-                    <th className="text-end">Total Output KGs</th>
-                    <th className="text-end">Outturn</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {loading ? (
-                    Array(10).fill(0).map((_, index) => (
-                        <SkeletonRow key={index} cols={10} />
-                    ))
-                ) : currentItems.length > 0 ? (
-                    currentItems.map((report, index) => (
-                        <tr
-                            key={index}
-                            style={{ backgroundColor: index % 2 === 0 ? 'white' : theme.tableHover, cursor: 'pointer' }}
-                            onClick={() => handleRowClick(report)}
-                        >
-                            <td>{index+1}</td>
-                            <td>{report.batchInfo.batchNo}</td>
-                            <td>{report.batchInfo.station}</td>
-                            <td>{report.batchInfo.processingType}</td>
-                            <td className="text-end">{report.batchInfo.totalInputKgs.toLocaleString()}</td>
-                            <td className="text-end">{report.batchInfo.totalOutputKgs.toLocaleString()}</td>
-                            <td
-                                style={{
-                                    textAlign: 'right',
-                                    color: report.batchInfo.processingType === "NATURAL" ? 'teal' : (report.batchInfo.outturn >= 20.5 && report.batchInfo.outturn <= 25 ? theme.primary : 'red'),
-                                    backgroundColor: theme.neutral,
-                                }}
-                            >
-                                {report.batchInfo.outturn}%
-                            </td>
-                            <td>{new Date(report.batchInfo.startDate).toLocaleDateString()}</td>
-                            <td>{report.batchInfo.endDate ? new Date(report.batchInfo.endDate).toLocaleDateString() : 'N/A'}</td>
-                            <td>
-                                <span className={`badge bg-${report.batchInfo.status === 'Completed' ? 'success' : 'warning'}`}>
-                                    {report.batchInfo.status}
-                                </span>
-                            </td>
-                        </tr>
-                    ))
-                ) : (
-                    <EmptyState message="No batch reports found matching your filters" />
-                )}
-            </tbody>
-        </table>
-    );
+    const renderBatchTable = () => {
+        return (
+            <table className="table table-hover">
+                <thead>
+                    <tr style={{ backgroundColor: theme.neutral }}>
+                        <th>#</th>
+                        <th>Batch No</th>
+                        <th>Station</th>
+                        <th>Processing Type</th>
+                        <th className="text-end">Total Input KGs</th>
+                        <th className="text-end">Total Output KGs</th>
+                        <th className="text-end">Outturn</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {loading ? (
+                        Array(10).fill(0).map((_, index) => (
+                            <SkeletonRow key={index} cols={10} />
+                        ))
+                    ) : currentItems.length > 0 ? (
+                        currentItems.map((report, index) => {
+                            const batchInfo = report.batchInfo || report;
+                            const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
+                            
+                            // Apply the NATURAL processing type logic here
+                            const displayProcessingType = baseBatchHasNatural[baseBatchNo] 
+                                ? "NATURAL" 
+                                : batchInfo.processingType;
+    
+                            return (
+                                <tr
+                                    key={index}
+                                    style={{ backgroundColor: index % 2 === 0 ? 'white' : theme.tableHover, cursor: 'pointer' }}
+                                    onClick={() => handleRowClick(report)}
+                                >
+                                    <td>{startIndex + index + 1}</td>
+                                    <td>{batchInfo.batchNo}</td>
+                                    <td>{batchInfo.station || 'N/A'}</td>
+                                    <td>{displayProcessingType}</td>
+                                    <td className="text-end">{(batchInfo.totalInputKgs || batchInfo.totalKgs || 0).toLocaleString()}</td>
+                                    <td className="text-end">{(batchInfo.totalOutputKgs || batchInfo.totalKgs || 0).toLocaleString()}</td>
+                                    <td
+                                        style={{
+                                            textAlign: 'right',
+                                            color: displayProcessingType === "NATURAL" ? 'teal' : 
+                                                (batchInfo.outturn >= 20.5 && batchInfo.outturn <= 25 ? theme.primary : 'red'),
+                                            backgroundColor: theme.neutral,
+                                        }}
+                                    >
+                                        {batchInfo.outturn}%
+                                    </td>
+                                    <td>{new Date(batchInfo.startDate).toLocaleDateString()}</td>
+                                    <td>{batchInfo.endDate ? new Date(batchInfo.endDate).toLocaleDateString() : 'N/A'}</td>
+                                    <td>
+                                        <span className={`badge bg-${batchInfo.status === 'Completed' || batchInfo.status === 'COMPLETED' ? 'success' : 'warning'}`}>
+                                            {batchInfo.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    ) : (
+                        <EmptyState message="No batch reports found matching your filters" />
+                    )}
+                </tbody>
+            </table>
+        );
+    };
 
 
     const renderStationTable = () => (
@@ -488,15 +581,18 @@ const BaggingOffReport = () => {
                 <tr style={{ backgroundColor: theme.neutral }}>
                     <th>#</th>
                     <th>Station</th>
-                    <th className="text-end">Input KGs</th>
-                    <th className="text-end">Output KGs</th>
-                    <th className="text-end">Outturn</th>
+                    <th className="text-end">Non NAT  Input Kgs </th>
+                    <th className="text-end">Non NAT Output Kgs</th>
+                    <th className="text-end">Non NAT Outturn</th>
+                    <th className="text-end">NAT  Input Kgs</th>
+                    <th className="text-end">NAT Output Kgs</th>
+                    <th className="text-end">NAT Outturn</th>
                 </tr>
             </thead>
             <tbody>
                 {loading ? (
                     Array(5).fill(0).map((_, index) => (
-                        <SkeletonRow key={index} cols={5} />
+                        <SkeletonRow key={index} cols={8} />
                     ))
                 ) : currentItems.length > 0 ? (
                     currentItems.map((summary, index) => (
@@ -505,11 +601,19 @@ const BaggingOffReport = () => {
                             style={{ backgroundColor: index % 2 === 0 ? 'white' : theme.tableHover, cursor: 'pointer' }}
                             onClick={() => handleRowClick(summary)}
                         >
-                            <td>{index+1}</td>
+                            <td>{index + 1}</td>
                             <td>{summary.stationName}</td>
                             <td className="text-end">{summary.nonNaturalInputKgs.toLocaleString()}</td>
                             <td className="text-end">{summary.nonNaturalOutputKgs.toLocaleString()}</td>
                             <td className="text-end">{summary.outturn}%</td>
+                            <td className="text-end">{(summary?.totalInputKgs - summary.nonNaturalInputKgs).toLocaleString()}</td>
+                            <td className="text-end">{(summary?.totalOutputKgs - summary.nonNaturalOutputKgs).toLocaleString()}</td>
+                            <td className="text-end">
+                                {summary?.totalInputKgs === summary.nonNaturalInputKgs && summary?.totalOutputKgs === summary.nonNaturalOutputKgs
+                                    ? '0%'
+                                    : ((summary?.totalOutputKgs - summary.nonNaturalOutputKgs) /
+                                        (summary?.totalInputKgs - summary.nonNaturalInputKgs) * 100).toFixed(2) + '%'}
+                            </td>
                         </tr>
                     ))
                 ) : (

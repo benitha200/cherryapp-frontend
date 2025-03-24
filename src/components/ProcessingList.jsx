@@ -279,11 +279,11 @@ const ProcessingList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [gradeFilter, setGradeFilter] = useState('ALL');
     const [processingTypeFilter, setProcessingTypeFilter] = useState('ALL');
-    const [statusFilter, setStatusFilter] = useState('ALL'); 
+    const [statusFilter, setStatusFilter] = useState('ALL');
 
     // Available processing types and statuses
     const [availableProcessingTypes, setAvailableProcessingTypes] = useState([]);
-    const [availableStatuses, setAvailableStatuses] = useState([]); 
+    const [availableStatuses, setAvailableStatuses] = useState([]);
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -379,7 +379,7 @@ const ProcessingList = () => {
         if (gradeFilter !== 'ALL') {
             filtered = filtered.filter(batch => batch.grade === gradeFilter);
         }
-   
+
         // Apply processing type filter
         if (processingTypeFilter !== 'ALL') {
             filtered = filtered.filter(batch => batch.processingType === processingTypeFilter);
@@ -521,11 +521,11 @@ const ProcessingList = () => {
 
         switch (processingType) {
             case 'FULLY_WASHED':
-                color='#3FA3C5';
+                color = '#3FA3C5';
                 text = 'FULLY_WASHED';
                 break;
             case 'NATURAL':
-                color=processingTheme.secondary;
+                color = processingTheme.secondary;
                 text = 'NATURAL';
                 break;
             default:
@@ -574,7 +574,7 @@ const ProcessingList = () => {
     // Improved pagination components
     const renderPaginationItems = () => {
         if (totalPages <= 1) return null;
-    
+
         return (
             <Pagination className="mb-0 flex-wrap">
                 {/* Previous button */}
@@ -590,7 +590,7 @@ const ProcessingList = () => {
                 >
                     <span style={{ color: processingTheme.primary }}>Prev</span>
                 </Pagination.Item>
-    
+
                 {/* Page numbers */}
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     // Calculate which page numbers to show
@@ -604,7 +604,7 @@ const ProcessingList = () => {
                     } else {
                         pageNum = currentPage - 2 + i;
                     }
-    
+
                     // Only render if we're within valid page range
                     if (pageNum > 0 && pageNum <= totalPages) {
                         return (
@@ -630,7 +630,7 @@ const ProcessingList = () => {
                     }
                     return null;
                 })}
-    
+
                 {/* Next button */}
                 <Pagination.Item
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
@@ -891,7 +891,7 @@ const ProcessingList = () => {
                                                 style={{
                                                     color: processingTheme.neutral,
                                                     borderColor: processingTheme.primary,
-                                                    backgroundColor:  processingTheme.primary,
+                                                    backgroundColor: processingTheme.primary,
                                                     transition: 'all 0.2s',
                                                     borderRadius: '4px',
                                                     padding: '0.375rem 0.75rem'
@@ -914,23 +914,23 @@ const ProcessingList = () => {
 
                     {filteredBatches.length > 0 && (
                         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4">
-                        <div style={{ color: processingTheme.primary, marginBottom: '1rem' }}>
-                            Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredBatches.length)} to {Math.min(currentPage * itemsPerPage, filteredBatches.length)} of {filteredBatches.length} entries
+                            <div style={{ color: processingTheme.primary, marginBottom: '1rem' }}>
+                                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredBatches.length)} to {Math.min(currentPage * itemsPerPage, filteredBatches.length)} of {filteredBatches.length} entries
+                            </div>
+                            <div className="d-flex flex-column flex-md-row align-items-center">
+                                {renderPaginationItems()}
+                                <Form.Select
+                                    style={{ width: '70px', marginLeft: '1rem', marginTop: '1rem', marginBottom: '1rem' }}
+                                    value={itemsPerPage}
+                                    onChange={handleItemsPerPageChange}
+                                >
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                    <option value={25}>25</option>
+                                    <option value={50}>50</option>
+                                </Form.Select>
+                            </div>
                         </div>
-                        <div className="d-flex flex-column flex-md-row align-items-center">
-                            {renderPaginationItems()}
-                            <Form.Select
-                                style={{ width: '70px', marginLeft: '1rem', marginTop: '1rem', marginBottom: '1rem' }}
-                                value={itemsPerPage}
-                                onChange={handleItemsPerPageChange}
-                            >
-                                <option value={5}>5</option>
-                                <option value={10}>10</option>
-                                <option value={25}>25</option>
-                                <option value={50}>50</option>
-                            </Form.Select>
-                        </div>
-                    </div>
                     )}
                 </Card.Body>
             </Card>
@@ -1022,7 +1022,7 @@ const LoadingSkeleton = () => (
     </div>
 );
 
-const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete,fetchProcessingBatches }) => {
+const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete, fetchProcessingBatches }) => {
     const [existingProcessing, setExistingProcessing] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
 
@@ -1815,14 +1815,143 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
 
 
                     {/* Fully Washed Processing Section */}
-                    {((!isEditing && batches?.[0]?.processingType?.toUpperCase() === 'FULLY_WASHED') ||
+                    {(!isEditing || (isEditing && editingRecord?.processingType === 'FULLY WASHED')) &&
+                        batches?.[0]?.processingType?.toUpperCase() === 'FULLY_WASHED' && (
+                            <div className="mb-3">
+                                <Form.Label style={{ color: processingTheme.primary }}>
+                                    Fully Washed Processing Output
+                                </Form.Label>
+                                <Row>
+                                    {batches[0].batchNo.endsWith('-2') || batches[0].batchNo.endsWith('B') ? (
+                                        <>
+                                            <Col md={6}>
+                                                <Form.Control
+                                                    type="number"
+                                                    placeholder="B1 KGs"
+                                                    value={fullyWashedOutputKgs.B1}
+                                                    onChange={(e) => handleFullyWashedOutputChange('B1', e.target.value)}
+                                                    required
+                                                    style={{
+                                                        borderColor: processingTheme.secondary,
+                                                        ':focus': { borderColor: processingTheme.primary }
+                                                    }}
+                                                />
+                                            </Col>
+                                            <Col md={6}>
+                                                <Form.Control
+                                                    type="number"
+                                                    placeholder="B2 KGs"
+                                                    value={fullyWashedOutputKgs.B2}
+                                                    onChange={(e) => handleFullyWashedOutputChange('B2', e.target.value)}
+                                                    required
+                                                    style={{
+                                                        borderColor: processingTheme.secondary,
+                                                        ':focus': { borderColor: processingTheme.primary }
+                                                    }}
+                                                />
+                                            </Col>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* Only show A2 and A3 if status is TRANSFERRED */}
+                                            {(batches?.[0]?.status === "TRANSFERRED" || editingRecord?.status === "TRANSFERRED") ? (
+                                                <>
+                                                    <Col md={6} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A2 KGs"
+                                                            value={fullyWashedOutputKgs.A2}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A2', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={6} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A3 KGs"
+                                                            value={fullyWashedOutputKgs.A3}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A3', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Col md={3} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A0 KGs"
+                                                            value={fullyWashedOutputKgs.A0}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A0', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={3} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A1 KGs"
+                                                            value={fullyWashedOutputKgs.A1}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A1', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={3} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A2 KGs"
+                                                            value={fullyWashedOutputKgs.A2}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A2', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={3} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A3 KGs"
+                                                            value={fullyWashedOutputKgs.A3}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A3', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </Row>
+                            </div>
+                        )
+                    }
+                    {/* {((!isEditing && batches?.[0]?.processingType?.toUpperCase() === 'FULLY_WASHED') ||
                         (isEditing && editingRecord?.processingType === 'FULLY WASHED')) && (
                             <div className="mb-3">
                                 <Form.Label style={{ color: processingTheme.primary }}>
                                     Fully Washed Processing Output (e.g., 120, 120.5)
                                 </Form.Label>
                                 <Row>
-                                    {/* Check for batch ending with -2 or B */}
                                     {(editingRecord?.batchNo?.endsWith('-2') ||
                                         editingRecord?.batchNo?.endsWith('B') ||
                                         batches?.[0]?.batchNo?.endsWith('-2') ||
@@ -1913,7 +2042,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                     )}
                                 </Row>
                             </div>
-                        )}
+                        )} */}
 
                     {/* Natural Processing Section */}
                     {((!isEditing && batches?.[0]?.processingType?.toUpperCase() === 'NATURAL') ||

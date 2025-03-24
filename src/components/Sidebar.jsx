@@ -259,6 +259,7 @@ const Sidebar = () => {
   const settingsItems = [
     { path: '/cws', icon: 'journal', text: 'CWS' },
     { path: '/site-collections', icon: 'collection', text: 'Site Collections' },
+    { path: '/wet-transfer-cws-mapping', icon: 'collection', text: 'Cws Mapping' },
     { path: '/pricing', icon: 'cash', text: 'Pricing' },
     { path: '/users', icon: 'people', text: 'Users' },
   ];

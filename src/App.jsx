@@ -25,6 +25,7 @@ import WetTransfer from './components/Cws/WetTransfer.jsx';
 import WetTransferReceiver from './components/Cws/WetTransferReceiver.jsx';
 import BaggingOffList from './components/Admin/Reports/BaggingOffList.jsx';
 import BaggingOffReport from './components/Admin/Reports/BaggingOffReport.jsx';
+import WetTransferCwsMapping from './components/Cws/WetTransferCwsMapping.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -162,6 +163,14 @@ const AppContent = () => {
               element={
                 <PrivateRoute>
                   <CwsForm />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/wet-transfer-cws-mapping"
+              element={
+                <PrivateRoute>
+                  <WetTransferCwsMapping />
                 </PrivateRoute>
               }
             />

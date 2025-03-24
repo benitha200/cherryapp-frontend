@@ -141,6 +141,8 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
       stationName, 
       nonNaturalInputKgs, 
       nonNaturalOutputKgs, 
+      naturalInputKgs, 
+      naturalOutputKgs, 
       outturn, 
       processingTypes = {}, 
       gradeBreakdown = {}, 
@@ -166,7 +168,7 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
                 <td>{nonNaturalOutputKgs ? nonNaturalOutputKgs.toLocaleString() : '0'}</td>
               </tr>
               <tr>
-                <td className="fw-bold">Outturn</td>
+                <td className="fw-bold">Outturn <br/><span className='text-sucafina fw-semibold'>(Non NAT)</span></td>
                 <td 
                   style={{ 
                     color: outturn >= 20 && outturn <= 25 ? '#008080' : 'red',
@@ -174,6 +176,25 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
                   }}
                 >
                   {outturn ? `${outturn}%` : '0%'}
+                </td>
+              </tr>
+              <tr>
+                <td className="fw-bold">Total Input KGs <br/><span className='text-sucafina fw-semibold'>(NATURAL)</span></td>
+                <td>{naturalInputKgs ? naturalInputKgs.toLocaleString() : '0'}</td>
+              </tr>
+              <tr>
+                <td className="fw-bold">Total Output KGs <br/><span className='text-sucafina fw-semibold'>(NATURAL)</span></td>
+                <td>{naturalOutputKgs ? naturalOutputKgs.toLocaleString() : '0'}</td>
+              </tr>
+              <tr>
+                <td className="fw-bold">Outturn <br/><span className='text-sucafina fw-semibold'>(NAT)</span></td>
+                <td 
+                  style={{ 
+                    color: outturn >= 20 && outturn <= 25 ? '#008080' : 'red',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {naturalInputKgs === 0 ? "0%" : ((naturalOutputKgs/naturalInputKgs)*100).toFixed(2) + "%"}
                 </td>
               </tr>
             </tbody>

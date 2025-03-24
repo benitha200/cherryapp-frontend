@@ -131,10 +131,10 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
 
     const prepareSubmissionData = (processingType, status) => {
         if (!batches?.[0]?.batchNo) return [];
-    
+
         const submissions = [];
         const batchNo = batches[0].batchNo;
-    
+
         if (processingType === 'HONEY') {
             if (honeyOutputKgs.H1) {
                 submissions.push({
@@ -148,7 +148,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                     recordId: isEditing && editingRecord?.processingType === 'HONEY' ? editingRecord.id : null
                 });
             }
-    
+
             // Add fully washed submission if applicable
             if (Object.values(fullyWashedOutputKgs).some(v => v !== '')) {
                 submissions.push({
@@ -177,7 +177,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                 });
             }
         }
-    
+
         return submissions;
     };
 
@@ -275,16 +275,16 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
 
     const handleCompleteBaggingOff = async () => {
         if (!batches?.[0]?.batchNo) return;
-    
+
         try {
             setLoading(true);
-    
+
             // Get submissions if there are any new values entered
             const submissions = prepareSubmissionData(
                 batches[0].processingType.toUpperCase(),
                 'COMPLETED'
             );
-    
+
             // If there are new entries, submit them
             if (submissions.length > 0) {
                 await Promise.all(
@@ -293,7 +293,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                     )
                 );
             }
-    
+
             // Always update existing bagging-off entries to "COMPLETED"
             if (savedBaggingOffs.length > 0) {
                 await Promise.all(
@@ -305,12 +305,12 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                     )
                 );
             }
-    
+
             // Always call onComplete even if there are no new submissions
             if (onComplete && typeof onComplete === 'function') {
                 await onComplete(batches[0].batchNo);
             }
-    
+
             handleClose();
             alert('Bagging off completed successfully');
         } catch (error) {
@@ -483,7 +483,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                             marginRight: '5px'
                                                         }}
                                                     >
-                                                     <i className="bi bi-pencil-square"></i>
+                                                        <i className="bi bi-pencil-square"></i>
                                                     </Button>
                                                     <Button
                                                         variant="outline-danger"
@@ -494,7 +494,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                                             borderColor: '#dc3545'
                                                         }}
                                                     >
-                                                       <i className="bi bi-trash"></i>
+                                                        <i className="bi bi-trash"></i>
                                                     </Button>
                                                 </>
                                             )}
@@ -690,7 +690,7 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                         )}
 
                     {/* Fully Washed Processing Section */}
-                    {(!isEditing || (isEditing && editingRecord?.processingType === 'FULLY WASHED')) &&
+                    {/* {(!isEditing || (isEditing && editingRecord?.processingType === 'FULLY WASHED')) &&
                         batches?.[0]?.processingType?.toUpperCase() === 'FULLY_WASHED' && (
                             <div className="mb-3">
                                 <Form.Label style={{ color: processingTheme.primary }}>
@@ -784,7 +784,138 @@ const ProcessingBatchModal = ({ show, handleClose, batches, onSubmit, onComplete
                                     )}
                                 </Row>
                             </div>
-                        )}
+                        )} */}
+
+                    {(!isEditing || (isEditing && editingRecord?.processingType === 'FULLY WASHED')) &&
+                        batches?.[0]?.processingType?.toUpperCase() === 'FULLY_WASHED' && (
+                            <div className="mb-3">
+                                <Form.Label style={{ color: processingTheme.primary }}>
+                                    Fully Washed Processing Output
+                                </Form.Label>
+                                <Row>
+                                    {batches[0].batchNo.endsWith('-2') || batches[0].batchNo.endsWith('B') ? (
+                                        <>
+                                            <Col md={6}>
+                                                <Form.Control
+                                                    type="number"
+                                                    placeholder="B1 KGs"
+                                                    value={fullyWashedOutputKgs.B1}
+                                                    onChange={(e) => handleFullyWashedOutputChange('B1', e.target.value)}
+                                                    required
+                                                    style={{
+                                                        borderColor: processingTheme.secondary,
+                                                        ':focus': { borderColor: processingTheme.primary }
+                                                    }}
+                                                />
+                                            </Col>
+                                            <Col md={6}>
+                                                <Form.Control
+                                                    type="number"
+                                                    placeholder="B2 KGs"
+                                                    value={fullyWashedOutputKgs.B2}
+                                                    onChange={(e) => handleFullyWashedOutputChange('B2', e.target.value)}
+                                                    required
+                                                    style={{
+                                                        borderColor: processingTheme.secondary,
+                                                        ':focus': { borderColor: processingTheme.primary }
+                                                    }}
+                                                />
+                                            </Col>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* Only show A2 and A3 if status is TRANSFERRED */}
+                                            {(batches?.[0]?.status === "TRANSFERRED" || editingRecord?.status === "TRANSFERRED") ? (
+                                                <>
+                                                    <Col md={6} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A2 KGs"
+                                                            value={fullyWashedOutputKgs.A2}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A2', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={6} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A3 KGs"
+                                                            value={fullyWashedOutputKgs.A3}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A3', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Col md={3} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A0 KGs"
+                                                            value={fullyWashedOutputKgs.A0}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A0', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={3} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A1 KGs"
+                                                            value={fullyWashedOutputKgs.A1}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A1', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={3} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A2 KGs"
+                                                            value={fullyWashedOutputKgs.A2}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A2', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={3} className="mb-2">
+                                                        <Form.Control
+                                                            type="number"
+                                                            placeholder="A3 KGs"
+                                                            value={fullyWashedOutputKgs.A3}
+                                                            onChange={(e) => handleFullyWashedOutputChange('A3', e.target.value)}
+                                                            required
+                                                            style={{
+                                                                borderColor: processingTheme.secondary,
+                                                                ':focus': { borderColor: processingTheme.primary }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </Row>
+                            </div>
+                        )
+                    }
                 </Form>
             </Modal.Body>
             <Modal.Footer style={{ backgroundColor: processingTheme.neutral }}>

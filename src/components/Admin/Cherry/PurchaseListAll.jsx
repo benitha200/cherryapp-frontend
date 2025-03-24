@@ -52,7 +52,7 @@ const PurchaseListAll = () => {
         processingEntries: true
     });
     const [prices, setPrices] = useState({
-        A: 750,
+        A: 800,
         B: 200
     });
     const [editingPrice, setEditingPrice] = useState({
@@ -116,7 +116,7 @@ const PurchaseListAll = () => {
 
         // Get base cherry price based on grade
         let baseCherryPrice = grade === 'A' ?
-            (cwsPricing ? cwsPricing.gradeAPrice : 750) :
+            (cwsPricing ? cwsPricing.gradeAPrice : 800) :
             200; // Grade B fixed price is 200
 
         if (deliveryType === 'SITE_COLLECTION' && siteCollectionId) {
@@ -845,7 +845,7 @@ const PurchaseListAll = () => {
                                 <span className="form-control-plaintext">
                                     <strong>{newPurchase.cherryPrice}</strong>
                                     <small className="text-muted ms-2">
-                                        ({newPurchase.grade === 'A' ? '750' : '200'} - ({newPurchase?.transportFee}+{newPurchase?.commissionFee}))
+                                        ({newPurchase.grade === 'A' ? '800' : '200'} - ({newPurchase?.transportFee}+{newPurchase?.commissionFee}))
                                     </small>
                                 </span>
                             </div>

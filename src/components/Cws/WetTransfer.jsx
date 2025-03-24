@@ -70,11 +70,12 @@ const WetTransfer = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedBatches, setExpandedBatches] = useState({});
     const [selectAllChecked, setSelectAllChecked] = useState(false);
-    const [cwsList, setCwsList] = useState([]);
+    const [cwsMappings, setCwsMappings] = useState([]);
     const [selectedDestinationCws, setSelectedDestinationCws] = useState('');
     const [modalBatchSearch, setModalBatchSearch] = useState('');
     const [moistureValues, setMoistureValues] = useState({});
     const userInfo = JSON.parse(localStorage.getItem('user'));
+    const cwsInfo = JSON.parse(localStorage.getItem('cws'));
     const [honeyOutputKgs, setHoneyOutputKgs] = useState({ H1: '' });
     const [naturalOutputKgs, setNaturalOutputKgs] = useState({
         N1: '', N2: '', B1: '', B2: ''
@@ -114,7 +115,7 @@ const WetTransfer = () => {
 
     useEffect(() => {
         fetchProcessingRecords();
-        fetchCwsList();
+        fetchCwsMappings();
     }, []);
 
     // Get processing types for a batch
@@ -293,21 +294,25 @@ const WetTransfer = () => {
         }
     };
 
-    const fetchCwsList = async () => {
+    const fetchCwsMappings = async () => {
         try {
-            // Fetch all CWS locations except the current one
-            const response = await axios.get(`${API_URL}/cws`);
-            const filteredCws = response.data.filter(cws =>
-                cws.id !== userInfo.cwsId && cws.name !== "TEST"
+            // Fetch CWS mappings where the sender CWS is the current user's CWS
+            const response = await axios.get(`${API_URL}/wet-transfer/cws-mappings`);
+            
+            // Filter mappings where senderCwsId is the current user's CWS ID
+            const relevantMappings = response.data.filter(mapping => 
+                mapping.senderCwsId === cwsInfo.id
             );
-            setCwsList(filteredCws);
+            
+            setCwsMappings(relevantMappings);
 
             // Set default destination CWS if available
-            if (filteredCws.length > 0) {
-                setSelectedDestinationCws(filteredCws[0].id);
+            if (relevantMappings.length > 0) {
+                setSelectedDestinationCws(relevantMappings[0].receivingCwsId);
             }
         } catch (error) {
-            console.error('Error fetching CWS list:', error);
+            console.error('Error fetching CWS mappings:', error);
+            setError('Failed to fetch destination CWS options');
         }
     };
 
@@ -366,29 +371,30 @@ const WetTransfer = () => {
     const handleTransferConfirm = async () => {
         try {
             const recordsToTransfer = [];
-
-            selectedBatches.forEach(uniqueKey => {
-                const batchRecords = groupedRecords[uniqueKey];
-                batchRecords.forEach(record => {
-                    const processingType = record.processingType;
-                    const gradePrefix = record.grade.charAt(0);
-                    const allowedGrades = getOutputGradesForProcessingType(processingType, gradePrefix);
-
-                    // Only include this record if its grade is selected and is an allowed output grade
-                    allowedGrades.forEach(grade => {
-                        if (selectedGrades[grade]) {
-                            recordsToTransfer.push({
-                                ...record,
-                                grade: grade,
-                                moistureContent: parseFloat(moistureValues[`${uniqueKey}-${grade}`] || 0.0),
-                                outputKgs: parseFloat(fullyWashedOutputKgs[grade] || 0
-                                )
-                            });
-                        }
-                    });
-                });
+    
+            // Create one record per selected grade (A0, A1) across all selected batches
+            Object.keys(selectedGrades).forEach(grade => {
+                if (selectedGrades[grade]) {
+                    // Only proceed if the grade is selected and has a valid output KG value
+                    const outputKgs = fullyWashedOutputKgs[grade];
+                    if (outputKgs && parseFloat(outputKgs) > 0) {
+                        // Use the first batch for reference data
+                        const firstBatchKey = selectedBatches[0];
+                        const referenceRecord = groupedRecords[firstBatchKey][0];
+                        
+                        recordsToTransfer.push({
+                            id: referenceRecord.id,
+                            batchNo: referenceRecord.batchNo,
+                            grade: grade,
+                            processingType: referenceRecord.processingType,
+                            moistureContent: parseFloat(moistureValues[`${firstBatchKey}-${grade}`] || 0.0),
+                            outputKgs: parseFloat(outputKgs || 0)
+                        });
+                    }
+                }
             });
-
+    
+            // Send the transfer requests
             await Promise.all(recordsToTransfer.map(record =>
                 axios.post(`${API_URL}/wet-transfer`, {
                     processingId: record.id,
@@ -396,14 +402,14 @@ const WetTransfer = () => {
                     date: new Date().toISOString(),
                     sourceCwsId: userInfo.cwsId,
                     destinationCwsId: selectedDestinationCws,
-                    totalKgs: record.totalKgs,
+                    totalKgs: record.totalKgs || 0, // This might be undefined, set a default
                     outputKgs: record.outputKgs,
                     grade: record.grade,
                     processingType: record.processingType,
                     moistureContent: record.moistureContent
                 })
             ));
-
+    
             await fetchProcessingRecords();
             setSelectedBatches([]);
             setSelectedGrades({});
@@ -412,8 +418,7 @@ const WetTransfer = () => {
             setNaturalOutputKgs({ N1: '', N2: '', B1: '', B2: '' });
             setFullyWashedOutputKgs({ A0: '', A1: '', A2: '', A3: '', B1: '', B2: '' });
             setShowTransferModal(false);
-
-
+    
             setAlertTitle('Success');
             setAlertMessage('Wet Transfer completed successfully');
             setShowAlertModal(true);
@@ -476,8 +481,8 @@ const WetTransfer = () => {
 
     const gradeTotals = getGradeTotals();
     const sourceCwsName = selectedBatches.length > 0 && groupedRecords[selectedBatches[0]][0].cws?.name;
-    const destinationCwsName = cwsList.find(cws => cws.id === selectedDestinationCws)?.name;
-
+    const selectedMapping = cwsMappings.find(mapping => mapping.receivingCwsId === selectedDestinationCws);
+    const destinationCwsName = selectedMapping?.receivingCws;
 
     return (
         <div className="container-fluid py-4">
@@ -498,11 +503,13 @@ const WetTransfer = () => {
                                         value={selectedDestinationCws}
                                         onChange={(e) => setSelectedDestinationCws(e.target.value)}
                                     >
-                                        {cwsList.map(cws => (
-                                            <option key={cws.id} value={cws.id}>{cws.name}</option>
+                                        {cwsMappings.map(mapping => (
+                                            <option key={mapping.receivingCwsId} value={mapping.receivingCwsId}>
+                                                {mapping.receivingCws}
+                                            </option>
                                         ))}
-                                        {cwsList.length === 0 && (
-                                            <option disabled>No CWS locations available</option>
+                                        {cwsMappings.length === 0 && (
+                                            <option disabled>No destination CWS mappings available</option>
                                         )}
                                     </Form.Select>
                                 </Form.Group>
@@ -614,11 +621,6 @@ const WetTransfer = () => {
                                                                     type="number"
                                                                     size="sm"
                                                                     style={{ width: '80px' }}
-                                                                    // value={
-                                                                    //     grade.startsWith('H') ? honeyOutputKgs[grade] :
-                                                                    //         grade.startsWith('N') || grade.startsWith('B') ? naturalOutputKgs[grade] :
-                                                                    //             fullyWashedOutputKgs[grade] || ''
-                                                                    // }
                                                                     value={fullyWashedOutputKgs[grade] || ''}
                                                                     onChange={(e) => {
                                                                         const value = e.target.value;
@@ -686,9 +688,9 @@ const WetTransfer = () => {
                                                     const moistureContent = parseFloat(moistureValues[`${selectedBatches[0]}-${grade}`] || 0);
 
                                                     return !transferredKgs || parseFloat(transferredKgs) <= 0 || isNaN(moistureContent) || moistureContent <= 0;
-                                                })
+                                                }) ||
+                                                cwsMappings.length === 0
                                             }
-
                                             onClick={handleTransferClick}
                                             style={{
                                                 backgroundColor: processingTheme.primary,
@@ -698,6 +700,12 @@ const WetTransfer = () => {
                                             Create Wet Transfer
                                         </Button>
                                     </div>
+                                    
+                                    {cwsMappings.length === 0 && (
+                                        <Alert variant="warning" className="mt-3">
+                                            No destination CWS mappings available for your CWS. Please contact an administrator.
+                                        </Alert>
+                                    )}
                                 </Card.Body>
                             </Card>
                         </div>

@@ -122,9 +122,9 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
         outputKgs: outputData,
         date: new Date().toISOString(),
         processingType: processingType,
-        status: "COMPLETED",
+        status: "RECEIVER_COMPLETED",
         notes: notes,
-        existingProcessing: batchDetails?.id ? { id: batchDetails.id } : undefined
+        existingProcessing: batchDetails?.processingId ? { processingId: batchDetails.processingId } : undefined
       };
       
       console.log('Sending payload to bagging-off API:', payload);
@@ -268,7 +268,7 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
       centered
     >
       <Modal.Header closeButton style={{ backgroundColor: processingTheme.primary }}>
-        <Modal.Title>Bag Off - {batchNo}</Modal.Title>
+        <Modal.Title className='text-white'>Bag Off - {batchNo}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {loading && !batchDetails ? (
@@ -294,20 +294,15 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
                     <tr>
                       <th>Source CWS</th>
                       <td>{batchDetails.sourceCws?.name || 'Unknown'}</td>
-                      <th>Total KGs</th>
-                      <td>{parseFloat(batchDetails.totalKgs).toFixed(2)} kg</td>
-                    </tr>
-                    <tr>
                       <th>Destination CWS</th>
                       <td>{batchDetails.destinationCws?.name || 'Unknown'}</td>
-                      <th>Status</th>
-                      <td>{batchDetails.status}</td>
                     </tr>
                     <tr>
+                      <th>Status</th>
+                      <td>{batchDetails.status}</td>
                       <th>Date</th>
                       <td>{new Date(batchDetails.date).toLocaleDateString()}</td>
-                      <th>Grade</th>
-                      <td>{batchDetails.grade || 'N/A'}</td>
+                     
                     </tr>
                     <tr>
                       <th>Moisture Content</th>
