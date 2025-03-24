@@ -45,7 +45,7 @@ const BaggingOffReport = () => {
     const [stationSummaries, setStationSummaries] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    
+
     // Mapping to track which base batches have NATURAL processing
     const [baseBatchHasNatural, setBaseBatchHasNatural] = useState({});
 
@@ -99,21 +99,21 @@ const BaggingOffReport = () => {
     const fetchReports = async () => {
         setLoading(true);
         setError(null);
-    
+
         try {
             const token = localStorage.getItem('token');
-            
+
             // Fetch batch-wise reports
             const batchResponse = await axios.get(`${API_URL}/bagging-off/report/completed`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-    
+
             if (batchResponse.data.reports) {
                 const reports = batchResponse.data.reports;
-                
+
                 // Step 1: Create a mapping of base batch numbers to their processing types
                 const naturalBatches = {};
-                
+
                 // First pass: Identify all batches with NATURAL processing
                 reports.forEach(report => {
                     const batchInfo = report.batchInfo || report;
@@ -124,13 +124,13 @@ const BaggingOffReport = () => {
                         naturalBatches[baseBatchNo] = true;
                     }
                 });
-                
+
                 // Store the mapping
                 setBaseBatchHasNatural(naturalBatches);
-                
+
                 // Process reports without modifying them for data storage
                 setBatchReports(reports);
-                
+
                 setOverallMetrics(prev => ({
                     ...prev,
                     totalNonNaturalInputKgs: batchResponse.data.overallMetrics.totalNonNaturalInputKgs,
@@ -138,30 +138,30 @@ const BaggingOffReport = () => {
                     overallNonNaturalOutturn: batchResponse.data.overallMetrics.overallNonNaturalOutturn,
                     totalBatches: batchResponse.data.totalRecords
                 }));
-    
+
                 // Extract unique filter options from the data
                 const stations = [...new Set(reports.map(report => (report.batchInfo || report).station))];
                 const processingTypes = [...new Set(reports.map(report => (report.batchInfo || report).processingType))];
-    
+
                 setFilterOptions({
                     stations,
                     processingTypes
                 });
             }
-    
+
             // Fetch station-wise summaries
             const stationResponse = await axios.get(`${API_URL}/bagging-off/report/summary`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-    
+
             if (stationResponse.data.stationSummaries) {
                 // Process summary data to update natural batch mapping
                 const summaries = stationResponse.data.stationSummaries;
-                
+
                 // Check if there's detailed batch info in the summaries
                 if (summaries.some(s => s.batches && s.batches.length > 0)) {
                     const updatedNaturalBatches = { ...baseBatchHasNatural };
-                    
+
                     // Look through all batches in summaries
                     summaries.forEach(station => {
                         if (station.batches && station.batches.length > 0) {
@@ -173,11 +173,11 @@ const BaggingOffReport = () => {
                             });
                         }
                     });
-                    
+
                     // Update the natural batches mapping with any new info from summaries
                     setBaseBatchHasNatural(updatedNaturalBatches);
                 }
-                
+
                 setStationSummaries(stationResponse.data.stationSummaries);
                 setOverallMetrics(prev => ({
                     ...prev,
@@ -215,7 +215,7 @@ const BaggingOffReport = () => {
                     if (!baseBatchHasNatural[baseBatchNo] && report.processingType !== "NATURAL") {
                         return false;
                     }
-                } 
+                }
                 // If looking for a non-NATURAL type, only show if the batch doesn't have any NATURAL processing
                 // and matches the requested processing type
                 else {
@@ -315,13 +315,13 @@ const BaggingOffReport = () => {
                             </thead>
                             <tbody>
                                 ${filteredData.map(report => {
-                                    const batchInfo = report.batchInfo || report;
-                                    const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
-                                    const displayProcessingType = baseBatchHasNatural[baseBatchNo] 
-                                        ? "NATURAL" 
-                                        : batchInfo.processingType;
-                                    
-                                    return `
+                const batchInfo = report.batchInfo || report;
+                const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
+                const displayProcessingType = baseBatchHasNatural[baseBatchNo]
+                    ? "NATURAL"
+                    : batchInfo.processingType;
+
+                return `
                                     <tr>
                                         <td>${batchInfo.batchNo}</td>
                                         <td>${batchInfo.station}</td>
@@ -423,10 +423,10 @@ const BaggingOffReport = () => {
             csvData = filteredData.map(report => {
                 const batchInfo = report.batchInfo || report;
                 const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
-                const displayProcessingType = baseBatchHasNatural[baseBatchNo] 
-                    ? "NATURAL" 
+                const displayProcessingType = baseBatchHasNatural[baseBatchNo]
+                    ? "NATURAL"
                     : batchInfo.processingType;
-                
+
                 return [
                     batchInfo.batchNo,
                     batchInfo.station,
@@ -528,12 +528,12 @@ const BaggingOffReport = () => {
                         currentItems.map((report, index) => {
                             const batchInfo = report.batchInfo || report;
                             const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
-                            
+
                             // Apply the NATURAL processing type logic here
-                            const displayProcessingType = baseBatchHasNatural[baseBatchNo] 
-                                ? "NATURAL" 
+                            const displayProcessingType = baseBatchHasNatural[baseBatchNo]
+                                ? "NATURAL"
                                 : batchInfo.processingType;
-    
+
                             return (
                                 <tr
                                     key={index}
@@ -549,7 +549,7 @@ const BaggingOffReport = () => {
                                     <td
                                         style={{
                                             textAlign: 'right',
-                                            color: displayProcessingType === "NATURAL" ? 'teal' : 
+                                            color: displayProcessingType === "NATURAL" ? 'teal' :
                                                 (batchInfo.outturn >= 20.5 && batchInfo.outturn <= 25 ? theme.primary : 'red'),
                                             backgroundColor: theme.neutral,
                                         }}
@@ -605,10 +605,23 @@ const BaggingOffReport = () => {
                             <td>{summary.stationName}</td>
                             <td className="text-end">{summary.nonNaturalInputKgs.toLocaleString()}</td>
                             <td className="text-end">{summary.nonNaturalOutputKgs.toLocaleString()}</td>
-                            <td className="text-end">{summary.outturn}%</td>
+                            <td
+                                className="text-end"
+                                style={{
+                                    textAlign: 'right',
+                                    color: summary.outturn >= 20.5 && summary.outturn <= 25 ? theme.primary : 'red',
+                                    backgroundColor: theme.neutral,
+                                }}
+                            >
+                                {summary.outturn}%
+                            </td>
+
                             <td className="text-end">{(summary?.totalInputKgs - summary.nonNaturalInputKgs).toLocaleString()}</td>
                             <td className="text-end">{(summary?.totalOutputKgs - summary.nonNaturalOutputKgs).toLocaleString()}</td>
-                            <td className="text-end">
+                            <td
+                                className="text-end"
+
+                            >
                                 {summary?.totalInputKgs === summary.nonNaturalInputKgs && summary?.totalOutputKgs === summary.nonNaturalOutputKgs
                                     ? '0%'
                                     : ((summary?.totalOutputKgs - summary.nonNaturalOutputKgs) /
