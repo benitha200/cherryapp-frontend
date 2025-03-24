@@ -291,6 +291,9 @@ const ProcessingListAll = () => {
             case 'in_progress':
                 backgroundColor = processingTheme.statusPending;
                 break;
+            case 'transferred':
+                backgroundColor = processingTheme.secondary;
+                break;
             case 'bagging_started':
                 backgroundColor = processingTheme.accent;
                 break;
