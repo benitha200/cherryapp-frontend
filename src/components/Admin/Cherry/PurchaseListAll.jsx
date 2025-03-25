@@ -782,6 +782,7 @@ const PurchaseListAll = () => {
                                 required
                             >
                                 <option value="DIRECT_DELIVERY">Direct</option>
+                                <option value="SUPPLIER">Supplier</option>
                             </select>
                         </div>
 
