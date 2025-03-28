@@ -168,7 +168,7 @@ const CherryPurchaseReportDetailed = () => {
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Date</th>
+                                <th>Purchase Date</th>
                                 <th>CWS Name</th>
                                 <th>Batch No</th>
                                 <th>Delivery Type</th>
@@ -235,7 +235,7 @@ const CherryPurchaseReportDetailed = () => {
 
         // Define headers
         const headers = [
-            'Date',
+            'Purchase Date',
             'CWS Name',
             'Batch No',
             'Delivery Type',
@@ -424,7 +424,7 @@ const CherryPurchaseReportDetailed = () => {
                             <thead>
                                 <tr style={{ backgroundColor: theme.neutral }}>
                                     <th>#</th>  
-                                    <th>Date</th>
+                                    <th>Purchase Date</th>
                                     <th>CWS Name</th>
                                     <th>Batch No</th>
                                     <th>Delivery Type</th>
