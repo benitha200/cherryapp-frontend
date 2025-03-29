@@ -78,18 +78,18 @@ const PurchaseList = () => {
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  // const yesterdayString = yesterday.toISOString().split('T')[0];
+  const yesterdayString = yesterday.toISOString().split('T')[0];
 
-  const yesterdayString = (timezoneOffset = 'Africa/Cairo') => {
-    // Create a new Date object with the specified timezone offset
-    const targetDate = new Date(new Date().toLocaleString('en-US', { timeZone: timezoneOffset }));
+  // const yesterdayString = (timezoneOffset = 'Africa/Cairo') => {
+  //   // Create a new Date object with the specified timezone offset
+  //   const targetDate = new Date(new Date().toLocaleString('en-US', { timeZone: timezoneOffset }));
     
-    // Subtract one day
-    targetDate.setDate(targetDate.getDate() - 1);
+  //   // Subtract one day
+  //   targetDate.setDate(targetDate.getDate() - 1);
     
-    // Format the date as YYYY-MM-DD
-    return targetDate.toISOString().split('T')[0];
-  };
+  //   // Format the date as YYYY-MM-DD
+  //   return targetDate.toISOString().split('T')[0];
+  // };
   
 
   const [newPurchase, setNewPurchase] = useState({
@@ -98,7 +98,7 @@ const PurchaseList = () => {
     totalKgs: '',
     totalPrice: '',
     grade: 'A',
-    purchaseDate: yesterdayString(),
+    purchaseDate: yesterdayString,
     siteCollectionId: '',
     // batchNo: new Date().toISOString().split('T')[0] // Use date as batch number
   });
