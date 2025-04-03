@@ -1760,9 +1760,9 @@ const PurchaseList = () => {
     const entry = processingEntries.find(entry => {
       const dateFromBatch = entry.batchNo.substring(5, 9); // Extract MMDD
       const targetDate = new Date(date);
-      const targetMMDD = `${String(targetDate.getMonth() + 1).padStart(2, '0')}${String(targetDate.getDate()).padStart(2, '0')}`;
+      const targetDDMM = `${String(targetDate.getMonth() + 1).padStart(2, '0')}${String(targetDate.getDate()).padStart(2, '0')}`;
 
-      return dateFromBatch === targetMMDD &&
+      return dateFromBatch === targetDDMM &&
         entry.grade === grade &&
         ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
     });
