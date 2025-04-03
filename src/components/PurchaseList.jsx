@@ -583,9 +583,9 @@ const PurchaseList = () => {
       const hasAnyProcessingStarted = processingEntries.some(entry => {
         const entryDate = entry.batchNo.substring(5, 9); // Extract MMDD from batch
         const targetDate = new Date(yesterdayString);
-        const targetMMDD = `${String(targetDate.getMonth() + 1).padStart(2, '0')}${String(targetDate.getDate()).padStart(2, '0')}`;
+        const targetDDMM = `${String(targetDate.getDate()).padStart(2, '0')}${String(targetDate.getMonth() + 1).padStart(2, '0')}`;
 
-        return entryDate === targetMMDD &&
+        return entryDate === targetDDMM &&
           ['IN_PROGRESS', 'COMPLETED'].includes(entry.status);
       });
 
