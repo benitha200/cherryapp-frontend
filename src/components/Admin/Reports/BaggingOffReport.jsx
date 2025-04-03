@@ -475,30 +475,7 @@ const BaggingOffReport = () => {
                        (summary?.totalInputKgs - summary.nonNaturalInputKgs) * 100).toFixed(2) + '%'
             ]);
         }
-        
-        // else {
-        //     headers = [
-        //         'Station Name',
-        //         'Total Input KGs',
-        //         'Total Output KGs',
-        //         'Outturn',
-        //         'Processing Types',
-        //         'Grade Breakdown',
-        //         'Total Batches',
-        //         'Total Processings'
-        //     ];
-
-        //     csvData = filteredData.map(summary => [
-        //         summary.stationName,
-        //         summary.totalNonNaturalInputKgs,
-        //         summary.totalNonNaturalOutputKgs,
-        //         summary.outturn,
-        //         Object.entries(summary.processingTypes).map(([type, kgs]) => `${type}: ${kgs} KGs`).join('; '),
-        //         Object.entries(summary.gradeBreakdown).map(([grade, kgs]) => `${grade}: ${kgs} KGs`).join('; '),
-        //         summary.totalBatches,
-        //         summary.totalProcessings
-        //     ]);
-        // }
+    
 
         // Combine headers and data
         const csvContent = [
