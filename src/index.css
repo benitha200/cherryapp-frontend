@@ -29,7 +29,7 @@ body {
 
 /* Global variables */
 :root {
-  --primary-color: #0d6efd;
+  --primary-color: #008080;
   --secondary-color: #6c757d;
   --success-color: #198754;
   --danger-color: #dc3545;
@@ -39,6 +39,10 @@ body {
   --sucafina-text-color: #4C585B;
 }
 
+
+.bg-primary{
+  background-color: var(--sucafina-color) !important;
+}
 /* For the switch itself */
 .custom-switch .form-check-input:checked {
   background-color: var(--sucafina-color);
