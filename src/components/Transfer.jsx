@@ -15,6 +15,9 @@ const GRADE_GROUPS = {
   LOW: ['A2', 'A3', 'B1', 'B2']
 };
 
+// TODO1: ON LOW GRADE THERE IS NO CUP PROFILE
+// TODO2:  EACH GRADE HAVE 
+
 const CUP_PROFILES = ['S88','S87','S86','C1', 'C2'];
 
 const LoadingSkeleton = () => {
@@ -35,7 +38,7 @@ const LoadingSkeleton = () => {
           <table className="table table-hover mb-0">
             <thead>
               <tr>
-                {['Batch No', 'Processing Type', 'Total KGs', 'Output KGs', 'Total Output KGs', 'CWS', 'Date', 'Status'].map((header) => (
+                {['Batch No', 'Processing Type', 'Output KGs', 'Total Output KGs', 'CWS', 'Date', 'Status'].map((header) => (
                   <th key={header}>
                     <Placeholder animation="glow">
                       <Placeholder xs={6} style={placeholderStyle} />
@@ -791,9 +794,9 @@ const Transfer = () => {
                     </th>
                     <th>Batch No</th>
                     <th>Processing Type</th>
-                    <th>Total KGs</th>
+                    {/* <th>Total KGs</th> */}
                     <th>Output KGs</th>
-                    <th>Outturn</th>
+                    {/* <th>Outturn</th> */}
                     <th>Status</th>
                     <th>Available Grades</th>
                     {/* <th>Actions</th> */}
@@ -838,9 +841,9 @@ const Transfer = () => {
                             </div>
                           </td>
                           <td>{getUniqueProcessingTypes(batchRecords)}</td>
-                          <td>{totalKgs.toFixed(2)}</td>
+                          {/* <td>{totalKgs.toFixed(2)}</td> */}
                           <td>{outputKgs.toFixed(2)}</td>
-                          <td>{outturn}%</td>
+                          {/* <td>{outturn}%</td> */}
                           <td>
                             {batchRecords.some(record => record.hasUntransferredGrades) ? (
                               <Badge bg="success">Ready for Transfer</Badge>
