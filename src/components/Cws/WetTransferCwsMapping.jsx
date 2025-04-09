@@ -16,33 +16,33 @@
 //   // CWS data state
 //   const [cwsList, setCwsList] = useState([]);
 //   const [isLoading, setIsLoading] = useState(true);
-  
+
 //   // Mappings state to be fetched from database
 //   const [mappings, setMappings] = useState([]);
-  
+
 //   const [loading, setLoading] = useState(false);
 //   const [error, setError] = useState('');
 //   const [success, setSuccess] = useState('');
 //   const [searchTerm, setSearchTerm] = useState('');
-  
+
 //   // Fetch CWS data and mappings on component mount
 //   useEffect(() => {
 //     const fetchData = async () => {
 //       try {
 //         setIsLoading(true);
-        
+
 //         // Fetch CWS data
 //         const cwsResponse = await axios.get(`${API_URL}/cws`, {
 //           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 //         });
-        
+
 //         setCwsList(cwsResponse.data);
-        
+
 //         // Fetch existing CWS mappings
 //         const mappingsResponse = await axios.get(`${API_URL}/wet-transfer/cws-mappings`, {
 //           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 //         });
-        
+
 //         setMappings(mappingsResponse.data);
 //       } catch (error) {
 //         console.error('Error fetching data:', error);
@@ -51,7 +51,7 @@
 //         setIsLoading(false);
 //       }
 //     };
-    
+
 //     fetchData();
 //   }, []);
 
@@ -83,7 +83,7 @@
 //   const handleMapCws = async () => {
 //     // Only process new or modified mappings (those without IDs)
 //     const newMappings = mappings.filter(mapping => !mapping.senderCwsId);
-    
+
 //     // Validate all fields are filled in new mappings
 //     const isValid = newMappings.every(mapping => mapping.senderCws && mapping.receivingCws);
 //     if (!isValid) {
@@ -99,22 +99,22 @@
 //     setLoading(true);
 //     setError('');
 //     setSuccess('');
-    
+
 //     try {
 //       const response = await axios.post(`${API_URL}/wet-transfer/map-cws`, { 
 //         mappings: newMappings 
 //       }, {
 //         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 //       });
-      
+
 //       console.log('Mapping successful:', response.data);
 //       setSuccess('CWS mappings processed successfully!');
-      
+
 //       // Refresh mappings after successful submission
 //       const mappingsResponse = await axios.get(`${API_URL}/wet-transfer/cws-mappings`, {
 //         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 //       });
-      
+
 //       setMappings(mappingsResponse.data);
 //     } catch (error) {
 //       console.error('Error mapping CWS:', error);
@@ -134,7 +134,7 @@
 //       setSuccess('');
 //       setError('');
 //     }, 5000);
-    
+
 //     return () => clearTimeout(timer);
 //   }, [success, error]);
 
@@ -167,7 +167,7 @@
 //     const alreadyMappedSenders = existingMappings
 //       .map(mapping => mapping.sender)
 //       .filter(sender => sender !== currentSelection);
-    
+
 //     // Return CWS that are either wet parchment senders or the current selection
 //     return cwsList
 //       .filter(cws => 
@@ -183,7 +183,7 @@
 //     const alreadyMappedReceivers = existingMappings
 //       .map(mapping => mapping.receiver)
 //       .filter(receiver => receiver !== currentSelection);
-    
+
 //     // Return CWS that are either wet parchment receivers or the current selection
 //     return cwsList
 //       .filter(cws => 
@@ -368,35 +368,35 @@ const WetTransferCwsMapping = () => {
   // CWS data state
   const [cwsList, setCwsList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Mappings state to be fetched from database
   const [mappings, setMappings] = useState([]);
   const [originalMappings, setOriginalMappings] = useState([]); // Keep track of original values for comparison
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const skeletonRows = Array(10).fill(0);
-  
+
   // Fetch CWS data and mappings on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
+
         // Fetch CWS data
         const cwsResponse = await axios.get(`${API_URL}/cws`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        
+
         setCwsList(cwsResponse.data);
-        
+
         // Fetch existing CWS mappings
         const mappingsResponse = await axios.get(`${API_URL}/wet-transfer/cws-mappings`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        
+
         setMappings(mappingsResponse.data);
         setOriginalMappings(JSON.parse(JSON.stringify(mappingsResponse.data))); // Deep copy for comparison
       } catch (error) {
@@ -406,12 +406,12 @@ const WetTransferCwsMapping = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
   // Filter mappings based on search term
-  const filteredMappings = mappings.filter(mapping => 
+  const filteredMappings = mappings.filter(mapping =>
     mapping.senderCws.toLowerCase().includes(searchTerm.toLowerCase()) ||
     mapping.receivingCws.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -428,20 +428,75 @@ const WetTransferCwsMapping = () => {
     setMappings([...mappings, { senderCws: '', receivingCws: '' }]);
   };
 
-  // Remove a mapping row
-  const removeMappingRow = (index) => {
-    const updatedMappings = mappings.filter((_, i) => i !== index);
-    setMappings(updatedMappings);
+  // Delete a mapping from the database
+  const deleteMappingFromDatabase = async (mapping) => {
+    if (!mapping.senderCwsId || !mapping.receivingCwsId) {
+      // This is a new mapping that hasn't been saved to the database yet
+      // Just remove it from the UI state
+      return true;
+    }
+
+    try {
+      setLoading(true);
+
+      // Make API call to delete the mapping
+      await axios.delete(
+        `${API_URL}/wet-transfer/cws-mappings/${mapping.senderCwsId}/${mapping.receivingCwsId}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
+
+      setSuccess('Mapping deleted successfully!');
+      return true;
+    } catch (error) {
+      console.error('Error deleting mapping:', error);
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError('Failed to delete mapping. Please try again.');
+      }
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Replace your existing removeMappingRow function with this updated version
+  const removeMappingRow = async (index) => {
+    const mapping = mappings[index];
+
+    // If it's a new mapping (not saved to DB yet), just remove from UI
+    if (!mapping.senderCwsId) {
+      const updatedMappings = mappings.filter((_, i) => i !== index);
+      setMappings(updatedMappings);
+      return;
+    }
+
+    // If it's already saved to DB, we need to delete it
+    const success = await deleteMappingFromDatabase(mapping);
+
+    if (success) {
+      // Remove from UI state after successful DB deletion
+      const updatedMappings = mappings.filter((_, i) => i !== index);
+      setMappings(updatedMappings);
+
+      // Also update the original mappings state to keep them in sync
+      const updatedOriginalMappings = originalMappings.filter(m =>
+        m.senderCwsId !== mapping.senderCwsId || m.receivingCwsId !== mapping.receivingCwsId
+      );
+      setOriginalMappings(updatedOriginalMappings);
+    }
   };
 
   // Check if a mapping has been modified from its original state
   const isMappingModified = (mapping, index) => {
     if (!mapping.senderCwsId) return true; // New mapping
-    
-    const original = originalMappings.find(m => 
+
+    const original = originalMappings.find(m =>
       m.senderCwsId === mapping.senderCwsId && m.receivingCwsId === mapping.receivingCwsId
     );
-    
+
     return original && (original.senderCws !== mapping.senderCws || original.receivingCws !== mapping.receivingCws);
   };
 
@@ -449,10 +504,10 @@ const WetTransferCwsMapping = () => {
   const handleMapCws = async () => {
     // Separate new and modified mappings
     const newMappings = mappings.filter(mapping => !mapping.senderCwsId);
-    const modifiedMappings = mappings.filter((mapping, index) => 
+    const modifiedMappings = mappings.filter((mapping, index) =>
       mapping.senderCwsId && isMappingModified(mapping, index)
     );
-    
+
     // Validate all fields are filled in new mappings
     const isValid = newMappings.every(mapping => mapping.senderCws && mapping.receivingCws);
     if (!isValid) {
@@ -468,33 +523,33 @@ const WetTransferCwsMapping = () => {
     setLoading(true);
     setError('');
     setSuccess('');
-    
+
     try {
       // Process new mappings
       if (newMappings.length > 0) {
-        await axios.post(`${API_URL}/wet-transfer/map-cws`, { 
-          mappings: newMappings 
+        await axios.post(`${API_URL}/wet-transfer/map-cws`, {
+          mappings: newMappings
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       }
-      
+
       // Process modified mappings
       if (modifiedMappings.length > 0) {
-        await axios.put(`${API_URL}/wet-transfer/update-cws-mappings`, { 
-          mappings: modifiedMappings 
+        await axios.put(`${API_URL}/wet-transfer/update-cws-mappings`, {
+          mappings: modifiedMappings
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       }
-      
+
       setSuccess('CWS mappings processed successfully!');
-      
+
       // Refresh mappings after successful submission
       const mappingsResponse = await axios.get(`${API_URL}/wet-transfer/cws-mappings`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      
+
       setMappings(mappingsResponse.data);
       setOriginalMappings(JSON.parse(JSON.stringify(mappingsResponse.data))); // Update original mappings
     } catch (error) {
@@ -515,7 +570,7 @@ const WetTransferCwsMapping = () => {
       setSuccess('');
       setError('');
     }, 5000);
-    
+
     return () => clearTimeout(timer);
   }, [success, error]);
 
@@ -528,27 +583,27 @@ const WetTransferCwsMapping = () => {
               <div className="h4 mb-0 bg-secondary bg-opacity-25 rounded" style={{ width: '200px', height: '24px' }} />
               <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '150px', height: '38px' }} />
             </div>
-  
+
             {/* Search Bar Skeleton */}
             <div className="input-group">
               <span className="input-group-text" style={{ backgroundColor: theme.neutral }}>
                 <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '16px', height: '16px' }} />
               </span>
-              <div 
+              <div
                 className="form-control bg-secondary bg-opacity-25"
                 style={{ border: `1px solid ${theme.secondary}` }}
               />
             </div>
           </div>
-  
+
           <div className="card-body p-0">
             <div className="table-responsive">
               <table className="table table-hover table-sm mb-0">
                 <thead style={{ backgroundColor: theme.neutral }}>
                   <tr>
                     {['Name', 'CWS', 'Created Date', 'Actions'].map((header, index) => (
-                      <th 
-                        key={index} 
+                      <th
+                        key={index}
                         className="text-uppercase px-4 py-3"
                         style={{ color: theme.primary }}
                       >
@@ -580,7 +635,7 @@ const WetTransferCwsMapping = () => {
                 </tbody>
               </table>
             </div>
-  
+
             {/* Pagination Skeleton */}
             <div className="d-flex justify-content-between align-items-center px-4 py-3" style={{ backgroundColor: theme.neutral }}>
               <div className="bg-secondary bg-opacity-25 rounded" style={{ width: '200px', height: '20px' }} />
@@ -588,8 +643,8 @@ const WetTransferCwsMapping = () => {
                 <ul className="pagination mb-0">
                   {[1, 2, 3].map((_, index) => (
                     <li key={index} className="page-item">
-                      <div 
-                        className="page-link bg-secondary bg-opacity-25" 
+                      <div
+                        className="page-link bg-secondary bg-opacity-25"
                         style={{ width: '40px', height: '38px', border: `1px solid ${theme.secondary}` }}
                       />
                     </li>
@@ -606,19 +661,19 @@ const WetTransferCwsMapping = () => {
   // Function to filter out already selected CWS names for sender dropdown
   const getAvailableSenderCws = (currentMapping) => {
     if (!currentMapping) return [];
-    
+
     // For existing mappings, always include the current selection
     const currentSelection = currentMapping.senderCws;
-    
+
     // Get all senders that are already mapped (excluding current selection)
     const alreadyMappedSenders = mappings
       .filter(m => m.senderCwsId && m.senderCwsId !== currentMapping.senderCwsId)
       .map(m => m.senderCws);
-    
+
     // Return CWS that are either wet parchment senders or the current selection
     return cwsList
-      .filter(cws => 
-        (cws.is_wet_parchment_sender === 1 || cws.name === currentSelection) && 
+      .filter(cws =>
+        (cws.is_wet_parchment_sender === 1 || cws.name === currentSelection) &&
         !alreadyMappedSenders.includes(cws.name)
       )
       .map(cws => cws.name);
@@ -627,19 +682,19 @@ const WetTransferCwsMapping = () => {
   // Function to filter out already selected CWS names for receiver dropdown
   const getAvailableReceiverCws = (currentMapping) => {
     if (!currentMapping) return [];
-    
+
     // For existing mappings, always include the current selection
     const currentSelection = currentMapping.receivingCws;
-    
+
     // Get all receivers that are already mapped (excluding current selection)
     const alreadyMappedReceivers = mappings
       .filter(m => m.receivingCwsId && m.receivingCwsId !== currentMapping.receivingCwsId)
       .map(m => m.receivingCws);
-    
+
     // Return CWS that are either wet parchment receivers or the current selection
     return cwsList
-      .filter(cws => 
-        (cws.is_wet_parchment_sender === 2 || cws.name === currentSelection) && 
+      .filter(cws =>
+        (cws.is_wet_parchment_sender === 2 || cws.name === currentSelection) &&
         !alreadyMappedReceivers.includes(cws.name)
       )
       .map(cws => cws.name);
@@ -741,11 +796,11 @@ const WetTransferCwsMapping = () => {
                     <td className="px-4 py-2">
                       <div className="d-flex align-items-center">
                         {mapping.senderCwsId && (
-                          <span 
+                          <span
                             className="badge rounded-pill me-2"
-                            style={{ 
+                            style={{
                               backgroundColor: isMappingModified(mapping, index) ? theme.accent : theme.secondary,
-                              color: 'white' 
+                              color: 'white'
                             }}
                           >
                             {isMappingModified(mapping, index) ? 'Modified' : 'Saved'}
@@ -755,7 +810,7 @@ const WetTransferCwsMapping = () => {
                           className="btn btn-sm text-white"
                           style={{ backgroundColor: theme.accent }}
                           onClick={() => removeMappingRow(index)}
-                          disabled={mapping.senderCwsId && !isMappingModified(mapping, index)} // Only allow removing new or modified mappings
+                          disabled={loading} 
                         >
                           <i className="bi bi-trash3-fill"></i>
                         </button>
