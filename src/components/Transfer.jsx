@@ -15,7 +15,7 @@ const GRADE_GROUPS = {
   LOW: ['A2', 'A3', 'B1', 'B2']
 };
 
-const CUP_PROFILES = ['C1', 'C2', 'S86', 'S87', 'S88'];
+const CUP_PROFILES = ['S88','S87','S86','C1', 'C2'];
 
 const LoadingSkeleton = () => {
   const placeholderStyle = {
@@ -1010,7 +1010,7 @@ const Transfer = () => {
                     </Form.Group>
 
                     <Form.Group className="mb-3">
-                      <Form.Label>Cup Profile Percentage</Form.Label>
+                      <Form.Label>Moisture Content</Form.Label>
                       <Form.Control
                         type="number"
                         name="cupProfilePercentage"
