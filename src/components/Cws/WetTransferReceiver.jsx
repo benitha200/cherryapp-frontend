@@ -96,6 +96,7 @@ const WetTransferReceiver = () => {
 
             setPendingTransfers(pending);
             setCompletedTransfers(completed);
+            console.log(completed)
 
             // Group pending transfers by batchNo
             const pendingByBatch = groupTransfersByBatch(pending);
@@ -110,6 +111,29 @@ const WetTransferReceiver = () => {
             setError('Error fetching wet transfers');
             console.error('Fetch error:', error);
             setLoading(false);
+        }
+    };
+
+    const handleBagOffSuccess = (result) => {
+        // If the bag off was completed, refresh the data
+        if (result && result.completed) {
+            // Remove the completed batch from the UI immediately
+            if (selectedBagOffBatch) {
+                // Create a copy of the grouped completed transfers
+                const updatedCompletedTransfers = { ...groupedCompletedTransfers };
+                // Delete the completed batch
+                delete updatedCompletedTransfers[selectedBagOffBatch];
+                // Update the state
+                setGroupedCompletedTransfers(updatedCompletedTransfers);
+
+                // Also update the completedTransfers array
+                setCompletedTransfers(prev =>
+                    prev.filter(transfer => transfer.batchNo !== selectedBagOffBatch)
+                );
+            }
+
+            // Then also trigger a full refresh from the server
+            setRefreshKey(prev => prev + 1);
         }
     };
 
@@ -205,6 +229,7 @@ const WetTransferReceiver = () => {
 
     const handleBagOffClick = (batchNo, e) => {
         e.stopPropagation();
+        console.log(batchNo);
         setSelectedBagOffBatch(batchNo);
         setShowBagOffModal(true);
     };
@@ -612,7 +637,7 @@ const WetTransferReceiver = () => {
                                                                     </div>
                                                                 )}
 
-                                                               
+
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -713,10 +738,9 @@ const WetTransferReceiver = () => {
                 onHide={() => {
                     setShowBagOffModal(false);
                     setSelectedBagOffBatch(null);
-                    // Optionally refresh data after a successful bag off
-                    setRefreshKey(prev => prev + 1);
                 }}
                 batchNo={selectedBagOffBatch}
+                onSuccess={handleBagOffSuccess}
                 processingTheme={processingTheme}
             />
         </div>
