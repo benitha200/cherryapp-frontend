@@ -26,6 +26,7 @@ import WetTransferReceiver from './components/Cws/WetTransferReceiver.jsx';
 import BaggingOffList from './components/Admin/Reports/BaggingOffList.jsx';
 import BaggingOffReport from './components/Admin/Reports/BaggingOffReport.jsx';
 import WetTransferCwsMapping from './components/Cws/WetTransferCwsMapping.jsx';
+import WetTransferBoth from './components/Cws/WetTransferBoth.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -53,7 +54,7 @@ const AppContent = () => {
           transition: 'margin-left 0.3s ease-in-out'
         }}
       >
-{/* <div
+        {/* <div
   className="alert m-2 text-center"
   role="alert"
   style={{
@@ -108,14 +109,24 @@ const AppContent = () => {
                 <ProcessingList />
               </PrivateRoute>
             } />
+
+            {/* sender */}
             <Route path="/wet-transfer" element={
               <PrivateRoute>
                 <WetTransfer />
               </PrivateRoute>
             } />
+            {/* wet transfer receiver */}
             <Route path="/wet-transfer-receiver" element={
               <PrivateRoute>
                 <WetTransferReceiver />
+              </PrivateRoute>
+            } />
+
+            {/* wet transfer sender and receiver */}
+            <Route path="/wet-transfer-both" element={
+              <PrivateRoute>
+                <WetTransferBoth />
               </PrivateRoute>
             } />
 
@@ -124,6 +135,7 @@ const AppContent = () => {
                 <Transfer />
               </PrivateRoute>
             } />
+
             <Route path="/site-collections/new" element={
               <PrivateRoute>
                 <SiteCollectionForm />

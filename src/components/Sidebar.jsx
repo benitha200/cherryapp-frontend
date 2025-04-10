@@ -287,9 +287,23 @@ const Sidebar = () => {
     ];
     
     // Only add Wet Transfer if the user is a sender or receiver
+    // if (cwsInfo?.is_wet_parchment_sender !== 0) {
+    //   menuItems.push({
+    //     path: cwsInfo?.is_wet_parchment_sender === 1 ? '/wet-transfer' : '/wet-transfer-receiver',
+    //     icon: 'bag-check',
+    //     text: 'Wet Transfer'
+    //   });
+    // 
+    
+    // add both when cws is sender and reciver at the sametime
+
     if (cwsInfo?.is_wet_parchment_sender !== 0) {
       menuItems.push({
-        path: cwsInfo?.is_wet_parchment_sender === 1 ? '/wet-transfer' : '/wet-transfer-receiver',
+        path: cwsInfo?.is_wet_parchment_sender === 1 
+          ? '/wet-transfer' 
+          : cwsInfo?.is_wet_parchment_sender === 3
+            ? '/wet-transfer-both'
+            : '/wet-transfer-receiver',
         icon: 'bag-check',
         text: 'Wet Transfer'
       });
