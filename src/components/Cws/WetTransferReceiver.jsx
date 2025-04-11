@@ -552,7 +552,7 @@ const WetTransferReceiver = () => {
                                                                 >
                                                                     Receive
                                                                 </Button>
-                                                                <Button
+                                                                {/* <Button
                                                                     size="sm"
                                                                     variant="outline-danger"
                                                                     onClick={(e) => {
@@ -561,7 +561,7 @@ const WetTransferReceiver = () => {
                                                                     }}
                                                                 >
                                                                     Reject
-                                                                </Button>
+                                                                </Button> */}
                                                             </div>
                                                         </td>
                                                     )}
