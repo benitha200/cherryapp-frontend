@@ -363,7 +363,7 @@ const WetTransferReceiver = () => {
                             Select the batches you would like to receive and click the "Receive Selected Batches" button.
                         </Alert>
 
-                        <div className="selected-transfers-container mb-3">
+                        {/* <div className="selected-transfers-container mb-3">
                             <div className="d-flex justify-content-between align-items-center mb-2">
                                 <span><strong>Selected Batches:</strong> {selectedBatches.length}</span>
                                 {selectedBatches.length > 0 && (
@@ -421,7 +421,7 @@ const WetTransferReceiver = () => {
                                     </div>
                                 </div>
                             )}
-                        </div>
+                        </div> */}
                     </Card.Body>
                 </Card>
             )}

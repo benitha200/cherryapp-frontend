@@ -298,12 +298,12 @@ const WetTransfer = () => {
         try {
             // Fetch CWS mappings where the sender CWS is the current user's CWS
             const response = await axios.get(`${API_URL}/wet-transfer/cws-mappings`);
-            
+
             // Filter mappings where senderCwsId is the current user's CWS ID
-            const relevantMappings = response.data.filter(mapping => 
+            const relevantMappings = response.data.filter(mapping =>
                 mapping.senderCwsId === cwsInfo.id
             );
-            
+
             setCwsMappings(relevantMappings);
 
             // Set default destination CWS if available
@@ -371,7 +371,7 @@ const WetTransfer = () => {
     const handleTransferConfirm = async () => {
         try {
             const recordsToTransfer = [];
-    
+
             // Create one record per selected grade (A0, A1) across all selected batches
             Object.keys(selectedGrades).forEach(grade => {
                 if (selectedGrades[grade]) {
@@ -381,7 +381,7 @@ const WetTransfer = () => {
                         // Use the first batch for reference data
                         const firstBatchKey = selectedBatches[0];
                         const referenceRecord = groupedRecords[firstBatchKey][0];
-                        
+
                         recordsToTransfer.push({
                             id: referenceRecord.id,
                             batchNo: referenceRecord.batchNo,
@@ -393,7 +393,7 @@ const WetTransfer = () => {
                     }
                 }
             });
-    
+
             // Send the transfer requests
             await Promise.all(recordsToTransfer.map(record =>
                 axios.post(`${API_URL}/wet-transfer`, {
@@ -409,7 +409,7 @@ const WetTransfer = () => {
                     moistureContent: record.moistureContent
                 })
             ));
-    
+
             await fetchProcessingRecords();
             setSelectedBatches([]);
             setSelectedGrades({});
@@ -418,7 +418,7 @@ const WetTransfer = () => {
             setNaturalOutputKgs({ N1: '', N2: '', B1: '', B2: '' });
             setFullyWashedOutputKgs({ A0: '', A1: '', A2: '', A3: '', B1: '', B2: '' });
             setShowTransferModal(false);
-    
+
             setAlertTitle('Success');
             setAlertMessage('Wet Transfer completed successfully');
             setShowAlertModal(true);
@@ -700,7 +700,7 @@ const WetTransfer = () => {
                                             Create Wet Transfer
                                         </Button>
                                     </div>
-                                    
+
                                     {cwsMappings.length === 0 && (
                                         <Alert variant="warning" className="mt-3">
                                             No destination CWS mappings available for your CWS. Please contact an administrator.
@@ -923,7 +923,7 @@ const WetTransfer = () => {
 
                     <Row className="mt-3">
                         <Col>
-                        <Alert variant="warning">
+                            <Alert variant="warning">
                                 Please confirm that you are about to transfer coffee from {sourceCwsName} to {destinationCwsName}.
                                 This action cannot be undone.
                             </Alert>
