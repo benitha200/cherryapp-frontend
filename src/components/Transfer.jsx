@@ -1833,7 +1833,7 @@ const Transfer = () => {
   return (
     <div className="container-fluid py-4">
 
-     
+
 
 
       <Card className="mb-4">
@@ -2081,8 +2081,8 @@ const Transfer = () => {
         </Card>
       )}
 
-       {/* Transfer Modal */}
-       <Modal show={showTransferModal} onHide={() => setShowTransferModal(false)} size="lg">
+      {/* Transfer Modal */}
+      <Modal show={showTransferModal} onHide={() => setShowTransferModal(false)} size="lg">
         <Form noValidate validated={validated} onSubmit={handleTransferConfirm}>
           <Modal.Header closeButton style={{ backgroundColor: processingTheme.neutral }}>
             <Modal.Title>
@@ -2102,72 +2102,7 @@ const Transfer = () => {
                   Total KGs: <strong>{totalSelectedKgs.toFixed(2)} kg</strong>
                 </Alert>
 
-                <h5>Transport Details</h5>
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <Form.Group controlId="truckNumber">
-                      <Form.Label>Truck Number</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="truckNumber"
-                        placeholder="Enter truck number"
-                        value={transportDetails.truckNumber}
-                        onChange={handleTransportDetailsChange}
-                        required
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        Please provide a truck number.
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group controlId="driverName">
-                      <Form.Label>Driver Name</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="driverName"
-                        placeholder="Enter driver name"
-                        value={transportDetails.driverName}
-                        onChange={handleTransportDetailsChange}
-                        required
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        Please provide a driver name.
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <Form.Group controlId="driverPhone">
-                      <Form.Label>Driver Phone</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="driverPhone"
-                        placeholder="Enter driver phone"
-                        value={transportDetails.driverPhone}
-                        onChange={handleTransportDetailsChange}
-                        required
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        Please provide a driver phone number.
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group controlId="notes">
-                      <Form.Label>Notes</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={2}
-                        name="notes"
-                        placeholder="Enter any notes"
-                        value={transportDetails.notes}
-                        onChange={handleTransportDetailsChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
+
 
                 <InputGroup className="mb-3">
                   <Form.Control
@@ -2380,6 +2315,81 @@ const Transfer = () => {
                     </Tab>
                   )}
                 </Tabs>
+
+                <Card>
+                  <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <span className="h5" style={{ color: processingTheme.primary }}>Transport Details</span>
+                    </div>
+                  </Card.Header>
+                  <Card.Body className="p-4">
+                    <Row className="mb-3">
+                      <Col md={6}>
+                        <Form.Group controlId="truckNumber">
+                          <Form.Label>Truck Number</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="truckNumber"
+                            placeholder="Enter truck number"
+                            value={transportDetails.truckNumber}
+                            onChange={handleTransportDetailsChange}
+                            required
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            Please provide a truck number.
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group controlId="driverName">
+                          <Form.Label>Driver Name</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="driverName"
+                            placeholder="Enter driver name"
+                            value={transportDetails.driverName}
+                            onChange={handleTransportDetailsChange}
+                            required
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            Please provide a driver name.
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row className="mb-3">
+                      <Col md={6}>
+                        <Form.Group controlId="driverPhone">
+                          <Form.Label>Driver Phone</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="driverPhone"
+                            placeholder="Enter driver phone"
+                            value={transportDetails.driverPhone}
+                            onChange={handleTransportDetailsChange}
+                            required
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            Please provide a driver phone number.
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group controlId="notes">
+                          <Form.Label>Notes</Form.Label>
+                          <Form.Control
+                            as="textarea"
+                            rows={2}
+                            name="notes"
+                            placeholder="Enter any notes"
+                            value={transportDetails.notes}
+                            onChange={handleTransportDetailsChange}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
               </>
             )}
           </Modal.Body>
