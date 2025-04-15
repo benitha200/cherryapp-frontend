@@ -1432,7 +1432,7 @@ const Transfer = () => {
   // Modify the toggle function for batch selection view
   const toggleBatchSelectionView = () => {
     setShowBatchSelection(!showBatchSelection);
-    
+
     // When switching back to transfer view, initialize any new batches
     if (!showBatchSelection) {
       initializeGradeQualityDetails();
@@ -1631,7 +1631,7 @@ const Transfer = () => {
   const handleBatchSelectionChange = (batchKey, isSelected) => {
     if (isSelected) {
       setSelectedBatches(prev => [...prev, batchKey]);
-      
+
       // Initialize empty quality details for new batch if they don't exist
       setGradeQualityDetails(prev => {
         if (!prev[batchKey]) {
@@ -1644,10 +1644,10 @@ const Transfer = () => {
       });
     } else {
       setSelectedBatches(prev => prev.filter(key => key !== batchKey));
-      
+
       // Optionally: Remove quality details for deselected batch
       setGradeQualityDetails(prev => {
-        const newDetails = {...prev};
+        const newDetails = { ...prev };
         delete newDetails[batchKey];
         return newDetails;
       });
@@ -2422,9 +2422,9 @@ const Transfer = () => {
                               <td className="align-middle">
                                 <Form.Check
                                   type="checkbox"
-                                  // className='bg-sucafina'
                                   checked={isSelected}
                                   onChange={(e) => handleBatchSelectionChange(batchKey, e.target.checked)}
+                                  className="custom-checkbox"
                                 />
                               </td>
                               <td className="align-middle">{batchKey}</td>
