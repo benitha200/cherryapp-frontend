@@ -2388,7 +2388,7 @@ const Transfer = () => {
               </Button>
             </div>
           </Modal.Header>
-          <Modal.Body style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+          <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
             {showBatchSelection ? (
               <div className="batch-selection-modal">
                 <InputGroup className="mb-3">
