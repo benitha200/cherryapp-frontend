@@ -2422,7 +2422,7 @@ const Transfer = () => {
                               <td className="align-middle">
                                 <Form.Check
                                   type="checkbox"
-                                  className='bg-sucafina'
+                                  // className='bg-sucafina'
                                   checked={isSelected}
                                   onChange={(e) => handleBatchSelectionChange(batchKey, e.target.checked)}
                                 />
