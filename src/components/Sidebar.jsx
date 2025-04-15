@@ -271,6 +271,7 @@ const Sidebar = () => {
       { path: '/purchases-all', icon: 'coin', text: 'Add Purchase' },
       { path: '/purchase-by-station', icon: 'cash', text: 'Purchases' },
       { path: '/processing-all', icon: 'hourglass-split', text: 'Processing' },
+      { path: '/transport', icon: 'truck', text: 'Transport' },
       // Report dropdown will be added separately
     ];
   } else if (user.role === 'SUPERVISOR' || user.role === 'OPERATIONS' || user.role === 'FINANCE' || user.role === 'MD') {
@@ -286,14 +287,6 @@ const Sidebar = () => {
       { path: '/processing', icon: 'bag-check', text: 'Bagging Off' },
     ];
     
-    // Only add Wet Transfer if the user is a sender or receiver
-    // if (cwsInfo?.is_wet_parchment_sender !== 0) {
-    //   menuItems.push({
-    //     path: cwsInfo?.is_wet_parchment_sender === 1 ? '/wet-transfer' : '/wet-transfer-receiver',
-    //     icon: 'bag-check',
-    //     text: 'Wet Transfer'
-    //   });
-    // 
     
     // add both when cws is sender and reciver at the sametime
 

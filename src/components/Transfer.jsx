@@ -1833,8 +1833,256 @@ const Transfer = () => {
   return (
     <div className="container-fluid py-4">
 
-      {/* Transfer Modal */}
-      <Modal show={showTransferModal} onHide={() => setShowTransferModal(false)} size="lg">
+     
+
+
+      <Card className="mb-4">
+        <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
+          <span className="h5" style={{ color: processingTheme.primary }}>
+            Transport to HQ
+          </span>
+        </Card.Header>
+        <Card.Body>
+          <div className="row">
+            <div className="col-md-8">
+              {/* Selected Batches Section */}
+              <div className="mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <strong>Selected Batches ({selectedBatches.length})</strong>
+                  {selectedBatches.length > 0 && (
+                    <Button variant="outline-danger" size="sm" onClick={() => setSelectedBatches([])}>
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+                <div className="selected-batches-container" style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '0.25rem', padding: '0.5rem' }}>
+                  {selectedBatches.length === 0 ? (
+                    <div className="text-muted">No batches selected</div>
+                  ) : (
+                    <div className="d-flex flex-wrap">
+                      {selectedBatches.map(batchKey => (
+                        <Badge key={batchKey} bg={processingTheme.neutral} className="me-2 mb-2 p-2 bg-sucafina">
+                          {batchKey} ({(calculateOverallOutputKgs(batchKey) || 0).toFixed(2)} kg)
+                          <Button size="sm" variant="link" className="p-0 ms-1" onClick={() => handleBatchSelectionChange(batchKey, false)} style={{ color: 'white' }}>
+                            ×
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-4">
+              <Card style={{ backgroundColor: processingTheme.neutral }}>
+                <Card.Body>
+                  <h5>Transfer Summary</h5>
+                  <p><strong>Selected Batches:</strong> {selectedBatches.length}</p>
+                  <p><strong>Selected Grades:</strong> {Object.entries(selectedGrades).filter(([_, isSelected]) => isSelected).length}</p>
+
+                  <div className="d-flex justify-content-between mb-2">
+                    <span><strong>High Grades (A0, A1):</strong></span>
+                    <span>{getGradeGroupTotal('HIGH').toFixed(2)} kg</span>
+                  </div>
+
+                  <div className="d-flex justify-content-between mb-2">
+                    <span><strong>Low Grades (A2-B2):</strong></span>
+                    <span>{getGradeGroupTotal('LOW').toFixed(2)} kg</span>
+                  </div>
+
+                  <div className="d-flex justify-content-between mb-3" style={{ fontWeight: 'bold' }}>
+                    <span>Total KGs:</span>
+                    <span>{totalSelectedKgs.toFixed(2)} kg</span>
+                  </div>
+
+                  <div className="d-grid gap-2">
+                    <div className="d-flex gap-2">
+                      <Button
+                        className="flex-grow-1"
+                        variant="outline-sucafina"
+                        disabled={selectedBatches.length === 0 || !selectedBatches.some(batchKey => hasTransferableHighGrades(batchKey))}
+                        onClick={() => handleTransferClick('HIGH')}
+                        style={{ color: processingTheme.primary, borderColor: processingTheme.primary }}
+                      >
+                        High Grades Only
+                      </Button>
+                      <Button
+                        className="flex-grow-1"
+                        variant="outline-secondary"
+                        disabled={selectedBatches.length === 0 || !selectedBatches.some(batchKey => hasTransferableLowGrades(batchKey))}
+                        onClick={() => handleTransferClick('LOW')}
+                      >
+                        Low Grades Only
+                      </Button>
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </div>
+          </div>
+        </Card.Body>
+      </Card>
+
+
+
+
+      {loading ? (
+        <LoadingSkeleton />
+      ) : error ? (
+        <Alert variant="danger">{error}</Alert>
+      ) : (
+        <Card>
+          <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <span className="h5" style={{ color: processingTheme.primary }}>Untransferred Batches</span>
+              <div className="d-flex">
+                <InputGroup>
+                  <Form.Control
+                    placeholder="Search by batch number..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="me-2"
+                    style={{ maxWidth: '250px' }}
+                  />
+                </InputGroup>
+              </div>
+            </div>
+          </Card.Header>
+
+          <Card.Body className="p-0">
+            <div className="table-responsive">
+              <table className="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th width="10%">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          checked={selectAllChecked}
+                          onChange={(e) => handleSelectAllBatches(e.target.checked)}
+                          id="selectAllCheckbox"
+                        />
+                        <label className="form-check-label" htmlFor="selectAllCheckbox">
+                          Select All
+                        </label>
+                      </div>
+                    </th>
+                    <th width="20%">Batch No</th>
+                    <th width="20%">Processing Type</th>
+                    <th width="20%">Output KGs</th>
+                    <th width="30%">Available Grades</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getPaginatedBatches().map((batchKey) => {
+                    const records = groupedRecords[batchKey] || [];
+                    const isExpanded = expandedBatches[batchKey] || false;
+                    const totalInputKgs = calculateOverallTotalKgs(batchKey);
+                    const totalOutputKgs = calculateOverallOutputKgs(batchKey);
+                    const overallOutturn = calculateOutturn(totalInputKgs, { all: totalOutputKgs });
+                    const cwsName = (records[0]?.cwsName) || 'N/A';
+                    const processingTypes = getUniqueProcessingTypes(records);
+                    const isSelected = selectedBatches.includes(batchKey);
+
+                    return (
+                      <React.Fragment key={batchKey}>
+                        <tr className={isSelected ? 'table-success' : ''}>
+                          <td className="align-middle">
+                            <Form.Check
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => handleBatchSelectionChange(batchKey, e.target.checked)}
+                            />
+                          </td>
+                          <td className="align-middle">
+                            <div className="d-flex align-items-center">
+                              <Button
+                                variant="link"
+                                className="p-0 me-2"
+                                onClick={() => toggleBatchExpansion(batchKey)}
+                                style={{ color: processingTheme.primary }}
+                              >
+                                {isExpanded ? '▼' : '►'}
+                              </Button>
+                              <span>{batchKey}</span>
+                            </div>
+                          </td>
+                          <td className="align-middle">{processingTypes}</td>
+                          <td className="align-middle">{totalOutputKgs.toFixed(2)} kg</td>
+                          <td className="align-middle">
+                            <div className="d-flex flex-wrap gap-1">
+                              {renderAvailableGrades(batchKey)}
+                            </div>
+                          </td>
+                        </tr>
+                        {isExpanded && records.map((record, idx) => (
+                          <tr key={`${batchKey}-detail-${idx}`} className="table-light">
+                            <td colSpan="5" className="py-3">
+                              <div className="px-4">
+                                <div className="row">
+                                  <div className="col-md-4">
+                                    <div className="mb-2">
+                                      <strong>Total Output KGs:</strong> {record.totalOutputKgs?.toFixed(2) || '0.00'} kg
+                                    </div>
+                                    <div className="mb-2">
+                                      <strong>Batch No:</strong> {record.batchNo}
+                                    </div>
+                                    <div className="mb-2">
+                                      <strong>Processing Type:</strong> {record.processingType}
+                                    </div>
+                                  </div>
+                                  <div className="col-md-8">
+                                    <div className="mb-2">
+                                      <strong>Grades:</strong>
+                                    </div>
+                                    <div className="d-flex flex-wrap gap-2">
+                                      {renderOutputKgs(record.outputKgs, record.transferredGrades)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })}
+                  {getPaginatedBatches().length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="text-center py-3">No untransferred batches found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card.Body>
+          <Card.Footer>
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                Showing {(currentPage - 1) * batchesPerPage + 1} to {Math.min(currentPage * batchesPerPage, getFilteredBatches().length)} of {getFilteredBatches().length} batches
+              </div>
+              <ul className="pagination mb-0">
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => paginate(currentPage - 1)}>Previous</button>
+                </li>
+                {[...Array(Math.ceil(getFilteredBatches().length / batchesPerPage))].map((_, idx) => (
+                  <li key={idx} className={`page-item ${currentPage === idx + 1 ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => paginate(idx + 1)}>{idx + 1}</button>
+                  </li>
+                ))}
+                <li className={`page-item ${currentPage >= Math.ceil(getFilteredBatches().length / batchesPerPage) ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => paginate(currentPage + 1)}>Next</button>
+                </li>
+              </ul>
+            </div>
+          </Card.Footer>
+        </Card>
+      )}
+
+       {/* Transfer Modal */}
+       <Modal show={showTransferModal} onHide={() => setShowTransferModal(false)} size="lg">
         <Form noValidate validated={validated} onSubmit={handleTransferConfirm}>
           <Modal.Header closeButton style={{ backgroundColor: processingTheme.neutral }}>
             <Modal.Title>
@@ -2145,252 +2393,6 @@ const Transfer = () => {
           </Modal.Footer>
         </Form>
       </Modal>
-
-
-      <Card className="mb-4">
-        <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-          <span className="h5" style={{ color: processingTheme.primary }}>
-            Transport to HQ
-          </span>
-        </Card.Header>
-        <Card.Body>
-          <div className="row">
-            <div className="col-md-8">
-              {/* Selected Batches Section */}
-              <div className="mb-3">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <strong>Selected Batches ({selectedBatches.length})</strong>
-                  {selectedBatches.length > 0 && (
-                    <Button variant="outline-danger" size="sm" onClick={() => setSelectedBatches([])}>
-                      Clear All
-                    </Button>
-                  )}
-                </div>
-                <div className="selected-batches-container" style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '0.25rem', padding: '0.5rem' }}>
-                  {selectedBatches.length === 0 ? (
-                    <div className="text-muted">No batches selected</div>
-                  ) : (
-                    <div className="d-flex flex-wrap">
-                      {selectedBatches.map(batchKey => (
-                        <Badge key={batchKey} bg={processingTheme.neutral} className="me-2 mb-2 p-2 bg-sucafina">
-                          {batchKey} ({(calculateOverallOutputKgs(batchKey) || 0).toFixed(2)} kg)
-                          <Button size="sm" variant="link" className="p-0 ms-1" onClick={() => handleBatchSelectionChange(batchKey, false)} style={{ color: 'white' }}>
-                            ×
-                          </Button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <Card style={{ backgroundColor: processingTheme.neutral }}>
-                <Card.Body>
-                  <h5>Transfer Summary</h5>
-                  <p><strong>Selected Batches:</strong> {selectedBatches.length}</p>
-                  <p><strong>Selected Grades:</strong> {Object.entries(selectedGrades).filter(([_, isSelected]) => isSelected).length}</p>
-
-                  <div className="d-flex justify-content-between mb-2">
-                    <span><strong>High Grades (A0, A1):</strong></span>
-                    <span>{getGradeGroupTotal('HIGH').toFixed(2)} kg</span>
-                  </div>
-
-                  <div className="d-flex justify-content-between mb-2">
-                    <span><strong>Low Grades (A2-B2):</strong></span>
-                    <span>{getGradeGroupTotal('LOW').toFixed(2)} kg</span>
-                  </div>
-
-                  <div className="d-flex justify-content-between mb-3" style={{ fontWeight: 'bold' }}>
-                    <span>Total KGs:</span>
-                    <span>{totalSelectedKgs.toFixed(2)} kg</span>
-                  </div>
-
-                  <div className="d-grid gap-2">
-                    <div className="d-flex gap-2">
-                      <Button
-                        className="flex-grow-1"
-                        variant="outline-sucafina"
-                        disabled={selectedBatches.length === 0 || !selectedBatches.some(batchKey => hasTransferableHighGrades(batchKey))}
-                        onClick={() => handleTransferClick('HIGH')}
-                        style={{ color: processingTheme.primary, borderColor: processingTheme.primary }}
-                      >
-                        High Grades Only
-                      </Button>
-                      <Button
-                        className="flex-grow-1"
-                        variant="outline-secondary"
-                        disabled={selectedBatches.length === 0 || !selectedBatches.some(batchKey => hasTransferableLowGrades(batchKey))}
-                        onClick={() => handleTransferClick('LOW')}
-                      >
-                        Low Grades Only
-                      </Button>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </div>
-          </div>
-        </Card.Body>
-      </Card>
-
-
-
-
-      {loading ? (
-        <LoadingSkeleton />
-      ) : error ? (
-        <Alert variant="danger">{error}</Alert>
-      ) : (
-        <Card>
-          <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-            <div className="d-flex justify-content-between align-items-center">
-              <span className="h5" style={{ color: processingTheme.primary }}>Untransferred Batches</span>
-              <div className="d-flex">
-                <InputGroup>
-                  <Form.Control
-                    placeholder="Search by batch number..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="me-2"
-                    style={{ maxWidth: '250px' }}
-                  />
-                </InputGroup>
-              </div>
-            </div>
-          </Card.Header>
-
-          <Card.Body className="p-0">
-            <div className="table-responsive">
-              <table className="table table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th width="10%">
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={selectAllChecked}
-                          onChange={(e) => handleSelectAllBatches(e.target.checked)}
-                          id="selectAllCheckbox"
-                        />
-                        <label className="form-check-label" htmlFor="selectAllCheckbox">
-                          Select All
-                        </label>
-                      </div>
-                    </th>
-                    <th width="20%">Batch No</th>
-                    <th width="20%">Processing Type</th>
-                    <th width="20%">Output KGs</th>
-                    <th width="30%">Available Grades</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {getPaginatedBatches().map((batchKey) => {
-                    const records = groupedRecords[batchKey] || [];
-                    const isExpanded = expandedBatches[batchKey] || false;
-                    const totalInputKgs = calculateOverallTotalKgs(batchKey);
-                    const totalOutputKgs = calculateOverallOutputKgs(batchKey);
-                    const overallOutturn = calculateOutturn(totalInputKgs, { all: totalOutputKgs });
-                    const cwsName = (records[0]?.cwsName) || 'N/A';
-                    const processingTypes = getUniqueProcessingTypes(records);
-                    const isSelected = selectedBatches.includes(batchKey);
-
-                    return (
-                      <React.Fragment key={batchKey}>
-                        <tr className={isSelected ? 'table-success' : ''}>
-                          <td className="align-middle">
-                            <Form.Check
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={(e) => handleBatchSelectionChange(batchKey, e.target.checked)}
-                            />
-                          </td>
-                          <td className="align-middle">
-                            <div className="d-flex align-items-center">
-                              <Button
-                                variant="link"
-                                className="p-0 me-2"
-                                onClick={() => toggleBatchExpansion(batchKey)}
-                                style={{ color: processingTheme.primary }}
-                              >
-                                {isExpanded ? '▼' : '►'}
-                              </Button>
-                              <span>{batchKey}</span>
-                            </div>
-                          </td>
-                          <td className="align-middle">{processingTypes}</td>
-                          <td className="align-middle">{totalOutputKgs.toFixed(2)} kg</td>
-                          <td className="align-middle">
-                            <div className="d-flex flex-wrap gap-1">
-                              {renderAvailableGrades(batchKey)}
-                            </div>
-                          </td>
-                        </tr>
-                        {isExpanded && records.map((record, idx) => (
-                          <tr key={`${batchKey}-detail-${idx}`} className="table-light">
-                            <td colSpan="5" className="py-3">
-                              <div className="px-4">
-                                <div className="row">
-                                  <div className="col-md-4">
-                                    <div className="mb-2">
-                                      <strong>Total Output KGs:</strong> {record.totalOutputKgs?.toFixed(2) || '0.00'} kg
-                                    </div>
-                                    <div className="mb-2">
-                                      <strong>Batch No:</strong> {record.batchNo}
-                                    </div>
-                                    <div className="mb-2">
-                                      <strong>Processing Type:</strong> {record.processingType}
-                                    </div>
-                                  </div>
-                                  <div className="col-md-8">
-                                    <div className="mb-2">
-                                      <strong>Grades:</strong>
-                                    </div>
-                                    <div className="d-flex flex-wrap gap-2">
-                                      {renderOutputKgs(record.outputKgs, record.transferredGrades)}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </React.Fragment>
-                    );
-                  })}
-                  {getPaginatedBatches().length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="text-center py-3">No untransferred batches found</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card.Body>
-          <Card.Footer>
-            <div className="d-flex justify-content-between align-items-center">
-              <div>
-                Showing {(currentPage - 1) * batchesPerPage + 1} to {Math.min(currentPage * batchesPerPage, getFilteredBatches().length)} of {getFilteredBatches().length} batches
-              </div>
-              <ul className="pagination mb-0">
-                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => paginate(currentPage - 1)}>Previous</button>
-                </li>
-                {[...Array(Math.ceil(getFilteredBatches().length / batchesPerPage))].map((_, idx) => (
-                  <li key={idx} className={`page-item ${currentPage === idx + 1 ? 'active' : ''}`}>
-                    <button className="page-link" onClick={() => paginate(idx + 1)}>{idx + 1}</button>
-                  </li>
-                ))}
-                <li className={`page-item ${currentPage >= Math.ceil(getFilteredBatches().length / batchesPerPage) ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => paginate(currentPage + 1)}>Next</button>
-                </li>
-              </ul>
-            </div>
-          </Card.Footer>
-        </Card>
-      )}
 
 
     </div>

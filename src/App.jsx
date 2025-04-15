@@ -27,6 +27,7 @@ import BaggingOffList from './components/Admin/Reports/BaggingOffList.jsx';
 import BaggingOffReport from './components/Admin/Reports/BaggingOffReport.jsx';
 import WetTransferCwsMapping from './components/Cws/WetTransferCwsMapping.jsx';
 import WetTransferBoth from './components/Cws/WetTransferBoth.jsx';
+import Transport from './components/Admin/Transport/Transport.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -98,6 +99,11 @@ const AppContent = () => {
             <Route path="/processing-all" element={
               <PrivateRoute>
                 <ProcessingListAll />
+              </PrivateRoute>
+            } />
+            <Route path="/transport" element={
+              <PrivateRoute>
+                <Transport />
               </PrivateRoute>
             } />
             <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />
