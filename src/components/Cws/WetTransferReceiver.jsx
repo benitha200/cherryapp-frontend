@@ -462,6 +462,7 @@ const WetTransferReceiver = () => {
                                             <Form.Check
                                                 type="checkbox"
                                                 checked={selectAllChecked}
+                                                className="custom-checkbox"
                                                 onChange={(e) => handleSelectAllBatches(e.target.checked)}
                                                 title="Select All Visible Batches"
                                             />
@@ -515,6 +516,7 @@ const WetTransferReceiver = () => {
                                                                     e.stopPropagation();
                                                                     handleBatchSelectionChange(batchNo, e.target.checked);
                                                                 }}
+                                                                className="custom-checkbox"
                                                             />
                                                         </td>
                                                     )}

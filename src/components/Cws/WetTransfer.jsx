@@ -1432,7 +1432,8 @@ const WetTransfer = () => {
                                                                         id={`grade-${grade}`}
                                                                         checked={true}
                                                                         disabled={true}
-                                                                        className="me-2"
+                                                                        // className="me-2"
+                                                                        className="custom-checkbox me-2"
                                                                     />
                                                                     {grade}
                                                                 </div>
@@ -1602,6 +1603,7 @@ const WetTransfer = () => {
                                                             type="radio"
                                                             name="batchSelection"
                                                             checked={isSelected}
+                                                            className="custom-checkbox"
                                                             onChange={() => handleBatchSelectionChange(uniqueKey)}
                                                         />
                                                     </td>

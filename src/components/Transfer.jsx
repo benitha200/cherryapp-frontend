@@ -2274,6 +2274,7 @@ const Transfer = () => {
                               type="checkbox"
                               checked={isSelected}
                               onChange={(e) => handleBatchSelectionChange(batchKey, e.target.checked)}
+                              className="custom-checkbox"
                             />
                           </td>
                           <td className="align-middle">
