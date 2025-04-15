@@ -283,7 +283,7 @@ const Transport = () => {
                             <td className="align-middle">{record.batchNo}</td>
                             <td className="align-middle">
                               <Badge
-                                bg={record.gradeGroup === 'HIGH' ? 'primary' : 'secondary'}
+                                bg={record.gradeGroup === 'HIGH' ? 'sucafina' : 'secondary'}
                                 style={{ 
                                   backgroundColor: record.gradeGroup === 'HIGH' ? processingTheme.primary : '#6c757d' 
                                 }}
@@ -377,7 +377,7 @@ const Transport = () => {
                   </li>
                   {[...Array(Math.ceil(getFilteredRecords().length / recordsPerPage))].map((_, idx) => (
                     <li key={idx} className={`page-item ${currentPage === idx + 1 ? 'active' : ''}`}>
-                      <button className="page-link" onClick={() => paginate(idx + 1)}>{idx + 1}</button>
+                      <button className="page-link bg-sucafina" onClick={() => paginate(idx + 1)}>{idx + 1}</button>
                     </li>
                   ))}
                   <li className={`page-item ${currentPage >= Math.ceil(getFilteredRecords().length / recordsPerPage) ? 'disabled' : ''}`}>

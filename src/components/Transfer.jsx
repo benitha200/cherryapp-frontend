@@ -2073,7 +2073,7 @@ const Transfer = () => {
                   </li>
                 ))}
                 <li className={`page-item ${currentPage >= Math.ceil(getFilteredBatches().length / batchesPerPage) ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => paginate(currentPage + 1)}>Next</button>
+                  <button className="page-link bg-sucafina" onClick={() => paginate(currentPage + 1)}>Next</button>
                 </li>
               </ul>
             </div>
