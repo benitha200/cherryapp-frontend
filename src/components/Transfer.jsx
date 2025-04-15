@@ -2362,7 +2362,7 @@ const Transfer = () => {
       )}
 
       {/* Transfer Modal */}
-      <Modal show={showTransferModal} onHide={handleModalClose} size="xl" >
+      <Modal show={showTransferModal} onHide={handleModalClose} size="lg" >
         <Form noValidate validated={validated} onSubmit={handleTransferConfirm}>
           <Modal.Header
             closeButton
