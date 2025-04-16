@@ -28,6 +28,7 @@ import BaggingOffReport from './components/Admin/Reports/BaggingOffReport.jsx';
 import WetTransferCwsMapping from './components/Cws/WetTransferCwsMapping.jsx';
 import WetTransferBoth from './components/Cws/WetTransferBoth.jsx';
 import Transport from './components/Admin/Transport/Transport.jsx';
+import WetTransferAdmin from './components/Admin/WetTransfer/WetTransferAdmin.jsx';
 
 const AppContent = () => {
   const location = useLocation();
@@ -104,6 +105,11 @@ const AppContent = () => {
             <Route path="/transport" element={
               <PrivateRoute>
                 <Transport />
+              </PrivateRoute>
+            } />
+            <Route path="/wet-transfer-admin" element={
+              <PrivateRoute>
+                <WetTransferAdmin />
               </PrivateRoute>
             } />
             <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />
