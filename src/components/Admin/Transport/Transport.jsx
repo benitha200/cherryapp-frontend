@@ -16,6 +16,10 @@ const GRADE_GROUPS = {
   LOW: ['A2', 'A3', 'B1', 'B2']
 };
 
+// TODO: ADD TRANSFER ALL ON LOW GRADE CHOOSE GRADE AND PUT ALL IN ONE BAG 
+//  TODO: BY DEFAULT CUP PROFILE
+// 
+
 const Transport = () => {
   const [transferRecords, setTransferRecords] = useState([]);
   const [loading, setLoading] = useState(true);

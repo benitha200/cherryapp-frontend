@@ -157,7 +157,7 @@ const ProcessingListAll = () => {
     // Update the fetchAllBatches function to avoid unnecessary calculations
     const fetchAllBatches = async () => {
         try {
-            const res = await axios.get(`${API_URL}/processing?limit=1000`);
+            const res = await axios.get(`${API_URL}/processing?limit=100000`);
             const batchData = res.data.data;
             setAllBatches(batchData);
             // Calculate summary data for the initial load (all batches)
@@ -171,7 +171,7 @@ const ProcessingListAll = () => {
     const fetchProcessingBatches = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`${API_URL}/processing?limit=1000`);
+            const res = await axios.get(`${API_URL}/processing?limit=100000`);
             setProcessingBatches(res.data.data);
             setPagination(prev => ({
                 ...prev,
