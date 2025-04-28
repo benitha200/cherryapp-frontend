@@ -11,9 +11,9 @@ const processingTheme = {
 };
 
 const GRADE_GROUPS = {
-  HIGH: ['A0', 'A1'],
+  HIGH: ['A0', 'A1','N1','N2','H2'],
   LOW: ['A2', 'A3', 'B1', 'B2'],
-  BOTH: ['A0', 'A1', 'A2', 'B1', 'B2']
+  BOTH: ['A0', 'A1','N1','N2','H2','A2', 'B1', 'B2']
 };
 
 const CUP_PROFILES = ['Select Cup Profile', 'S88', 'S87', 'S86', 'C1', 'C2'];
@@ -44,6 +44,7 @@ const Transfer = () => {
   const [lowGradeBags, setLowGradeBags] = useState('');
   const [activeBothGradeTab, setActiveBothGradeTab] = useState("high");
 
+
   // New state variables
   const [selectedHighGradeBatches, setSelectedHighGradeBatches] = useState([]);
   const [showHighGradeBatchSelection, setShowHighGradeBatchSelection] = useState(false);
@@ -64,6 +65,370 @@ const Transfer = () => {
     }
   };
 
+  // First, let's create a function that will flatten the batch records into grade-specific entries
+  const flattenBatchRecords = () => {
+    // First create the individual items as before
+    const individualRows = [];
+
+    Object.keys(groupedRecords).forEach(batchKey => {
+      const batchRecords = groupedRecords[batchKey] || [];
+
+      batchRecords.forEach(record => {
+        Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
+          const kgValue = parseFloat(kg) || 0;
+
+          // Only include grades that have a positive kg value and haven't been transferred
+          if (kgValue > 0 && (!record.transferredGrades || !record.transferredGrades[grade])) {
+            // Create a unique ID by combining record ID and grade
+            const uniqueId = `${record.id}-${grade}`;
+            // Create a unique gradeKey for selection
+            const gradeKey = `${batchKey}-${grade}`;
+
+            individualRows.push({
+              id: uniqueId,
+              batchKey: batchKey,
+              gradeKey: gradeKey,
+              batchNo: record.batchNo,
+              displayId: `${record.batchNo}(${grade})`,
+              grade: grade,
+              kgValue: kgValue,
+              isHighGrade: GRADE_GROUPS.HIGH.includes(grade),
+              processingType: record.processingType,
+              totalKgs: record.totalKgs,
+              recordId: record.id,
+              record: record
+            });
+          }
+        });
+      });
+    });
+
+    // Now group identical batch & grade combinations
+    const groupedItems = {};
+    individualRows.forEach(row => {
+      // Create a combined key using batch number and grade
+      const combinedKey = `${row.batchNo}-${row.grade}`;
+
+      if (!groupedItems[combinedKey]) {
+        // First occurrence of this batch & grade combination
+        groupedItems[combinedKey] = {
+          ...row,
+          // Create a new combined grade key for selection
+          combinedGradeKey: combinedKey,
+          // Store the original items in a records array
+          records: [row],
+          // Count how many records we're combining
+          recordCount: 1
+        };
+      } else {
+        // Add this record's weight to the existing combination
+        groupedItems[combinedKey].kgValue += row.kgValue;
+        // Add the record to the records array
+        groupedItems[combinedKey].records.push(row);
+        // Increment record count
+        groupedItems[combinedKey].recordCount += 1;
+      }
+    });
+
+    // Convert back to array and sort
+    const combinedRows = Object.values(groupedItems);
+
+    // Define the desired grade order
+    const gradeOrder = ['A0', 'A1', 'A2', 'A3', 'B1', 'B2'];
+
+    // Function to extract date from batch number (DDMM format)
+    const extractDateFromBatch = (batchNo) => {
+      // Match 4 consecutive digits in the batch number
+      const dateMatch = batchNo.match(/(\d{2})(\d{2})/);
+      if (dateMatch && dateMatch.length >= 3) {
+        const day = parseInt(dateMatch[1], 10);
+        const month = parseInt(dateMatch[2], 10);
+        return { day, month };
+      }
+      return { day: 0, month: 0 }; // Default for batches without date
+    };
+
+    // Sort by grade first, then by date (oldest first)
+    return combinedRows.sort((a, b) => {
+      // First sort by grade
+      const gradeAIndex = gradeOrder.indexOf(a.grade);
+      const gradeBIndex = gradeOrder.indexOf(b.grade);
+
+      if (gradeAIndex !== gradeBIndex) {
+        return gradeAIndex - gradeBIndex;
+      }
+
+      // If grades are same, sort by date
+      const dateA = extractDateFromBatch(a.batchNo);
+      const dateB = extractDateFromBatch(b.batchNo);
+
+      // Compare months first
+      if (dateA.month !== dateB.month) {
+        return dateA.month - dateB.month;
+      }
+
+      // If same month, compare days
+      if (dateA.day !== dateB.day) {
+        return dateA.day - dateB.day;
+      }
+
+      // If same date, sort alphabetically by batch number
+      return a.batchNo.localeCompare(b.batchNo);
+    });
+  };
+
+  // Update selection functions to work with combinedGradeKey
+  const handleGradeItemSelection = (combinedGradeKey, isSelected) => {
+    if (isSelected) {
+      setSelectedGradeItems(prev => [...prev, combinedGradeKey]);
+    } else {
+      setSelectedGradeItems(prev => prev.filter(key => key !== combinedGradeKey));
+    }
+  };
+
+  // Function to check if a grade item is selected
+  const isGradeItemSelected = (combinedGradeKey) => {
+    return selectedGradeItems.includes(combinedGradeKey);
+  };
+
+  // Function to handle select all
+  const handleSelectAllGradeItems = (isSelected) => {
+    if (isSelected) {
+      const allGradeKeys = flattenBatchRecords().map(item => item.combinedGradeKey);
+      setSelectedGradeItems(allGradeKeys);
+    } else {
+      setSelectedGradeItems([]);
+    }
+  };
+
+  // Replace selectedBatches with selectedGradeItems
+  const [selectedGradeItems, setSelectedGradeItems] = useState([]);
+
+  // Function to get selected items details
+  const getSelectedGradeItems = () => {
+    return flattenBatchRecords().filter(item => selectedGradeItems.includes(item.gradeKey));
+  };
+
+  // Calculate total selected KGs
+  const calculateTotalSelectedKgs = () => {
+    const total = getSelectedGradeItems().reduce((sum, item) => sum + item.kgValue, 0);
+    setTotalSelectedKgs(total);
+  };
+
+  // Get high grade total
+  const getHighGradeTotal = () => {
+    return getSelectedGradeItems()
+      .filter(item => GRADE_GROUPS.HIGH.includes(item.grade))
+      .reduce((sum, item) => sum + item.kgValue, 0);
+  };
+
+  // Get low grade total
+  const getLowGradeTotal = () => {
+    return getSelectedGradeItems()
+      .filter(item => GRADE_GROUPS.LOW.includes(item.grade))
+      .reduce((sum, item) => sum + item.kgValue, 0);
+  };
+
+  // Helper to group selected items by grade group
+  const getSelectedItemsByGradeGroup = (gradeGroup) => {
+    return getSelectedGradeItems()
+      .filter(item => GRADE_GROUPS[gradeGroup].includes(item.grade));
+  };
+
+  // Check if there are transferable items in a grade group
+  const hasTransferableItems = (gradeGroup) => {
+    return getSelectedGradeItems()
+      .some(item => GRADE_GROUPS[gradeGroup].includes(item.grade));
+  };
+
+  // Modified transfer function
+  // Modified handleTransferConfirm function to handle the combined low grade bags
+  const handleTransferConfirm = async (e) => {
+    const form = e.currentTarget;
+    e.preventDefault();
+
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+      setValidated(true);
+      return;
+    }
+
+    try {
+      const transferPromises = [];
+
+      // Process high grade items - unchanged
+      if (transferMode === 'BOTH' || transferMode === 'HIGH') {
+        const highGradeItems = getSelectedGradeItems().filter(item =>
+          GRADE_GROUPS.HIGH.includes(item.grade)
+        );
+
+        for (const groupedItem of highGradeItems) {
+          // For each grouped high grade item, create transfers for each record in the group
+          for (const originalRecord of groupedItem.records) {
+            // For each high grade item, create a transfer
+            const gradeDetails = {};
+            gradeDetails[originalRecord.grade] = {
+              numberOfBags: parseInt(gradeQualityDetails[groupedItem.gradeKey]?.numberOfBags || 0) / groupedItem.recordCount,
+              cupProfile: gradeQualityDetails[groupedItem.gradeKey]?.cupProfile || CUP_PROFILES[0],
+              moistureContent: parseInt(gradeQualityDetails[groupedItem.gradeKey]?.moistureContent || 0)
+            };
+
+            const outputKgs = {};
+            outputKgs[originalRecord.grade] = originalRecord.kgValue;
+
+            transferPromises.push(
+              axios.post(`${API_URL}/transfer`, {
+                baggingOffId: originalRecord.recordId,
+                batchNo: originalRecord.batchKey,
+                gradeGroup: 'HIGH',
+                date: new Date().toISOString(),
+                outputKgs: outputKgs,
+                gradeDetails: gradeDetails,
+                ...transportDetails
+              })
+            );
+          }
+        }
+      }
+
+      // Process low grade items - modified for combined bag approach
+      if (transferMode === 'BOTH' || transferMode === 'LOW') {
+        if (selectedLowGrade) {
+          // Get all selected batches for this low grade
+          const selectedBatchItems = flattenBatchRecords()
+            .filter(item =>
+              item.grade === selectedLowGrade &&
+              selectedLowGradeBatches.includes(item.gradeKey)
+            );
+
+          // Calculate total number of bags per record
+          const totalLowGradeRecords = selectedBatchItems.reduce((sum, item) => sum + item.recordCount, 0);
+          const bagsPerRecord = totalLowGradeRecords > 0 ?
+            Math.ceil(parseInt(lowGradeBags || 0) / totalLowGradeRecords) : 0;
+
+          // Process each selected batch
+          for (const groupedItem of selectedBatchItems) {
+            for (const originalRecord of groupedItem.records) {
+              const gradeDetails = {};
+              gradeDetails[originalRecord.grade] = {
+                numberOfBags: bagsPerRecord
+              };
+
+              const outputKgs = {};
+              outputKgs[originalRecord.grade] = originalRecord.kgValue;
+
+              transferPromises.push(
+                axios.post(`${API_URL}/transfer`, {
+                  baggingOffId: originalRecord.recordId,
+                  batchNo: originalRecord.batchKey,
+                  gradeGroup: 'LOW',
+                  date: new Date().toISOString(),
+                  outputKgs: outputKgs,
+                  gradeDetails: gradeDetails,
+                  ...transportDetails
+                })
+              );
+            }
+          }
+        } else {
+          // Legacy processing for directly selected low grade items
+          const lowGradeItems = getSelectedGradeItems().filter(item =>
+            GRADE_GROUPS.LOW.includes(item.grade)
+          );
+
+          for (const groupedItem of lowGradeItems) {
+            for (const originalRecord of groupedItem.records) {
+              const gradeDetails = {};
+              gradeDetails[originalRecord.grade] = {
+                numberOfBags: parseInt(gradeQualityDetails[groupedItem.gradeKey]?.numberOfBags || 0) / groupedItem.recordCount
+              };
+
+              const outputKgs = {};
+              outputKgs[originalRecord.grade] = originalRecord.kgValue;
+
+              transferPromises.push(
+                axios.post(`${API_URL}/transfer`, {
+                  baggingOffId: originalRecord.recordId,
+                  batchNo: originalRecord.batchKey,
+                  gradeGroup: 'LOW',
+                  date: new Date().toISOString(),
+                  outputKgs: outputKgs,
+                  gradeDetails: gradeDetails,
+                  ...transportDetails
+                })
+              );
+            }
+          }
+        }
+      }
+
+      await Promise.all(transferPromises);
+
+      // Reset form and refresh data
+      await fetchUntransferredRecords();
+      setSelectedGradeItems([]);
+      setSelectedLowGrade(null);
+      setSelectedLowGradeBatches([]);
+      setLowGradeBags('');
+      setTransportDetails({
+        truckNumber: '',
+        driverName: '',
+        driverPhone: '',
+        notes: ''
+      });
+      setGradeQualityDetails({});
+      setShowTransferModal(false);
+      setValidated(false);
+
+      // Show success message
+      if (transferMode === 'HIGH') {
+        alert('High Grade transfer completed successfully');
+      } else if (transferMode === 'LOW') {
+        alert('Low Grade transfer completed successfully');
+      } else {
+        alert('Transfer completed successfully');
+      }
+    } catch (error) {
+      console.error('Transfer error:', error);
+      alert(`Failed to complete transfer: ${error.response?.data?.error || error.message}`);
+    }
+  };
+
+  // Modified function to initialize quality details
+  // const initializeGradeQualityDetails = () => {
+  //   const newGradeDetails = {};
+
+  //   getSelectedGradeItems().forEach(item => {
+  //     // Only initialize if not already exists
+  //     if (!newGradeDetails[item.gradeKey]) {
+  //       newGradeDetails[item.gradeKey] = {
+  //         numberOfBags: gradeQualityDetails[item.gradeKey]?.numberOfBags || '',
+  //         cupProfile: item.isHighGrade ? 
+  //           (gradeQualityDetails[item.gradeKey]?.cupProfile || CUP_PROFILES[0]) : 
+  //           undefined,
+  //         moistureContent: item.isHighGrade ? 
+  //           (gradeQualityDetails[item.gradeKey]?.moistureContent || '') : 
+  //           undefined
+  //       };
+  //     }
+  //   });
+
+  //   setGradeQualityDetails(prevDetails => ({
+  //     ...prevDetails,
+  //     ...newGradeDetails
+  //   }));
+  // };
+
+  // Modified handler for quality details change
+  const handleQualityDetailsChange = (gradeKey, field, value) => {
+    setGradeQualityDetails(prevDetails => ({
+      ...prevDetails,
+      [gradeKey]: {
+        ...(prevDetails[gradeKey] || {}),
+        [field]: value
+      }
+    }));
+  };
 
   // New batch selection handlers
   const handleHighGradeBatchSelectionChange = (batchKey, isSelected) => {
@@ -128,9 +493,9 @@ const Transfer = () => {
     initializeGradeQualityDetails();
   }, [selectedBatches, groupedRecords]);
 
-  useEffect(() => {
-    calculateTotalSelectedKgs();
-  }, [selectedGrades, transferMode]);
+  // useEffect(() => {
+  //   calculateTotalSelectedKgs();
+  // }, [selectedGrades, transferMode]);
 
 
 
@@ -184,18 +549,6 @@ const Transfer = () => {
   };
 
 
-  const handleQualityDetailsChange = (batchKey, grade, field, value) => {
-    setGradeQualityDetails(prevDetails => ({
-      ...prevDetails,
-      [batchKey]: {
-        ...(prevDetails[batchKey] || {}),
-        [grade]: {
-          ...(prevDetails[batchKey]?.[grade] || {}),
-          [field]: value
-        }
-      }
-    }));
-  };
 
   const handleTransportDetailsChange = (e) => {
     const { name, value } = e.target;
@@ -205,18 +558,6 @@ const Transfer = () => {
     }));
   };
 
-  // const getFilteredBatches = () => {
-  //   // Filter batches based on search term
-  //   const filteredBatches = Object.keys(groupedRecords).filter(batchKey => {
-  //     // Check if batch key contains search term
-  //     if (searchTerm && !batchKey.toLowerCase().includes(searchTerm.toLowerCase())) {
-  //       return false;
-  //     }
-  //     return true;
-  //   });
-
-  //   return filteredBatches;
-  // };
 
   useEffect(() => {
     const visibleBatches = getFilteredBatches();
@@ -250,17 +591,16 @@ const Transfer = () => {
     return totals;
   };
 
+  // Update useEffect to trigger calculation when selectedGradeItems changes
+  useEffect(() => {
+    calculateTotalSelectedKgs();
+  }, [selectedGradeItems, transferMode]);
+
+  // Replace getGradeGroupTotal with a new function based on the flattened model
   const getGradeGroupTotal = (gradeGroup) => {
-    let total = 0;
-    const totals = getGradeTotals();
-
-    Object.entries(totals)
-      .filter(([grade, _]) => GRADE_GROUPS[gradeGroup].includes(grade))
-      .forEach(([_, kg]) => {
-        total += kg;
-      });
-
-    return total;
+    return getSelectedGradeItems()
+      .filter(item => GRADE_GROUPS[gradeGroup].includes(item.grade))
+      .reduce((sum, item) => sum + item.kgValue, 0);
   };
 
   const handleGradeSelectionChange = (grade, isSelected) => {
@@ -301,28 +641,28 @@ const Transfer = () => {
   };
 
 
-  const calculateTotalSelectedKgs = () => {
-    let total = 0;
-    selectedBatches.forEach(batchKey => {
-      const batchRecords = groupedRecords[batchKey] || [];
-      batchRecords.forEach(record => {
-        Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
-          // Only count if grade is selected and matches transfer mode
-          if (selectedGrades[grade]) {
-            const kgValue = parseFloat(kg) || 0;
-            if (transferMode === 'BOTH') {
-              total += kgValue;
-            } else if (transferMode === 'HIGH' && GRADE_GROUPS.HIGH.includes(grade)) {
-              total += kgValue;
-            } else if (transferMode === 'LOW' && GRADE_GROUPS.LOW.includes(grade)) {
-              total += kgValue;
-            }
-          }
-        });
-      });
-    });
-    setTotalSelectedKgs(total);
-  };
+  // const calculateTotalSelectedKgs = () => {
+  //   let total = 0;
+  //   selectedBatches.forEach(batchKey => {
+  //     const batchRecords = groupedRecords[batchKey] || [];
+  //     batchRecords.forEach(record => {
+  //       Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
+  //         // Only count if grade is selected and matches transfer mode
+  //         if (selectedGrades[grade]) {
+  //           const kgValue = parseFloat(kg) || 0;
+  //           if (transferMode === 'BOTH') {
+  //             total += kgValue;
+  //           } else if (transferMode === 'HIGH' && GRADE_GROUPS.HIGH.includes(grade)) {
+  //             total += kgValue;
+  //           } else if (transferMode === 'LOW' && GRADE_GROUPS.LOW.includes(grade)) {
+  //             total += kgValue;
+  //           }
+  //         }
+  //       });
+  //     });
+  //   });
+  //   setTotalSelectedKgs(total);
+  // };
 
 
 
@@ -392,120 +732,13 @@ const Transfer = () => {
     return isValid;
   };
 
-  const handleTransferConfirm = async (e) => {
-    const form = e.currentTarget;
-    e.preventDefault();
 
-    if (form.checkValidity() === false) {
-      e.stopPropagation();
-      setValidated(true);
-      return;
-    }
 
-    // Additional validation for quality details
-    // if (!validateQualityDetails()) {
-    //   alert('Please fill in all quality details for high grade coffee.');
-    //   return;
-    // }
-
-    try {
-      const transferPromises = [];
-
-      // High grade transfers (same as before)
-      if (transferMode === 'BOTH' || transferMode === 'HIGH') {
-        const highGradeTransfers = createGradeGroupTransfers('HIGH');
-        transferPromises.push(...highGradeTransfers);
-      }
-
-      // Low grade transfers (new implementation)
-      if (transferMode === 'BOTH' || transferMode === 'LOW') {
-        if (selectedLowGrade && selectedLowGradeBatches.length > 0) {
-          selectedLowGradeBatches.forEach(batchKey => {
-            const batchRecords = groupedRecords[batchKey] || [];
-
-            batchRecords.forEach(record => {
-              const kg = parseFloat(record.outputKgs?.[selectedLowGrade] || 0);
-              if (kg > 0 && (!record.transferredGrades || !record.transferredGrades[selectedLowGrade])) {
-                transferPromises.push(
-                  axios.post(`${API_URL}/transfer`, {
-                    baggingOffId: record.id,
-                    batchNo: batchKey,
-                    gradeGroup: 'LOW',
-                    date: new Date().toISOString(),
-                    outputKgs: { [selectedLowGrade]: kg },
-                    gradeDetails: {
-                      [selectedLowGrade]: {
-                        numberOfBags: parseInt(lowGradeBags || 0)
-                      }
-                    },
-                    ...transportDetails
-                  })
-                );
-              }
-            });
-          });
-        }
-      }
-      const commonDetails = {
-        truckNumber: transportDetails.truckNumber,
-        driverName: transportDetails.driverName,
-        driverPhone: transportDetails.driverPhone,
-        notes: transportDetails.notes,
-        transferMode: transferMode
-      };
-
-      // Process transfers based on the selected mode
-      if (transferMode === 'BOTH' || transferMode === 'HIGH') {
-        // High grade transfer
-        const highGradeTransfers = createGradeGroupTransfers('HIGH');
-        transferPromises.push(...highGradeTransfers);
-      }
-
-      if (transferMode === 'BOTH' || transferMode === 'LOW') {
-        // Low grade transfer
-        const lowGradeTransfers = createGradeGroupTransfers('LOW');
-        transferPromises.push(...lowGradeTransfers);
-      }
-
-      // Log what is being transferred for debugging
-      console.log(`Transferring in ${transferMode} mode:`,
-        transferPromises.map(transfer => ({
-          batchNo: transfer.batchNo,
-          gradeGroup: transfer.gradeGroup,
-          outputKgs: transfer.outputKgs
-        }))
-      );
-
-      await Promise.all(transferPromises.map(transfer =>
-        axios.post(`${API_URL}/transfer`, transfer)
-      ));
-
-      // Reset form and refresh data
-      await fetchUntransferredRecords();
-      setSelectedBatches([]);
-      setSelectedGrades({});
-      setTransportDetails({
-        truckNumber: '',
-        driverName: '',
-        driverPhone: '',
-        notes: ''
-      });
-      setGradeQualityDetails({});
-      setShowTransferModal(false);
-      setValidated(false);
-
-      // Show more specific alert message
-      if (transferMode === 'HIGH') {
-        alert('High Grade transfer completed successfully');
-      } else if (transferMode === 'LOW') {
-        alert('Low Grade transfer completed successfully');
-      } else {
-        alert('Transfer completed successfully');
-      }
-    } catch (error) {
-      console.error('Transfer error:', error);
-      alert(`Failed to complete transfer: ${error.response?.data?.error || error.message}`);
-    }
+  const hasBothGradeTypes = () => {
+    const selectedItems = getSelectedGradeItems();
+    const hasHighGrade = selectedItems.some(item => GRADE_GROUPS.HIGH.includes(item.grade));
+    const hasLowGrade = selectedItems.some(item => GRADE_GROUPS.LOW.includes(item.grade));
+    return hasHighGrade && hasLowGrade;
   };
 
   const createGradeGroupTransfers = (gradeGroup) => {
@@ -793,12 +1026,12 @@ const Transfer = () => {
     setSelectAllChecked(isSelected);
   };
 
-  const getPaginatedBatches = () => {
-    const filteredBatches = getFilteredBatches();
-    const indexOfLastBatch = currentPage * batchesPerPage;
-    const indexOfFirstBatch = indexOfLastBatch - batchesPerPage;
-    return filteredBatches.slice(indexOfFirstBatch, indexOfLastBatch);
-  };
+  // const getPaginatedBatches = () => {
+  //   const filteredBatches = getFilteredBatches();
+  //   const indexOfLastBatch = currentPage * batchesPerPage;
+  //   const indexOfFirstBatch = indexOfLastBatch - batchesPerPage;
+  //   return filteredBatches.slice(indexOfFirstBatch, indexOfLastBatch);
+  // };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -844,11 +1077,93 @@ const Transfer = () => {
     return hasUntransferredLowGrade;
   };
 
+  const getPaginatedBatches = () => {
+    const flattenedBatches = flattenBatchRecords();
+    // Apply search filter if needed
+    const filteredBatches = flattenedBatches.filter(item => {
+      if (searchTerm) {
+        return item.displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.processingType.toLowerCase().includes(searchTerm.toLowerCase());
+      }
+      return true;
+    });
+
+    const indexOfLastBatch = currentPage * batchesPerPage;
+    const indexOfFirstBatch = indexOfLastBatch - batchesPerPage;
+    return filteredBatches.slice(indexOfFirstBatch, indexOfLastBatch);
+  };
+
   return (
     <div className="container-fluid py-4">
 
+      <Card className="mb-4">
+        <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
+          <span className="h5" style={{ color: processingTheme.primary }}>
+            Transport to HQ
+          </span>
+        </Card.Header>
+        <Card.Body>
+          <div className="d-flex flex-wrap justify-content-between align-items-center">
+            <div className="mb-2 mb-md-0">
+              <h5 className="mb-1">Transfer Summary</h5>
+              <div className="d-flex gap-4 text-sm">
+                <span><strong>Batches:</strong> {new Set(getSelectedGradeItems().map(item => item.batchNo)).size}</span>
+                <span><strong>Grades:</strong> {new Set(getSelectedGradeItems().map(item => item.grade)).size}</span>
+                <span><strong>Total:</strong> {totalSelectedKgs.toFixed(2)} kg</span>
+              </div>
+            </div>
 
-      <Modal show={showTransferModal} onHide={handleModalClose} size="lg" >
+            <div className="d-flex gap-2">
+              <div className="me-2">
+                <div className="mb-1"><strong>High Grades:</strong> {getGradeGroupTotal('HIGH').toFixed(2)} kg</div>
+                <div><strong>Low Grades:</strong> {getGradeGroupTotal('LOW').toFixed(2)} kg</div>
+              </div>
+
+              <div className="d-flex gap-1">
+                <Button
+                  size="sm"
+                  variant="outline-sucafina"
+                  disabled={hasBothGradeTypes() || !getSelectedGradeItems().some(item => GRADE_GROUPS.HIGH.includes(item.grade))}
+                  onClick={() => handleTransferClick('HIGH')}
+                  style={{
+                    color: processingTheme.primary,
+                    borderColor: processingTheme.primary,
+                    opacity: hasBothGradeTypes() ? 0.5 : 1
+                  }}
+                >
+                  High Grades
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline-secondary"
+                  disabled={hasBothGradeTypes() || !getSelectedGradeItems().some(item => GRADE_GROUPS.LOW.includes(item.grade))}
+                  onClick={() => handleTransferClick('LOW')}
+                  style={{
+                    opacity: hasBothGradeTypes() ? 0.5 : 1
+                  }}
+                >
+                  Low Grades
+                </Button>
+                <Button
+                  size="sm"
+                  variant="sucafina"
+                  disabled={getSelectedGradeItems().length === 0}
+                  onClick={() => handleTransferClick('BOTH')}
+                  style={{
+                    backgroundColor: processingTheme.primary,
+                    borderColor: processingTheme.primary
+                  }}
+                >
+                  Transport Both Grades
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card.Body>
+      </Card>
+
+      <Modal show={showTransferModal} onHide={handleModalClose} size="lg">
         <Form noValidate validated={validated} onSubmit={handleTransferConfirm}>
           <Modal.Header
             closeButton
@@ -908,781 +1223,531 @@ const Transfer = () => {
                     <thead>
                       <tr>
                         <th width="10%">Select</th>
-                        <th width="30%">Batch No</th>
-                        <th width="30%">Processing Type</th>
-                        <th width="30%">Available Grades</th>
+                        <th width="30%">Batch & Grade</th>
+                        <th width="30%">Processing</th>
+                        <th width="30%">Weight (kg)</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {getFilteredBatches()
-                        .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                        .map((batchKey) => {
-                          const records = groupedRecords[batchKey] || [];
-                          const processingTypes = getUniqueProcessingTypes(records);
-                          const isSelected = selectedBatches.includes(batchKey);
-
-                          return (
-                            <tr key={batchKey} className={isSelected ? 'table-success' : ''}>
-                              <td className="align-middle">
-                                <Form.Check
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={(e) => handleBatchSelectionChange(batchKey, e.target.checked)}
-                                  className="custom-checkbox"
-                                />
-                              </td>
-                              <td className="align-middle">{batchKey}</td>
-                              <td className="align-middle">{processingTypes}</td>
-                              <td className="align-middle">
-                                <div className="d-flex flex-wrap gap-1">
-                                  {renderAvailableGrades(batchKey)}
+                      {flattenBatchRecords()
+                        .filter(item => item.displayId.toLowerCase().includes(modalBatchSearch.toLowerCase()))
+                        .map((item) => (
+                          <tr
+                            key={item.id}
+                            style={{
+                              backgroundColor: item.isHighGrade ? 'rgba(0, 128, 128, 0.05)' : 'transparent',
+                              borderLeft: item.isHighGrade ? `4px solid ${processingTheme.primary}` : 'none'
+                            }}
+                          >
+                            <td>
+                              <Form.Check
+                                type="checkbox"
+                                checked={isGradeItemSelected(item.gradeKey)}
+                                onChange={(e) => handleGradeItemSelection(item.gradeKey, e.target.checked)}
+                                label=""
+                              />
+                            </td>
+                            <td>
+                              <div className="d-flex align-items-center">
+                                <div>
+                                  <div className="fw-bold">
+                                    {item.displayId} {item.isHighGrade && <span style={{ color: processingTheme.primary }}>★</span>}
+                                  </div>
+                                  <Badge
+                                    bg={item.isHighGrade ? "success" : "info"}
+                                    className="me-1"
+                                  >
+                                    {item.isHighGrade ? "High Grade" : "Low Grade"}
+                                  </Badge>
                                 </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                              </div>
+                            </td>
+                            <td>{item.processingType}</td>
+                            <td>{item.kgValue.toFixed(2)} kg</td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
               </div>
             ) : (
-              // Existing transfer form content
               <>
-                {selectedBatches.length === 0 ? (
-                  <Alert variant="warning">No batches selected for transfer</Alert>
+                {selectedGradeItems.length === 0 ? (
+                  <Alert variant="warning">No grade items selected for transfer</Alert>
                 ) : (
                   <>
-                    {/* <Alert variant="info">
-                      You are about to transfer coffee from {selectedBatches.length} batch(es).
-                      <br />
-                      Total KGs: <strong>{totalSelectedKgs.toFixed(2)} kg</strong>
-                    </Alert> */}
+                    <div className="table-responsive">
+                      <table className="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Batch & Grade</th>
+                            <th>Processing</th>
+                            <th>Weight (kg)</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {getSelectedGradeItems()
+                            .sort((a, b) => {
+                              const gradeOrder = ['A0', 'A1', 'A2', 'A3', 'B1', 'B2'];
+                              const gradeAIndex = gradeOrder.indexOf(a.grade);
+                              const gradeBIndex = gradeOrder.indexOf(b.grade);
 
-                    <InputGroup className="mb-3">
-                      <Form.Control
-                        placeholder="Search batches..."
-                        value={modalBatchSearch}
-                        onChange={(e) => setModalBatchSearch(e.target.value)}
-                      />
-                    </InputGroup>
+                              if (gradeAIndex !== gradeBIndex) return gradeAIndex - gradeBIndex;
 
-                    <Tabs
-                      id="grade-tabs"
-                      activeKey={activeGradeTab}
-                      onSelect={(k) => setActiveGradeTab(k)}
-                      className="mb-3"
-                    >
+                              // Extract dates
+                              const extractDate = (batchNo) => {
+                                const match = batchNo.match(/(\d{2})(\d{2})/);
+                                return match ? { day: parseInt(match[1], 10), month: parseInt(match[2], 10) } : { day: 0, month: 0 };
+                              };
 
-                      {(transferMode === 'HIGH') && (
-                        <Tab eventKey="high" title={`High Grades (${getGradeGroupTotal('HIGH').toFixed(2)} kg)`}>
-                          {selectedBatches
-                            .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                            .map(batchKey => {
-                              // Get all available grades for this batch
-                              const availableGradeSet = {};
-                              const batchRecords = groupedRecords[batchKey] || [];
+                              const dateA = extractDate(a.batchNo);
+                              const dateB = extractDate(b.batchNo);
 
-                              batchRecords.forEach(record => {
-                                Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
-                                  const kgValue = parseFloat(kg) || 0;
-                                  // Only include high grades that haven't been transferred and have kg > 0
-                                  if (kgValue > 0 && GRADE_GROUPS.HIGH.includes(grade) &&
-                                    (!record.transferredGrades || !record.transferredGrades[grade])) {
-                                    if (!availableGradeSet[grade]) {
-                                      availableGradeSet[grade] = 0;
-                                    }
-                                    availableGradeSet[grade] += kgValue;
-                                  }
-                                });
-                              });
-
-                              const highGrades = Object.entries(availableGradeSet);
-
-                              if (highGrades.length === 0) return null;
-
-                              return (
-                                <Card key={`high-${batchKey}`} className="mb-3">
-                                  <Card.Header>
-                                    <strong>{batchKey}</strong>
-                                  </Card.Header>
-                                  <Card.Body>
-                                    {highGrades.map(([grade, kg]) => (
-                                      <div key={`${batchKey}-${grade}`} className="mb-3">
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                          <Badge
-                                            bg="sucafina"
-                                            className="p-2"
-                                            style={{ backgroundColor: processingTheme.primary }}
-                                          >
-                                            {grade}: {kg.toFixed(2)} kg
-                                          </Badge>
-                                          <Form.Check
-                                            type="checkbox"
-                                            hidden
-                                            checked={selectedGrades[grade] !== false} // Default to true if undefined
-                                            onChange={(e) => handleGradeSelectionChange(grade, e.target.checked)}
-                                          />
-                                        </div>
-
-                                        {selectedGrades[grade] !== false && (
-                                          <Row>
-                                            <Col md={4}>
-                                              <Form.Group controlId={`${batchKey}-${grade}-bags`}>
-                                                <Form.Label>Number of Bags</Form.Label>
-                                                <Form.Control
-                                                  type="number"
-                                                  min="1"
-                                                  placeholder="ex: 20"
-                                                  value={gradeQualityDetails[batchKey]?.[grade]?.numberOfBags || ''}
-                                                  onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'numberOfBags', e.target.value)}
-                                                  required
-                                                />
-                                                <Form.Control.Feedback type="invalid">
-                                                  Please provide the number of bags.
-                                                </Form.Control.Feedback>
-                                              </Form.Group>
-                                            </Col>
-                                            <Col md={4}>
-                                              <Form.Group controlId={`${batchKey}-${grade}-cupProfile`}>
-                                                <Form.Label>Cup Profile</Form.Label>
-                                                <Form.Select
-                                                  value={gradeQualityDetails[batchKey]?.[grade]?.cupProfile || CUP_PROFILES[0]}
-                                                  onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'cupProfile', e.target.value)}
-                                                  required
-                                                >
-                                                  {CUP_PROFILES.map(profile => (
-                                                    <option key={profile} value={profile}>{profile}</option>
-                                                  ))}
-                                                </Form.Select>
-                                                <Form.Control.Feedback type="invalid">
-                                                  Please select a cup profile.
-                                                </Form.Control.Feedback>
-                                              </Form.Group>
-                                            </Col>
-                                            <Col md={4}>
-                                              <Form.Group controlId={`${batchKey}-${grade}-moisture`}>
-                                                <Form.Label>Moisture Content (%)</Form.Label>
-                                                <Form.Control
-                                                  type="number"
-                                                  min="0"
-                                                  max="20"
-                                                  step="0.1"
-                                                  placeholder="Enter moisture %"
-                                                  value={gradeQualityDetails[batchKey]?.[grade]?.moistureContent || ''}
-                                                  onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'moistureContent', e.target.value)}
-                                                  required
-                                                />
-                                                <Form.Control.Feedback type="invalid">
-                                                  Please provide the moisture content.
-                                                </Form.Control.Feedback>
-                                              </Form.Group>
-                                            </Col>
-                                          </Row>
-                                        )}
+                              // Month comparison first
+                              if (dateA.month !== dateB.month) return dateA.month - dateB.month;
+                              // Then day comparison
+                              if (dateA.day !== dateB.day) return dateA.day - dateB.day;
+                              // Finally batch number
+                              return a.batchNo.localeCompare(b.batchNo);
+                            })
+                            .map((item) => (
+                              <tr key={item.id}
+                                style={{
+                                  backgroundColor: item.isHighGrade ? 'rgba(0, 128, 128, 0.05)' : 'transparent',
+                                  borderLeft: item.isHighGrade ? `4px solid ${processingTheme.primary}` : 'none'
+                                }}
+                              >
+                                <td>
+                                  <div className="d-flex align-items-center">
+                                    <div>
+                                      <div className="fw-bold">
+                                        {item.displayId} {item.isHighGrade && <span style={{ color: processingTheme.primary }}>★</span>}
                                       </div>
-                                    ))}
-                                  </Card.Body>
-                                </Card>
-                              );
-                            })}
-                        </Tab>
-                      )}
+                                      <Badge
+                                        bg={item.isHighGrade ? "success" : "info"}
+                                        className="me-1"
+                                      >
+                                        {item.isHighGrade ? "High Grade" : "Low Grade"}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>{item.processingType}</td>
+                                <td>{item.kgValue.toFixed(2)} kg</td>
+                                <td>
+                                  <Button
+                                    size="sm"
+                                    variant="outline-danger"
+                                    onClick={() => handleGradeItemSelection(item.gradeKey, false)}
+                                  >
+                                    Remove
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
 
-                      {(transferMode === 'LOW') && (
-                        <Tab eventKey="low" title={`Low Grades (${getGradeGroupTotal('LOW').toFixed(2)} kg)`}>
-                          {selectedBatches
-                            .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                            .map(batchKey => {
-                              // Get all available grades for this batch
-                              const availableGradeSet = {};
-                              const batchRecords = groupedRecords[batchKey] || [];
+                    {/* Quality Details Form */}
+                    {/* Modified version of the Quality Details Card to handle low grades differently */}
+                    <Card className="mt-3">
+                      <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <span className="h5" style={{ color: processingTheme.primary }}>Quality Details</span>
+                        </div>
+                      </Card.Header>
+                      <Card.Body>
+                        {/* Tabs for HIGH/LOW when in BOTH mode */}
+                        {transferMode === 'BOTH' && (
+                          <Nav variant="tabs" className="mb-3" activeKey={activeBothGradeTab} onSelect={setActiveBothGradeTab}>
+                            <Nav.Item>
+                              <Nav.Link eventKey="high">High Grades</Nav.Link>
+                            </Nav.Item>
+                            <Nav.Item>
+                              <Nav.Link eventKey="low">Low Grades</Nav.Link>
+                            </Nav.Item>
+                          </Nav>
+                        )}
 
-                              batchRecords.forEach(record => {
-                                Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
-                                  const kgValue = parseFloat(kg) || 0;
-                                  // Only include low grades that haven't been transferred and have kg > 0
-                                  if (kgValue > 0 && GRADE_GROUPS.LOW.includes(grade) &&
-                                    (!record.transferredGrades || !record.transferredGrades[grade])) {
-                                    if (!availableGradeSet[grade]) {
-                                      availableGradeSet[grade] = 0;
-                                    }
-                                    availableGradeSet[grade] += kgValue;
-                                  }
-                                });
-                              });
-
-                              const lowGrades = Object.entries(availableGradeSet);
-
-                              if (lowGrades.length === 0) return null;
-
-                              return (
-                                <Card key={`low-${batchKey}`} className="mb-3">
-                                  <Card.Header>
-                                    <strong>{batchKey}</strong>
-                                  </Card.Header>
-                                  <Card.Body>
-                                    {lowGrades.map(([grade, kg]) => (
-                                      <div key={`${batchKey}-${grade}`} className="mb-3">
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                          <Badge
-                                            bg="sucafina"
-                                            className="p-2"
-                                            style={{ backgroundColor: '#008080' }}
-                                          >
-                                            {grade}: {kg.toFixed(2)} kg
-                                          </Badge>
-                                          <Form.Check
-                                            type="checkbox"
-                                            hidden
-                                            checked={selectedGrades[grade] !== false} // Default to true if undefined
-                                            onChange={(e) => handleGradeSelectionChange(grade, e.target.checked)}
-                                          />
-                                        </div>
-
-                                        {selectedGrades[grade] !== false && (
-                                          <Row>
-                                            <Col md={6}>
-                                              <Form.Group controlId={`${batchKey}-${grade}-bags`}>
-                                                <Form.Label>Number of Bags</Form.Label>
-                                                <Form.Control
-                                                  type="number"
-                                                  min="1"
-                                                  placeholder="Ex: 20"
-                                                  value={gradeQualityDetails[batchKey]?.[grade]?.numberOfBags || ''}
-                                                  onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'numberOfBags', e.target.value)}
-                                                  required
-                                                />
-                                                <Form.Control.Feedback type="invalid">
-                                                  Please provide the number of bags.
-                                                </Form.Control.Feedback>
-                                              </Form.Group>
-                                            </Col>
-                                          </Row>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </Card.Body>
-                                </Card>
-                              );
-                            })}
-                        </Tab>
-                      )}
-                    </Tabs>
-
-
-
-                    {(transferMode === 'BOTH') && (
-                      <>
-                        <Tabs
-                          id="both-grades-tabs"
-                          activeKey={activeBothGradeTab}
-                          onSelect={(k) => setActiveBothGradeTab(k)}
-                          className="mb-3"
-                        >
-                          <Tab
-                            eventKey="high"
-                            title={
-                              <span>
-                                <Badge bg="success" className="me-1">HIGH</Badge>
-                                Grades Details
-                              </span>
-                            }
-                          >
+                        {/* High Grade Quality Details - only show when in high tab or non-BOTH mode */}
+                        {(transferMode !== 'BOTH' || activeBothGradeTab === 'high') && (
+                          <>
                             {showHighGradeBatchSelection ? (
-                              <div className="batch-selection-modal">
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                  <Alert variant="success" className="mb-0 flex-grow-1 me-2">
-                                    <strong>SELECT HIGH GRADE BATCHES:</strong> Check the boxes to select batches
-                                  </Alert>
-                                  <Button
-                                    variant="success"
-                                    size="sm"
-                                    onClick={toggleHighGradeBatchSelectionView}
-                                  >
-                                    Done Selecting
-                                  </Button>
-                                </div>
-
-                                {/* <InputGroup className="mb-3">
+                              <div className="batch-selection-container">
+                                <h5>Select High Grade Batches</h5>
+                                <InputGroup className="mb-3">
                                   <Form.Control
-                                    placeholder="Search high grade batches..."
+                                    placeholder="Search batches..."
                                     value={modalBatchSearch}
                                     onChange={(e) => setModalBatchSearch(e.target.value)}
                                   />
-                                </InputGroup> */}
-
-                                <div className="batch-selection-summary mb-3">
-                                  <Badge bg="secondary">
-                                    {selectedHighGradeBatches.length} high grade batches selected
-                                  </Badge>
-                                </div>
+                                </InputGroup>
 
                                 <div className="table-responsive">
                                   <table className="table table-hover mb-0">
-                                    <thead className="table-success">
+                                    <thead>
                                       <tr>
                                         <th width="10%">Select</th>
-                                        <th width="30%">Batch No</th>
-                                        <th width="30%">Processing Type</th>
-                                        <th width="30%">Available Grades</th>
+                                        <th width="30%">Batch</th>
+                                        <th width="30%">Processing</th>
+                                        <th width="30%">Weight (kg)</th>
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {getFilteredBatches('HIGH')
-                                        .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                                        .map((batchKey) => {
-                                          const records = groupedRecords[batchKey] || [];
-                                          const processingTypes = getUniqueProcessingTypes(records);
-                                          const isSelected = selectedHighGradeBatches.includes(batchKey);
-
-                                          return (
-                                            <tr key={batchKey} className={isSelected ? 'table-success' : ''}>
-                                              <td className="align-middle">
-                                                <Form.Check
-                                                  type="checkbox"
-                                                  checked={isSelected}
-                                                  onChange={(e) => handleHighGradeBatchSelectionChange(batchKey, e.target.checked)}
-                                                  className="custom-checkbox"
-                                                />
-                                              </td>
-                                              <td className="align-middle">{batchKey}</td>
-                                              <td className="align-middle">{processingTypes}</td>
-                                              <td className="align-middle">
-                                                <div className="d-flex flex-wrap gap-1">
-                                                  {renderAvailableGrades(batchKey, 'HIGH')}
+                                      {flattenBatchRecords()
+                                        .filter(item => GRADE_GROUPS.HIGH.includes(item.grade))
+                                        .filter(item => item.displayId.toLowerCase().includes(modalBatchSearch.toLowerCase()))
+                                        .map((item) => (
+                                          <tr key={item.id}>
+                                            <td>
+                                              <Form.Check
+                                                type="checkbox"
+                                                checked={selectedGradeItems.includes(item.gradeKey)}
+                                                onChange={(e) => {
+                                                  if (e.target.checked) {
+                                                    setSelectedGradeItems(prev => [...prev, item.gradeKey]);
+                                                  } else {
+                                                    setSelectedGradeItems(prev => prev.filter(key => key !== item.gradeKey));
+                                                  }
+                                                }}
+                                              />
+                                            </td>
+                                            <td>
+                                              <div className="d-flex align-items-center">
+                                                <div>
+                                                  <div className="fw-bold">
+                                                    {item.displayId} <span style={{ color: processingTheme.primary }}>★</span>
+                                                  </div>
+                                                  <Badge
+                                                    bg="success"
+                                                    className="me-1"
+                                                  >
+                                                    High Grade
+                                                  </Badge>
                                                 </div>
-                                              </td>
-                                            </tr>
-                                          );
-                                        })}
+                                              </div>
+                                            </td>
+                                            <td>{item.processingType}</td>
+                                            <td>{item.kgValue.toFixed(2)} kg</td>
+                                          </tr>
+                                        ))}
                                     </tbody>
                                   </table>
+                                </div>
+
+                                <div className="mt-3 d-flex justify-content-between">
+                                  <Button
+                                    variant="secondary"
+                                    onClick={() => setShowHighGradeBatchSelection(false)}
+                                  >
+                                    Back
+                                  </Button>
+                                  <Button
+                                    variant="primary"
+                                    onClick={() => setShowHighGradeBatchSelection(false)}
+                                    style={{ backgroundColor: processingTheme.primary, borderColor: processingTheme.primary }}
+                                  >
+                                    Confirm Selection
+                                  </Button>
                                 </div>
                               </div>
                             ) : (
                               <>
-                                {selectedHighGradeBatches.length === 0 ? (
-                                  <Alert variant="warning">
-                                    <div className="d-flex align-items-center justify-content-between">
-                                      <span>No high grade batches selected for transfer</span>
-                                      <Button
-                                        variant="success"
-                                        size="sm"
-                                        onClick={toggleHighGradeBatchSelectionView}
-                                      >
-                                        Select High Grade Batches
-                                      </Button>
-                                    </div>
-                                  </Alert>
-                                ) : (
-                                  <>
-                                    <div className="d-flex justify-content-between align-items-center mb-3">
-                                      <Alert variant="success" className="mb-0 flex-grow-1 me-2">
-                                        <strong>{selectedHighGradeBatches.length} high grade batches selected</strong>
-                                        <div>Total: {getGradeGroupTotal('HIGH').toFixed(2)} kg</div>
-                                      </Alert>
-                                      <Button
-                                        variant="outline-success"
-                                        size="sm"
-                                        onClick={toggleHighGradeBatchSelectionView}
-                                      >
-                                        Modify High Grade Batches
-                                      </Button>
-                                    </div>
+                                {/* Display selected high grade batches */}
+                                <div className="selected-batches mb-3">
+                                  <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <h5>Selected High Grade Batches</h5>
+                                    <Button
+                                      variant="outline-primary"
+                                      size="sm"
+                                      onClick={() => setShowHighGradeBatchSelection(true)}
+                                      style={{ borderColor: processingTheme.primary, color: processingTheme.primary }}
+                                    >
+                                      Modify High Batches
+                                    </Button>
+                                  </div>
 
-                                    <InputGroup className="mb-3">
-                                      <Form.Control
-                                        placeholder="Search high grade batches..."
-                                        value={modalBatchSearch}
-                                        onChange={(e) => setModalBatchSearch(e.target.value)}
-                                      />
-                                    </InputGroup>
+                                  {getSelectedGradeItems().filter(item => GRADE_GROUPS.HIGH.includes(item.grade)).length > 0 ? (
+                                    <table className="table table-sm">
+                                      <thead>
+                                        <tr>
+                                          <th>Batch & Grade</th>
+                                          <th>Weight (kg)</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {getSelectedGradeItems()
+                                          .filter(item => GRADE_GROUPS.HIGH.includes(item.grade))
+                                          .map(item => (
+                                            <tr key={item.gradeKey}>
+                                              <td>{item.displayId}</td>
+                                              <td>{item.kgValue.toFixed(2)} kg</td>
+                                            </tr>
+                                          ))}
+                                        <tr className="table-active">
+                                          <td><strong>Total</strong></td>
+                                          <td><strong>
+                                            {getSelectedGradeItems()
+                                              .filter(item => GRADE_GROUPS.HIGH.includes(item.grade))
+                                              .reduce((sum, item) => sum + item.kgValue, 0)
+                                              .toFixed(2)} kg
+                                          </strong></td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  ) : (
+                                    <Alert variant="info">No high grade batches selected. Click "Modify High Batches" to select.</Alert>
+                                  )}
+                                </div>
 
-                                    {selectedHighGradeBatches
-                                      .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                                      .map(batchKey => {
-                                        const availableGradeSet = {};
-                                        const batchRecords = groupedRecords[batchKey] || [];
-
-                                        batchRecords.forEach(record => {
-                                          Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
-                                            const kgValue = parseFloat(kg) || 0;
-                                            if (kgValue > 0 && GRADE_GROUPS.HIGH.includes(grade) &&
-                                              (!record.transferredGrades || !record.transferredGrades[grade])) {
-                                              if (!availableGradeSet[grade]) {
-                                                availableGradeSet[grade] = 0;
-                                              }
-                                              availableGradeSet[grade] += kgValue;
-                                            }
-                                          });
-                                        });
-
-                                        const highGrades = Object.entries(availableGradeSet);
-
-                                        if (highGrades.length === 0) return null;
-
-                                        return (
-                                          <Card key={`high-${batchKey}`} className="mb-3 border-success">
-                                            <Card.Header className="bg-success bg-opacity-25">
-                                              <strong>{batchKey}</strong>
-                                            </Card.Header>
-                                            <Card.Body>
-                                              {highGrades.map(([grade, kg]) => (
-                                                <div key={`${batchKey}-${grade}`} className="mb-3">
-                                                  <div className="d-flex justify-content-between align-items-center mb-2">
-                                                    <Badge
-                                                      bg="sucafina"
-                                                      className="p-2"
-                                                      style={{ backgroundColor: processingTheme.primary }}
-                                                    >
-                                                      {grade}: {kg.toFixed(2)} kg
-                                                    </Badge>
-                                                  </div>
-
-                                                  {selectedGrades[grade] !== false && (
-                                                    <Row>
-                                                      <Col md={4}>
-                                                        <Form.Group controlId={`${batchKey}-${grade}-bags`}>
-                                                          <Form.Label>Number of Bags</Form.Label>
-                                                          <Form.Control
-                                                            type="number"
-                                                            min="1"
-                                                            placeholder="Ex: 20"
-                                                            value={gradeQualityDetails[batchKey]?.[grade]?.numberOfBags || ''}
-                                                            onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'numberOfBags', e.target.value)}
-                                                            required
-                                                          />
-                                                          <Form.Control.Feedback type="invalid">
-                                                            Please provide the number of bags.
-                                                          </Form.Control.Feedback>
-                                                        </Form.Group>
-                                                      </Col>
-                                                      <Col md={4}>
-                                                        <Form.Group controlId={`${batchKey}-${grade}-cupProfile`}>
-                                                          <Form.Label>Cup Profile</Form.Label>
-                                                          <Form.Select
-                                                            value={gradeQualityDetails[batchKey]?.[grade]?.cupProfile || ''}
-                                                            onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'cupProfile', e.target.value)}
-                                                            required
-                                                          >
-                                                            {CUP_PROFILES.map((profile, index) => (
-                                                              <option
-                                                                key={profile}
-                                                                value={index === 0 ? '' : profile}
-                                                              >
-                                                                {profile}
-                                                              </option>
-                                                            ))}
-                                                          </Form.Select>
-                                                          <Form.Control.Feedback type="invalid">
-                                                            Please select a cup profile.
-                                                          </Form.Control.Feedback>
-                                                        </Form.Group>
-                                                      </Col>
-                                                      <Col md={4}>
-                                                        <Form.Group controlId={`${batchKey}-${grade}-moisture`}>
-                                                          <Form.Label>Moisture Content (%)</Form.Label>
-                                                          <Form.Control
-                                                            type="number"
-                                                            min="0"
-                                                            max="20"
-                                                            step="0.1"
-                                                            placeholder="Ex: 12.5%"
-                                                            value={gradeQualityDetails[batchKey]?.[grade]?.moistureContent || ''}
-                                                            onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'moistureContent', e.target.value)}
-                                                            required
-                                                          />
-                                                          <Form.Control.Feedback type="invalid">
-                                                            Please provide the moisture content.
-                                                          </Form.Control.Feedback>
-                                                        </Form.Group>
-                                                      </Col>
-                                                    </Row>
-                                                  )}
-                                                </div>
+                                {/* Quality Details for High Grades */}
+                                {getSelectedGradeItems()
+                                  .filter(item => GRADE_GROUPS.HIGH.includes(item.grade))
+                                  .map((item) => (
+                                    <div key={`quality-${item.gradeKey}`} className="mb-3">
+                                      <h5>{item.displayId}</h5>
+                                      <Row>
+                                        <Col md={4}>
+                                          <Form.Group controlId={`${item.gradeKey}-bags`}>
+                                            <Form.Label>Number of Bags</Form.Label>
+                                            <Form.Control
+                                              type="number"
+                                              min="1"
+                                              placeholder="ex: 20"
+                                              value={gradeQualityDetails[item.gradeKey]?.numberOfBags || ''}
+                                              onChange={(e) => handleQualityDetailsChange(item.gradeKey, 'numberOfBags', e.target.value)}
+                                              required
+                                            />
+                                          </Form.Group>
+                                        </Col>
+                                        <Col md={4}>
+                                          <Form.Group controlId={`${item.gradeKey}-cupProfile`}>
+                                            <Form.Label>Cup Profile</Form.Label>
+                                            <Form.Select
+                                              value={gradeQualityDetails[item.gradeKey]?.cupProfile || CUP_PROFILES[0]}
+                                              onChange={(e) => handleQualityDetailsChange(item.gradeKey, 'cupProfile', e.target.value)}
+                                              required
+                                            >
+                                              {CUP_PROFILES.map(profile => (
+                                                <option key={profile} value={profile}>{profile}</option>
                                               ))}
-                                            </Card.Body>
-                                          </Card>
-                                        );
-                                      })}
-                                  </>
-                                )}
+                                            </Form.Select>
+                                          </Form.Group>
+                                        </Col>
+                                        <Col md={4}>
+                                          <Form.Group controlId={`${item.gradeKey}-moisture`}>
+                                            <Form.Label>Moisture Content (%)</Form.Label>
+                                            <Form.Control
+                                              type="number"
+                                              min="0"
+                                              max="20"
+                                              step="0.1"
+                                              placeholder="Enter moisture %"
+                                              value={gradeQualityDetails[item.gradeKey]?.moistureContent || ''}
+                                              onChange={(e) => handleQualityDetailsChange(item.gradeKey, 'moistureContent', e.target.value)}
+                                              required
+                                            />
+                                          </Form.Group>
+                                        </Col>
+                                      </Row>
+                                    </div>
+                                  ))}
                               </>
                             )}
-                          </Tab>
-
-                          <Tab
-                            eventKey="low"
-                            title={
-                              <span>
-                                <Badge bg="warning" className="me-1">LOW</Badge>
-                                Grades Details
-                              </span>
-                            }
-                          >
+                          </>
+                        )}
+                        {/* Low Grade Selector - only show when in low tab or LOW mode */}
+                        {(transferMode === 'LOW' || (transferMode === 'BOTH' && activeBothGradeTab === 'low')) && (
+                          <>
                             {showLowGradeBatchSelection ? (
-                              <div className="batch-selection-modal">
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                  <Alert variant="warning" className="mb-0 flex-grow-1 me-2">
-                                    <strong>SELECT LOW GRADE BATCHES:</strong> Check the boxes to select batches.
-                                  </Alert>
-                                  <Button
-                                    variant="warning"
-                                    size="sm"
-                                    onClick={toggleLowGradeBatchSelectionView}
-                                  >
-                                    Done Selecting
-                                  </Button>
-                                </div>
-
-                                {/* <InputGroup className="mb-3">
+                              <div className="batch-selection-container">
+                                <h5>Select Batches for {selectedLowGrade}</h5>
+                                <InputGroup className="mb-3">
                                   <Form.Control
-                                    placeholder="Search low grade batches..."
+                                    placeholder="Search batches..."
                                     value={modalBatchSearch}
                                     onChange={(e) => setModalBatchSearch(e.target.value)}
                                   />
-                                </InputGroup> */}
-
-                                <div className="batch-selection-summary mb-3">
-                                  <Badge bg="secondary">
-                                    {selectedLowGradeBatches.length} low grade batches selected
-                                  </Badge>
-                                </div>
+                                </InputGroup>
 
                                 <div className="table-responsive">
                                   <table className="table table-hover mb-0">
-                                    <thead className="table-warning">
+                                    <thead>
                                       <tr>
                                         <th width="10%">Select</th>
-                                        <th width="30%">Batch No</th>
-                                        <th width="30%">Processing Type</th>
-                                        <th width="30%">Available Grades</th>
+                                        <th width="30%">Batch</th>
+                                        <th width="30%">Processing</th>
+                                        <th width="30%">Weight (kg)</th>
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {getFilteredBatches('LOW')
-                                        .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                                        .map((batchKey) => {
-                                          const records = groupedRecords[batchKey] || [];
-                                          const processingTypes = getUniqueProcessingTypes(records);
-                                          const isSelected = selectedLowGradeBatches.includes(batchKey);
-
-                                          return (
-                                            <tr key={batchKey} className={isSelected ? 'table-warning' : ''}>
-                                              <td className="align-middle">
-                                                <Form.Check
-                                                  type="checkbox"
-                                                  checked={isSelected}
-                                                  onChange={(e) => handleLowGradeBatchSelectionChange(batchKey, e.target.checked)}
-                                                  className="custom-checkbox"
-                                                />
-                                              </td>
-                                              <td className="align-middle">{batchKey}</td>
-                                              <td className="align-middle">{processingTypes}</td>
-                                              <td className="align-middle">
-                                                <div className="d-flex flex-wrap gap-1">
-                                                  {renderAvailableGrades(batchKey, 'LOW')}
-                                                </div>
-                                              </td>
-                                            </tr>
-                                          );
-                                        })}
+                                      {flattenBatchRecords()
+                                        .filter(item => item.grade === selectedLowGrade)
+                                        .filter(item => item.displayId.toLowerCase().includes(modalBatchSearch.toLowerCase()))
+                                        .map((item) => (
+                                          <tr key={item.id}>
+                                            <td>
+                                              <Form.Check
+                                                type="checkbox"
+                                                checked={selectedLowGradeBatches.includes(item.gradeKey)}
+                                                onChange={(e) => {
+                                                  if (e.target.checked) {
+                                                    setSelectedLowGradeBatches(prev => [...prev, item.gradeKey]);
+                                                  } else {
+                                                    setSelectedLowGradeBatches(prev => prev.filter(key => key !== item.gradeKey));
+                                                  }
+                                                }}
+                                              />
+                                            </td>
+                                            <td>{item.displayId}</td>
+                                            <td>{item.processingType}</td>
+                                            <td>{item.kgValue.toFixed(2)} kg</td>
+                                          </tr>
+                                        ))}
                                     </tbody>
                                   </table>
+                                </div>
+
+                                <div className="mt-3 d-flex justify-content-between">
+                                  <Button
+                                    variant="secondary"
+                                    onClick={() => setShowLowGradeBatchSelection(false)}
+                                  >
+                                    Back
+                                  </Button>
+                                  <Button
+                                    variant="primary"
+                                    onClick={() => {
+                                      // Update selected grade items with all selected batches
+                                      setSelectedGradeItems(prev => {
+                                        // Remove any existing items with this grade
+                                        const filtered = prev.filter(item => {
+                                          const batchItem = flattenBatchRecords().find(record => record.gradeKey === item);
+                                          return !batchItem || batchItem.grade !== selectedLowGrade;
+                                        });
+                                        // Add new selections
+                                        return [...filtered, ...selectedLowGradeBatches];
+                                      });
+                                      setShowLowGradeBatchSelection(false);
+                                    }}
+                                    style={{ backgroundColor: processingTheme.primary, borderColor: processingTheme.primary }}
+                                  >
+                                    Confirm Selection
+                                  </Button>
                                 </div>
                               </div>
                             ) : (
                               <>
-                                {selectedLowGradeBatches.length === 0 ? (
-                                  <Alert variant="warning">
-                                    <div className="d-flex align-items-center justify-content-between">
-                                      <span>No low grade batches selected for transfer</span>
-                                      <Button
-                                        variant="warning"
-                                        size="sm"
-                                        onClick={toggleLowGradeBatchSelectionView}
-                                      >
-                                        Select Low Grade Batches
-                                      </Button>
-                                    </div>
-                                  </Alert>
-                                ) : (
-                                  <>
-                                    <div className="d-flex justify-content-between align-items-center mb-3">
-                                      <Alert variant="warning" className="mb-0 flex-grow-1 me-2">
-                                        <strong>{selectedLowGradeBatches.length} low grade batches selected</strong>
-                                        <div>Total: {getGradeGroupTotal('LOW').toFixed(2)} kg</div>
-                                      </Alert>
-                                      <Button
-                                        variant="outline-warning"
-                                        size="sm"
-                                        onClick={toggleLowGradeBatchSelectionView}
-                                      >
-                                        Modify Low Grade Batches
-                                      </Button>
-                                    </div>
+                                {/* Low Grade Selection */}
+                                <div className="grade-selection-container">
+                                  <Form.Group className="mb-3">
+                                    <Form.Label>Select Low Grade</Form.Label>
+                                    <Form.Select
+                                      value={selectedLowGrade || ''}
+                                      onChange={(e) => setSelectedLowGrade(e.target.value)}
+                                      required
+                                    >
+                                      <option value="">Select a low grade</option>
+                                      {GRADE_GROUPS.LOW.map(grade => (
+                                        <option key={grade} value={grade}>{grade}</option>
+                                      ))}
+                                    </Form.Select>
+                                  </Form.Group>
 
-                                    <InputGroup className="mb-3">
-                                      <Form.Control
-                                        placeholder="Search low grade batches..."
-                                        value={modalBatchSearch}
-                                        onChange={(e) => setModalBatchSearch(e.target.value)}
-                                      />
-                                    </InputGroup>
+                                  {selectedLowGrade && (
+                                    <>
+                                      <div className="selected-batches mb-3">
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                          <h5>Selected {selectedLowGrade} Batches</h5>
+                                          <Button
+                                            variant="outline-primary"
+                                            size="sm"
+                                            onClick={() => setShowLowGradeBatchSelection(true)}
+                                            style={{ borderColor: processingTheme.primary, color: processingTheme.primary }}
+                                          >
+                                            Modify Batches
+                                          </Button>
+                                        </div>
 
-                                    {(() => {
-                                      // First, collect all grades across all batches
-                                      const allGradesByType = {};
+                                        {selectedLowGradeBatches.length > 0 ? (
+                                          <table className="table table-sm">
+                                            <thead>
+                                              <tr>
+                                                <th>Batch</th>
+                                                <th>Weight (kg)</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {selectedLowGradeBatches.map(key => {
+                                                const item = flattenBatchRecords().find(record => record.gradeKey === key);
+                                                return item && (
+                                                  <tr key={key}>
+                                                    <td>{item.displayId}</td>
+                                                    <td>{item.kgValue.toFixed(2)} kg</td>
+                                                  </tr>
+                                                );
+                                              })}
+                                              <tr className="table-active">
+                                                <td><strong>Total</strong></td>
+                                                <td><strong>
+                                                  {selectedLowGradeBatches
+                                                    .map(key => flattenBatchRecords().find(record => record.gradeKey === key))
+                                                    .filter(item => item)
+                                                    .reduce((sum, item) => sum + item.kgValue, 0)
+                                                    .toFixed(2)} kg
+                                                </strong></td>
+                                              </tr>
+                                            </tbody>
+                                          </table>
+                                        ) : (
+                                          <Alert variant="info">No batches selected. Click "Modify Batches" to select.</Alert>
+                                        )}
+                                      </div>
 
-                                      // Process all selected low grade batches
-                                      selectedLowGradeBatches
-                                        .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                                        .forEach(batchKey => {
-                                          const batchRecords = groupedRecords[batchKey] || [];
-
-                                          // Get all grades for this batch
-                                          batchRecords.forEach(record => {
-                                            Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
-                                              const kgValue = parseFloat(kg) || 0;
-                                              if (kgValue > 0 && GRADE_GROUPS.LOW.includes(grade) &&
-                                                (!record.transferredGrades || !record.transferredGrades[grade])) {
-
-                                                // Initialize the grade entry if it doesn't exist
-                                                if (!allGradesByType[grade]) {
-                                                  allGradesByType[grade] = [];
-                                                }
-
-                                                // Add this batch's grade info
-                                                allGradesByType[grade].push({
-                                                  batchKey,
-                                                  kg: kgValue
-                                                });
-                                              }
-                                            });
-                                          });
-                                        });
-
-                                      // Now render each grade type with all its batches
-                                      return Object.entries(allGradesByType).map(([grade, batches]) => {
-                                        const totalKgForGrade = batches.reduce((sum, batch) => sum + batch.kg, 0);
-
-                                        return (
-                                          <Card key={`grade-${grade}`} className="mb-3 border-warning">
-                                            <Card.Header className="bg-warning bg-opacity-25">
-                                              <div className="d-flex justify-content-between align-items-center">
-                                                <strong>{grade}</strong>
-                                                <Badge
-                                                  bg="sucafina"
-                                                  className="p-2"
-                                                  style={{ backgroundColor: '#008080' }}
-                                                >
-                                                  Total: {totalKgForGrade.toFixed(2)} kg
-                                                </Badge>
-                                              </div>
-                                            </Card.Header>
-                                            <Card.Body>
-                                              <div className="d-flex justify-content-between align-items-center mb-3">
-                                                <strong>Include this grade</strong>
-                                                <Form.Check
-                                                  type="checkbox"
-                                                  checked={selectedGrades[grade] !== false}
-                                                  onChange={(e) => handleGradeSelectionChange(grade, e.target.checked)}
-                                                />
-                                              </div>
-
-                                              {selectedGrades[grade] !== false && (
-                                                <>
-                                                  <Row className="mb-3">
-                                                    <Col md={6}>
-                                                      <Form.Group controlId={`${grade}-bags`}>
-                                                        <Form.Label>Number of Bags</Form.Label>
-                                                        <Form.Control
-                                                          type="number"
-                                                          min="1"
-                                                          placeholder="Enter number of bags for all batches"
-                                                          value={batches[0]?.batchKey && gradeQualityDetails[batches[0].batchKey]?.[grade]?.numberOfBags || ''}
-                                                          onChange={(e) => {
-                                                            // Apply the same number of bags to all batches with this grade
-                                                            batches.forEach(batch => {
-                                                              handleQualityDetailsChange(batch.batchKey, grade, 'numberOfBags', e.target.value);
-                                                            });
-                                                          }}
-                                                          required
-                                                        />
-                                                        <Form.Control.Feedback type="invalid">
-                                                          Please provide the number of bags.
-                                                        </Form.Control.Feedback>
-                                                      </Form.Group>
-                                                    </Col>
-                                                  </Row>
-
-                                                  <div className="table-responsive mt-3">
-                                                    <table className="table table-bordered table-sm">
-                                                      <thead className="table-warning bg-opacity-50">
-                                                        <tr>
-                                                          <th>Batch Number</th>
-                                                          <th>Weight (kg)</th>
-                                                        </tr>
-                                                      </thead>
-                                                      <tbody>
-                                                        {batches.map(batch => (
-                                                          <tr key={`${grade}-${batch.batchKey}`}>
-                                                            <td>{batch.batchKey}</td>
-                                                            <td>{batch.kg.toFixed(2)}</td>
-                                                          </tr>
-                                                        ))}
-                                                      </tbody>
-                                                    </table>
-                                                  </div>
-                                                </>
-                                              )}
-                                            </Card.Body>
-                                          </Card>
-                                        );
-                                      });
-                                    })()}
-                                  </>
-                                )}
+                                      <Form.Group className="mb-3">
+                                        <Form.Label>Number of Bags (Combined)</Form.Label>
+                                        <Form.Control
+                                          type="number"
+                                          min="1"
+                                          // placeholder="Total number of bags"
+                                          value={lowGradeBags}
+                                          // defaultValue={1}
+                                          // readOnly
+                                          onChange={(e) => setLowGradeBags(e.target.value)}
+                                          required
+                                        />
+                                        <Form.Text className="text-muted">
+                                          Enter the total number of bags for all selected {selectedLowGrade} batches combined.
+                                        </Form.Text>
+                                      </Form.Group>
+                                    </>
+                                  )}
+                                </div>
                               </>
                             )}
-                          </Tab>
-                        </Tabs>
+                          </>
+                        )}
 
-                        {/* Summary Display for Both Modes */}
-                        {/* {!showHighGradeBatchSelection && !showLowGradeBatchSelection && (
-                          <Alert variant="info" className="mb-3">
-                            <div className="d-flex justify-content-between">
-                              <div>
-                                <strong>Transferring Both Grade Groups</strong>
-                                <div>
-                                  <Badge bg="success" className="me-1">HIGH</Badge>
-                                  Grades: {getGradeGroupTotal('HIGH').toFixed(2)} kg
-                                  ({selectedHighGradeBatches.length} batches)
-                                </div>
-                                <div>
-                                  <Badge bg="warning" className="me-1">LOW</Badge>
-                                  Grades: {getGradeGroupTotal('LOW').toFixed(2)} kg
-                                  ({selectedLowGradeBatches.length} batches)
-                                </div>
-                              </div>
-                              <div className="text-end">
-                                <strong>Total: {totalSelectedKgs.toFixed(2)} kg</strong>
-                              </div>
-                            </div>
-                          </Alert>
-                        )} */}
-                      </>
-                    )}
+                        {/* Show message when no items selected */}
+                        {getSelectedGradeItems().length === 0 && (transferMode !== 'BOTH' || activeBothGradeTab !== 'low') && (
+                          <Alert variant="info">No grade items selected for transfer. Please modify batches to continue.</Alert>
+                        )}
+                      </Card.Body>
+                    </Card>
 
 
 
-                    <Card>
+
+                    {/* Transport Details */}
+                    <Card className="mt-3">
                       <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
                         <div className="d-flex justify-content-between align-items-center">
                           <span className="h5" style={{ color: processingTheme.primary }}>Transport Details</span>
                         </div>
                       </Card.Header>
-                      <Card.Body className="p-4">
+                      <Card.Body>
                         <Row className="mb-3">
                           <Col md={6}>
                             <Form.Group controlId="truckNumber">
@@ -1695,9 +1760,6 @@ const Transfer = () => {
                                 onChange={handleTransportDetailsChange}
                                 required
                               />
-                              <Form.Control.Feedback type="invalid">
-                                Please provide a truck number.
-                              </Form.Control.Feedback>
                             </Form.Group>
                           </Col>
                           <Col md={6}>
@@ -1711,9 +1773,6 @@ const Transfer = () => {
                                 onChange={handleTransportDetailsChange}
                                 required
                               />
-                              <Form.Control.Feedback type="invalid">
-                                Please provide a driver name.
-                              </Form.Control.Feedback>
                             </Form.Group>
                           </Col>
                         </Row>
@@ -1729,9 +1788,6 @@ const Transfer = () => {
                                 onChange={handleTransportDetailsChange}
                                 required
                               />
-                              <Form.Control.Feedback type="invalid">
-                                Please provide a driver phone number.
-                              </Form.Control.Feedback>
                             </Form.Group>
                           </Col>
                           <Col md={6}>
@@ -1750,7 +1806,8 @@ const Transfer = () => {
                         </Row>
                       </Card.Body>
                     </Card>
-                  </>)}
+                  </>
+                )}
               </>
             )}
           </Modal.Body>
@@ -1772,6 +1829,7 @@ const Transfer = () => {
                   type="submit"
                   variant="primary"
                   style={{ backgroundColor: processingTheme.primary, borderColor: processingTheme.primary }}
+                  disabled={selectedGradeItems.length === 0}
                 >
                   Confirm Transfer
                 </Button>
@@ -1781,704 +1839,8 @@ const Transfer = () => {
         </Form>
       </Modal>
 
-      {/* <Modal show={showTransferModal} onHide={handleModalClose} size="lg" >
-  <Form noValidate validated={validated} onSubmit={handleTransferConfirm}>
-    <Modal.Header
-      closeButton
-      className="d-flex"
-      style={{ backgroundColor: processingTheme.neutral }}
-    >
-      <div className='d-flex justify-content-between align-items-center w-100 px-3'>
-        <Modal.Title className="mb-0">
-          Transfer Both High & Low Grades
-        </Modal.Title>
-        <Button
-          variant="sucafina"
-          size="md"
-          onClick={toggleBatchSelectionView}
-          style={{
-            borderColor: processingTheme.primary,
-            color: processingTheme.primary
-          }}
-        >
-          {showBatchSelection ? 'Back to Transfer Form' : 'Select Batches'}
-        </Button>
-      </div>
-    </Modal.Header>
-    <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-      {showBatchSelection ? (
-        <div className="batch-selection-modal">
-          <InputGroup className="mb-3">
-            <Form.Control
-              placeholder="Search batches..."
-              value={modalBatchSearch}
-              onChange={(e) => setModalBatchSearch(e.target.value)}
-            />
-          </InputGroup>
 
-          <Tabs
-            id="batch-selection-tabs"
-            activeKey={activeBothGradeTab}
-            onSelect={(k) => setActiveBothGradeTab(k)}
-            className="mb-3"
-          >
-            <Tab 
-              eventKey="high" 
-              title={
-                <span>
-                  <Badge bg="success" className="me-1">HIGH</Badge> 
-                  Grade Batches Selection
-                </span>
-              }
-            >
-              <Alert variant="success" className="mb-3">
-                <strong>SELECT HIGH GRADE BATCHES:</strong> Check the boxes to select batches containing high grade coffee.
-              </Alert>
-              <div className="batch-selection-summary mb-3">
-                <Badge bg="secondary">
-                  {selectedHighGradeBatches.length} high grade batches selected
-                </Badge>
-              </div>
-              <div className="table-responsive">
-                <table className="table table-hover mb-0">
-                  <thead className="table-success">
-                    <tr>
-                      <th width="10%">Select</th>
-                      <th width="30%">Batch No</th>
-                      <th width="30%">Processing Type</th>
-                      <th width="30%">Available Grades</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getFilteredBatches('HIGH')
-                      .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                      .map((batchKey) => {
-                        const records = groupedRecords[batchKey] || [];
-                        const processingTypes = getUniqueProcessingTypes(records);
-                        const isSelected = selectedHighGradeBatches.includes(batchKey);
 
-                        return (
-                          <tr key={batchKey} className={isSelected ? 'table-success' : ''}>
-                            <td className="align-middle">
-                              <Form.Check
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => handleHighGradeBatchSelectionChange(batchKey, e.target.checked)}
-                                className="custom-checkbox"
-                              />
-                            </td>
-                            <td className="align-middle">{batchKey}</td>
-                            <td className="align-middle">{processingTypes}</td>
-                            <td className="align-middle">
-                              <div className="d-flex flex-wrap gap-1">
-                                {renderAvailableGrades(batchKey, 'HIGH')}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
-              </div>
-            </Tab>
-
-            <Tab 
-              eventKey="low" 
-              title={
-                <span>
-                  <Badge bg="warning" className="me-1">LOW</Badge> 
-                  Grade Batches Selection
-                </span>
-              }
-            >
-              <Alert variant="warning" className="mb-3">
-                <strong>SELECT LOW GRADE BATCHES:</strong> Check the boxes to select batches containing low grade coffee.
-              </Alert>
-              <div className="batch-selection-summary mb-3">
-                <Badge bg="secondary">
-                  {selectedLowGradeBatches.length} low grade batches selected
-                </Badge>
-              </div>
-              <div className="table-responsive">
-                <table className="table table-hover mb-0">
-                  <thead className="table-warning">
-                    <tr>
-                      <th width="10%">Select</th>
-                      <th width="30%">Batch No</th>
-                      <th width="30%">Processing Type</th>
-                      <th width="30%">Available Grades</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getFilteredBatches('LOW')
-                      .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                      .map((batchKey) => {
-                        const records = groupedRecords[batchKey] || [];
-                        const processingTypes = getUniqueProcessingTypes(records);
-                        const isSelected = selectedLowGradeBatches.includes(batchKey);
-
-                        return (
-                          <tr key={batchKey} className={isSelected ? 'table-warning' : ''}>
-                            <td className="align-middle">
-                              <Form.Check
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => handleLowGradeBatchSelectionChange(batchKey, e.target.checked)}
-                                className="custom-checkbox"
-                              />
-                            </td>
-                            <td className="align-middle">{batchKey}</td>
-                            <td className="align-middle">{processingTypes}</td>
-                            <td className="align-middle">
-                              <div className="d-flex flex-wrap gap-1">
-                                {renderAvailableGrades(batchKey, 'LOW')}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
-              </div>
-            </Tab>
-          </Tabs>
-        </div>
-      ) : (
-        // Existing transfer form content
-        <>
-          {selectedHighGradeBatches.length === 0 && selectedLowGradeBatches.length === 0 ? (
-            <Alert variant="warning">
-              <div className="d-flex align-items-center justify-content-between">
-                <span>No batches selected for transfer</span>
-                <Button 
-                  variant="primary" 
-                  size="sm" 
-                  onClick={toggleBatchSelectionView}
-                >
-                  Select Batches Now
-                </Button>
-              </div>
-            </Alert>
-          ) : (
-            <>
-              <Alert variant="info">
-                <div className="d-flex justify-content-between">
-                  <div>
-                    <strong>Transferring Both Grade Groups</strong>
-                    <div>
-                      <Badge bg="success" className="me-1">HIGH</Badge> 
-                      Grades: {getGradeGroupTotal('HIGH').toFixed(2)} kg 
-                      ({selectedHighGradeBatches.length} batches)
-                    </div>
-                    <div>
-                      <Badge bg="warning" className="me-1">LOW</Badge> 
-                      Grades: {getGradeGroupTotal('LOW').toFixed(2)} kg 
-                      ({selectedLowGradeBatches.length} batches)
-                    </div>
-                  </div>
-                  <div className="text-end">
-                    <strong>Total: {totalSelectedKgs.toFixed(2)} kg</strong>
-                  </div>
-                </div>
-              </Alert>
-
-              <InputGroup className="mb-3">
-                <Form.Control
-                  placeholder="Search batches..."
-                  value={modalBatchSearch}
-                  onChange={(e) => setModalBatchSearch(e.target.value)}
-                />
-              </InputGroup>
-
-              <Tabs
-                id="both-grades-tabs"
-                activeKey={activeBothGradeTab}
-                onSelect={(k) => setActiveBothGradeTab(k)}
-                className="mb-3"
-              >
-                <Tab 
-                  eventKey="high" 
-                  title={
-                    <span>
-                      <Badge bg="success" className="me-1">HIGH</Badge> 
-                      Grades Details
-                    </span>
-                  }
-                >
-                  {selectedHighGradeBatches
-                    .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                    .map(batchKey => {
-                      const availableGradeSet = {};
-                      const batchRecords = groupedRecords[batchKey] || [];
-
-                      batchRecords.forEach(record => {
-                        Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
-                          const kgValue = parseFloat(kg) || 0;
-                          if (kgValue > 0 && GRADE_GROUPS.HIGH.includes(grade) &&
-                            (!record.transferredGrades || !record.transferredGrades[grade])) {
-                            if (!availableGradeSet[grade]) {
-                              availableGradeSet[grade] = 0;
-                            }
-                            availableGradeSet[grade] += kgValue;
-                          }
-                        });
-                      });
-
-                      const highGrades = Object.entries(availableGradeSet);
-
-                      if (highGrades.length === 0) return null;
-
-                      return (
-                        <Card key={`high-${batchKey}`} className="mb-3 border-success">
-                          <Card.Header className="bg-success bg-opacity-25">
-                            <strong>{batchKey}</strong>
-                          </Card.Header>
-                          <Card.Body>
-                            {highGrades.map(([grade, kg]) => (
-                              <div key={`${batchKey}-${grade}`} className="mb-3">
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                  <Badge
-                                    bg="sucafina"
-                                    className="p-2"
-                                    style={{ backgroundColor: processingTheme.primary }}
-                                  >
-                                    {grade}: {kg.toFixed(2)} kg
-                                  </Badge>
-                                </div>
-
-                                {selectedGrades[grade] !== false && (
-                                  <Row>
-                                    <Col md={4}>
-                                      <Form.Group controlId={`${batchKey}-${grade}-bags`}>
-                                        <Form.Label>Number of Bags</Form.Label>
-                                        <Form.Control
-                                          type="number"
-                                          min="1"
-                                          placeholder="Enter number of bags"
-                                          value={gradeQualityDetails[batchKey]?.[grade]?.numberOfBags || ''}
-                                          onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'numberOfBags', e.target.value)}
-                                          required
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                          Please provide the number of bags.
-                                        </Form.Control.Feedback>
-                                      </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                      <Form.Group controlId={`${batchKey}-${grade}-cupProfile`}>
-                                        <Form.Label>Cup Profile</Form.Label>
-                                        <Form.Select
-                                          value={gradeQualityDetails[batchKey]?.[grade]?.cupProfile || ''}
-                                          onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'cupProfile', e.target.value)}
-                                          required
-                                        >
-                                          {CUP_PROFILES.map((profile, index) => (
-                                            <option
-                                              key={profile}
-                                              value={index === 0 ? '' : profile}
-                                            >
-                                              {profile}
-                                            </option>
-                                          ))}
-                                        </Form.Select>
-                                        <Form.Control.Feedback type="invalid">
-                                          Please select a cup profile.
-                                        </Form.Control.Feedback>
-                                      </Form.Group>
-                                    </Col>
-                                    <Col md={4}>
-                                      <Form.Group controlId={`${batchKey}-${grade}-moisture`}>
-                                        <Form.Label>Moisture Content (%)</Form.Label>
-                                        <Form.Control
-                                          type="number"
-                                          min="0"
-                                          max="20"
-                                          step="0.1"
-                                          placeholder="Enter moisture %"
-                                          value={gradeQualityDetails[batchKey]?.[grade]?.moistureContent || ''}
-                                          onChange={(e) => handleQualityDetailsChange(batchKey, grade, 'moistureContent', e.target.value)}
-                                          required
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                          Please provide the moisture content.
-                                        </Form.Control.Feedback>
-                                      </Form.Group>
-                                    </Col>
-                                  </Row>
-                                )}
-                              </div>
-                            ))}
-                          </Card.Body>
-                        </Card>
-                      );
-                    })}
-                </Tab>
-
-                <Tab 
-                  eventKey="low" 
-                  title={
-                    <span>
-                      <Badge bg="warning" className="me-1">LOW</Badge> 
-                      Grades Details
-                    </span>
-                  }
-                >
-                  {(() => {
-                    // First, collect all grades across all batches
-                    const allGradesByType = {};
-
-                    // Process all selected low grade batches
-                    selectedLowGradeBatches
-                      .filter(batch => batch.toLowerCase().includes(modalBatchSearch.toLowerCase()))
-                      .forEach(batchKey => {
-                        const batchRecords = groupedRecords[batchKey] || [];
-
-                        // Get all grades for this batch
-                        batchRecords.forEach(record => {
-                          Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
-                            const kgValue = parseFloat(kg) || 0;
-                            if (kgValue > 0 && GRADE_GROUPS.LOW.includes(grade) &&
-                              (!record.transferredGrades || !record.transferredGrades[grade])) {
-
-                              // Initialize the grade entry if it doesn't exist
-                              if (!allGradesByType[grade]) {
-                                allGradesByType[grade] = [];
-                              }
-
-                              // Add this batch's grade info
-                              allGradesByType[grade].push({
-                                batchKey,
-                                kg: kgValue
-                              });
-                            }
-                          });
-                        });
-                      });
-
-                    // Now render each grade type with all its batches
-                    return Object.entries(allGradesByType).map(([grade, batches]) => {
-                      const totalKgForGrade = batches.reduce((sum, batch) => sum + batch.kg, 0);
-
-                      return (
-                        <Card key={`grade-${grade}`} className="mb-3 border-warning">
-                          <Card.Header className="bg-warning bg-opacity-25">
-                            <div className="d-flex justify-content-between align-items-center">
-                              <strong>{grade}</strong>
-                              <Badge
-                                bg="sucafina"
-                                className="p-2"
-                                style={{ backgroundColor: '#008080' }}
-                              >
-                                Total: {totalKgForGrade.toFixed(2)} kg
-                              </Badge>
-                            </div>
-                          </Card.Header>
-                          <Card.Body>
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                              <strong>Include this grade</strong>
-                              <Form.Check
-                                type="checkbox"
-                                checked={selectedGrades[grade] !== false}
-                                onChange={(e) => handleGradeSelectionChange(grade, e.target.checked)}
-                              />
-                            </div>
-
-                            {selectedGrades[grade] !== false && (
-                              <>
-                                <Row className="mb-3">
-                                  <Col md={6}>
-                                    <Form.Group controlId={`${grade}-bags`}>
-                                      <Form.Label>Number of Bags</Form.Label>
-                                      <Form.Control
-                                        type="number"
-                                        min="1"
-                                        placeholder="Enter number of bags for all batches"
-                                        value={batches[0]?.batchKey && gradeQualityDetails[batches[0].batchKey]?.[grade]?.numberOfBags || ''}
-                                        onChange={(e) => {
-                                          // Apply the same number of bags to all batches with this grade
-                                          batches.forEach(batch => {
-                                            handleQualityDetailsChange(batch.batchKey, grade, 'numberOfBags', e.target.value);
-                                          });
-                                        }}
-                                        required
-                                      />
-                                      <Form.Control.Feedback type="invalid">
-                                        Please provide the number of bags.
-                                      </Form.Control.Feedback>
-                                    </Form.Group>
-                                  </Col>
-                                </Row>
-
-                                <div className="table-responsive mt-3">
-                                  <table className="table table-bordered table-sm">
-                                    <thead className="table-warning bg-opacity-50">
-                                      <tr>
-                                        <th>Batch Number</th>
-                                        <th>Weight (kg)</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {batches.map(batch => (
-                                        <tr key={`${grade}-${batch.batchKey}`}>
-                                          <td>{batch.batchKey}</td>
-                                          <td>{batch.kg.toFixed(2)}</td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </>
-                            )}
-                          </Card.Body>
-                        </Card>
-                      );
-                    });
-                  })()}
-                </Tab>
-              </Tabs>
-
-              <Card>
-                <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="h5" style={{ color: processingTheme.primary }}>Transport Details</span>
-                  </div>
-                </Card.Header>
-                <Card.Body className="p-4">
-                  <Row className="mb-3">
-                    <Col md={6}>
-                      <Form.Group controlId="truckNumber">
-                        <Form.Label>Truck Number</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="truckNumber"
-                          placeholder="Enter truck number"
-                          value={transportDetails.truckNumber}
-                          onChange={handleTransportDetailsChange}
-                          required
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          Please provide a truck number.
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group controlId="driverName">
-                        <Form.Label>Driver Name</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="driverName"
-                          placeholder="Enter driver name"
-                          value={transportDetails.driverName}
-                          onChange={handleTransportDetailsChange}
-                          required
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          Please provide a driver name.
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row className="mb-3">
-                    <Col md={6}>
-                      <Form.Group controlId="driverPhone">
-                        <Form.Label>Driver Phone</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="driverPhone"
-                          placeholder="Enter driver phone"
-                          value={transportDetails.driverPhone}
-                          onChange={handleTransportDetailsChange}
-                          required
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          Please provide a driver phone number.
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group controlId="notes">
-                        <Form.Label>Notes</Form.Label>
-                        <Form.Control
-                          as="textarea"
-                          rows={2}
-                          name="notes"
-                          placeholder="Enter any notes"
-                          value={transportDetails.notes}
-                          onChange={handleTransportDetailsChange}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
-            </>
-          )}
-        </>
-      )}
-    </Modal.Body>
-    <Modal.Footer>
-      {showBatchSelection ? (
-        <>
-          <div className="d-flex gap-2 me-auto">
-            <Badge bg="success" className="p-2">
-              {selectedHighGradeBatches.length} High Grade Batches
-            </Badge>
-            <Badge bg="warning" className="p-2">
-              {selectedLowGradeBatches.length} Low Grade Batches
-            </Badge>
-          </div>
-          <Button
-            variant="primary"
-            onClick={() => setShowBatchSelection(false)}
-            style={{ backgroundColor: processingTheme.primary, borderColor: processingTheme.primary }}
-          >
-            Continue with Selected Batches
-          </Button>
-        </>
-      ) : (
-        <>
-          <Button variant="secondary" onClick={() => setShowTransferModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            style={{ backgroundColor: processingTheme.primary, borderColor: processingTheme.primary }}
-          >
-            Confirm Transfer
-          </Button>
-        </>
-      )}
-    </Modal.Footer>
-  </Form>
-</Modal> */}
-
-      <Card className="mb-4">
-        <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-          <span className="h5" style={{ color: processingTheme.primary }}>
-            Transport to HQ
-          </span>
-        </Card.Header>
-        <Card.Body>
-          <div className="row">
-            <div className="col-md-8">
-              {/* Selected Batches Section */}
-              <div className="mb-3">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <strong>Selected Batches ({selectedBatches.length})</strong>
-                  {selectedBatches.length > 0 && (
-                    <Button variant="outline-danger" size="sm" onClick={() => setSelectedBatches([])}>
-                      Clear All
-                    </Button>
-                  )}
-                </div>
-                <div className="selected-batches-container" style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '0.25rem', padding: '0.5rem' }}>
-                  {selectedBatches.length === 0 ? (
-                    <div className="text-muted">No batches selected</div>
-                  ) : (
-                    <div className="d-flex flex-wrap">
-                      {selectedBatches.map(batchKey => (
-                        <Badge key={batchKey} bg={processingTheme.neutral} className="me-2 mb-2 p-2 bg-sucafina">
-                          {batchKey} ({(calculateOverallOutputKgs(batchKey) || 0).toFixed(2)} kg)
-                          <Button size="sm" variant="link" className="p-0 ms-1" onClick={() => handleBatchSelectionChange(batchKey, false)} style={{ color: 'white' }}>
-                            ×
-                          </Button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <Card style={{ backgroundColor: processingTheme.neutral }}>
-                <Card.Body>
-                  <h5>Transfer Summary</h5>
-                  <p><strong>Selected Batches:</strong> {selectedBatches.length}</p>
-                  <p><strong>Selected Grades:</strong> {Object.entries(selectedGrades).filter(([_, isSelected]) => isSelected).length}</p>
-
-                  <div className="d-flex justify-content-between mb-2">
-                    <span><strong>High Grades (A0, A1):</strong></span>
-                    <span>{getGradeGroupTotal('HIGH').toFixed(2)} kg</span>
-                  </div>
-
-                  <div className="d-flex justify-content-between mb-2">
-                    <span><strong>Low Grades (A2-B2):</strong></span>
-                    <span>{getGradeGroupTotal('LOW').toFixed(2)} kg</span>
-                  </div>
-
-                  <div className="d-flex justify-content-between mb-3" style={{ fontWeight: 'bold' }}>
-                    <span>Total KGs:</span>
-                    <span>{totalSelectedKgs.toFixed(2)} kg</span>
-                  </div>
-
-                  {/* <div className="d-grid gap-2">
-                    <div className="d-flex gap-2">
-                      <Button
-                        className="flex-grow-1"
-                        variant="outline-sucafina"
-                        disabled={selectedBatches.length === 0 || !selectedBatches.some(batchKey => hasTransferableHighGrades(batchKey))}
-                        onClick={() => handleTransferClick('HIGH')}
-                        style={{ color: processingTheme.primary, borderColor: processingTheme.primary }}
-                      >
-                        High Grades Only
-                      </Button>
-                      <Button
-                        className="flex-grow-1"
-                        variant="outline-secondary"
-                        disabled={selectedBatches.length === 0 || !selectedBatches.some(batchKey => hasTransferableLowGrades(batchKey))}
-                        onClick={() => handleTransferClick('LOW')}
-                      >
-                        Low Grades Only
-                      </Button>
-                    </div>
-                    <Button
-                      variant="sucafina"
-                      onClick={() => handleTransferClick('BOTH')}
-                      style={{ backgroundColor: processingTheme.primary, borderColor: processingTheme.primary }}
-                    >
-                      Transport Both Grades
-                    </Button>
-                  </div> */}
-
-                  <div className="d-grid gap-2">
-                    <div className="d-flex gap-2">
-                      <Button
-                        className="flex-grow-1"
-                        variant="outline-sucafina"
-                        disabled={selectedBatches.length === 0 || !selectedBatches.some(batchKey => hasTransferableHighGrades(batchKey))}
-                        onClick={() => handleTransferClick('HIGH')}
-                        style={{ color: processingTheme.primary, borderColor: processingTheme.primary }}
-                      >
-                        High Grades Only
-                      </Button>
-                      <Button
-                        className="flex-grow-1"
-                        variant="outline-secondary"
-                        disabled={selectedBatches.length === 0 || !selectedBatches.some(batchKey => hasTransferableLowGrades(batchKey))}
-                        onClick={() => handleTransferClick('LOW')}
-                      >
-                        Low Grades Only
-                      </Button>
-                    </div>
-                    <Button
-                      variant="sucafina"
-                      disabled={selectedBatches.length === 0 ||
-                        (!selectedBatches.some(batchKey => hasTransferableHighGrades(batchKey)) &&
-                          !selectedBatches.some(batchKey => hasTransferableLowGrades(batchKey)))}
-                      onClick={() => handleTransferClick('BOTH')}
-                      style={{ backgroundColor: processingTheme.primary, borderColor: processingTheme.primary }}
-                    >
-                      Transport Both Grades
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </div>
-          </div>
-        </Card.Body>
-      </Card>
 
       {/* Transfer Modal */}
 
@@ -2492,153 +1854,131 @@ const Transfer = () => {
         ) : error ? (
           <Alert variant="danger">{error}</Alert>
         ) : (
-          <Card>
+          <Card className="mb-4">
             <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
               <div className="d-flex justify-content-between align-items-center">
-                <span className="h5" style={{ color: processingTheme.primary }}>Untransferred Batches</span>
-                <div className="d-flex">
+                <span className="h5" style={{ color: processingTheme.primary }}>
+                  Available Grade Items
+                </span>
+                <div className="d-flex gap-2">
                   <InputGroup>
                     <Form.Control
-                      placeholder="Search by batch number..."
+                      type="search"
+                      placeholder="Search batches or grades"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="me-2"
-                      style={{ maxWidth: '250px' }}
                     />
                   </InputGroup>
                 </div>
               </div>
             </Card.Header>
-
-            <Card.Body className="p-0">
-              <div className="table-responsive">
-                <table className="table table-hover mb-0">
-                  <thead>
-                    <tr>
-                      <th width="10%">
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            checked={selectAllChecked}
-                            onChange={(e) => handleSelectAllBatches(e.target.checked)}
-                            id="selectAllCheckbox"
-                          />
-                          <label className="form-check-label" htmlFor="selectAllCheckbox">
-                            Select All
-                          </label>
-                        </div>
-                      </th>
-                      <th width="20%">Batch No</th>
-                      <th width="20%">Processing Type</th>
-                      <th width="20%">Output KGs</th>
-                      <th width="30%">Available Grades</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getPaginatedBatches().map((batchKey) => {
-                      const records = groupedRecords[batchKey] || [];
-                      const isExpanded = expandedBatches[batchKey] || false;
-                      const totalInputKgs = calculateOverallTotalKgs(batchKey);
-                      const totalOutputKgs = calculateOverallOutputKgs(batchKey);
-                      const overallOutturn = calculateOutturn(totalInputKgs, { all: totalOutputKgs });
-                      const cwsName = (records[0]?.cwsName) || 'N/A';
-                      const processingTypes = getUniqueProcessingTypes(records);
-                      const isSelected = selectedBatches.includes(batchKey);
-
-                      return (
-                        <React.Fragment key={batchKey}>
-                          <tr className={isSelected ? 'table-success' : ''}>
-                            <td className="align-middle">
+            <Card.Body>
+              {loading ? (
+                <Placeholder animation="glow">
+                  <Placeholder xs={12} />
+                  <Placeholder xs={12} />
+                  <Placeholder xs={12} />
+                </Placeholder>
+              ) : error ? (
+                <Alert variant="danger">{error}</Alert>
+              ) : (
+                <>
+                  <div className="table-responsive">
+                    <table className="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>
+                            <Form.Check
+                              type="checkbox"
+                              checked={selectAllChecked}
+                              onChange={(e) => handleSelectAllGradeItems(e.target.checked)}
+                              label=""
+                            />
+                          </th>
+                          <th>Batch & Grade</th>
+                          <th>Processing</th>
+                          <th>Weight (kg)</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getPaginatedBatches().map((item) => (
+                          <tr
+                            key={item.id}
+                            style={{
+                              backgroundColor: item.isHighGrade ? 'rgba(0, 128, 128, 0.05)' : 'transparent',
+                              borderLeft: item.isHighGrade ? `4px solid ${processingTheme.primary}` : 'none'
+                            }}
+                          >
+                            <td>
                               <Form.Check
                                 type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => handleBatchSelectionChange(batchKey, e.target.checked)}
-                                className="custom-checkbox"
+                                checked={isGradeItemSelected(item.gradeKey)}
+                                onChange={(e) => handleGradeItemSelection(item.gradeKey, e.target.checked)}
+                                label=""
                               />
                             </td>
-                            <td className="align-middle">
+                            <td>
                               <div className="d-flex align-items-center">
-                                <Button
-                                  variant="link"
-                                  className="p-0 me-2"
-                                  onClick={() => toggleBatchExpansion(batchKey)}
-                                  style={{ color: processingTheme.primary }}
-                                >
-                                  {isExpanded ? '▼' : '►'}
-                                </Button>
-                                <span>{batchKey}</span>
+                                <div>
+                                  <div className="fw-bold">
+                                    {item.displayId} {item.isHighGrade && <span style={{ color: processingTheme.primary }}>★</span>}
+                                  </div>
+                                  <Badge
+                                    bg={item.isHighGrade ? "success" : "info"}
+                                    className="me-1"
+                                  >
+                                    {item.isHighGrade ? "High Grade" : "Low Grade"}
+                                  </Badge>
+                                </div>
                               </div>
                             </td>
-                            <td className="align-middle">{processingTypes}</td>
-                            <td className="align-middle">{totalOutputKgs.toFixed(2)} kg</td>
-                            <td className="align-middle">
-                              <div className="d-flex flex-wrap gap-1">
-                                {renderAvailableGrades(batchKey)}
-                              </div>
+                            <td>{item.processingType}</td>
+                            <td>{item.kgValue.toFixed(2)} kg</td>
+                            <td>
+                              <Button
+                                size="sm"
+                                variant={isGradeItemSelected(item.gradeKey) ? "outline-danger" : "outline-sucafina"}
+                                onClick={() => handleGradeItemSelection(item.gradeKey, !isGradeItemSelected(item.gradeKey))}
+                              >
+                                {isGradeItemSelected(item.gradeKey) ? "Remove" : "Select"}
+                              </Button>
                             </td>
                           </tr>
-                          {isExpanded && records.map((record, idx) => (
-                            <tr key={`${batchKey}-detail-${idx}`} className="table-light">
-                              <td colSpan="5" className="py-3">
-                                <div className="px-4">
-                                  <div className="row">
-                                    <div className="col-md-4">
-                                      <div className="mb-2">
-                                        <strong>Total Output KGs:</strong> {record.totalOutputKgs?.toFixed(2) || '0.00'} kg
-                                      </div>
-                                      <div className="mb-2">
-                                        <strong>Batch No:</strong> {record.batchNo}
-                                      </div>
-                                      <div className="mb-2">
-                                        <strong>Processing Type:</strong> {record.processingType}
-                                      </div>
-                                    </div>
-                                    <div className="col-md-8">
-                                      <div className="mb-2">
-                                        <strong>Grades:</strong>
-                                      </div>
-                                      <div className="d-flex flex-wrap gap-2">
-                                        {renderOutputKgs(record.outputKgs, record.transferredGrades)}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </React.Fragment>
-                      );
-                    })}
-                    {getPaginatedBatches().length === 0 && (
-                      <tr>
-                        <td colSpan="5" className="text-center py-3">No untransferred batches found</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                        ))}
+                        {getPaginatedBatches().length === 0 && (
+                          <tr>
+                            <td colSpan="5" className="text-center">No grade items found</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination controls */}
+                  <div className="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                      Showing {getPaginatedBatches().length} of {flattenBatchRecords().length} grade items
+                    </div>
+                    <nav>
+                      <ul className="pagination mb-0">
+                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                          <button className="page-link" onClick={() => paginate(currentPage - 1)}>Previous</button>
+                        </li>
+                        {Array.from({ length: Math.ceil(flattenBatchRecords().length / batchesPerPage) }).map((_, index) => (
+                          <li key={`page-${index}`} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                            <button className="page-link" onClick={() => paginate(index + 1)}>{index + 1}</button>
+                          </li>
+                        ))}
+                        <li className={`page-item ${currentPage === Math.ceil(flattenBatchRecords().length / batchesPerPage) ? 'disabled' : ''}`}>
+                          <button className="page-link" onClick={() => paginate(currentPage + 1)}>Next</button>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                </>
+              )}
             </Card.Body>
-            <Card.Footer>
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  Showing {(currentPage - 1) * batchesPerPage + 1} to {Math.min(currentPage * batchesPerPage, getFilteredBatches().length)} of {getFilteredBatches().length} batches
-                </div>
-                <ul className="pagination mb-0">
-                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                    <button className="page-link" onClick={() => paginate(currentPage - 1)}>Previous</button>
-                  </li>
-                  {[...Array(Math.ceil(getFilteredBatches().length / batchesPerPage))].map((_, idx) => (
-                    <li key={idx} className={`page-item ${currentPage === idx + 1 ? 'active' : ''}`}>
-                      <button className="page-link bg-sucafina" onClick={() => paginate(idx + 1)}>{idx + 1}</button>
-                    </li>
-                  ))}
-                  <li className={`page-item ${currentPage >= Math.ceil(getFilteredBatches().length / batchesPerPage) ? 'disabled' : ''}`}>
-                    <button className="page-link bg-light" onClick={() => paginate(currentPage + 1)}>Next</button>
-                  </li>
-                </ul>
-              </div>
-            </Card.Footer>
           </Card>
         )
       }
