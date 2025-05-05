@@ -1,1 +1,40 @@
 @import "tailwindcss";
+
+.checkbox-column {
+    width: 30px !important;
+    max-width: 30px;
+    padding-left: 8px !important;
+    padding-right: 4px !important;
+  }
+  
+  /* Style for compact checkboxes */
+  .compact-checkbox {
+    margin: 0;
+    padding: 0;
+    height: 16px;
+    width: 16px;
+  }
+  
+  /* Hide the checkbox label text for "Select All" */
+  #selectAll + label {
+    font-size: 0;
+    display: none;
+  }
+  
+  /* Make sure the checkbox inside the th is centered */
+  th.checkbox-column {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  /* Make sure the checkbox inside the td is centered */
+  td.checkbox-column {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  /* Optional: Make the entire table more compact if needed */
+  .table thead th, .table tbody td {
+    padding: 0.5rem 0.75rem;
+    vertical-align: middle;
+  }

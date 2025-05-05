@@ -1065,7 +1065,7 @@ const WetTransfer = () => {
         if (selectedBatch) {
             const grades = {};
             const batchRecords = groupedRecords[selectedBatch] || [];
-            
+
             batchRecords.forEach(record => {
                 const processingType = record.processingType;
                 const gradePrefix = record.grade.charAt(0);
