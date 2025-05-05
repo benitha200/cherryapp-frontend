@@ -1719,7 +1719,7 @@ const Transfer = () => {
                                       </div>
 
                                       <Form.Group controlId={`combined-bags-${grade}`}>
-                                        <Form.Label>Number of Bags</Form.Label>
+                                        <Form.Label>Total Number of Bags({grade})</Form.Label>
                                         <Form.Control
                                           type="number"
                                           required
