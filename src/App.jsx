@@ -1,38 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Login from './components/Login.jsx';
-import Dashboard from './components/Dashboard.jsx';
-import PurchaseForm from './components/PurchaseForm.jsx';
-import PurchaseList from './components/PurchaseList.jsx';
-import PrivateRoute from './components/PrivateRoute.jsx';
-import SiteCollectionForm from './components/SiteCollectionForm.jsx';
-import SiteCollectionList from './components/SiteCollectionList.jsx';
-import ProcessingList from './components/ProcessingList.jsx';
-import DailyPurchaseDetails from './components/DailyPurchaseDetails.jsx';
-import Sidebar from './components/Sidebar.jsx';
-import Transfer from './components/Transfer.jsx';
-import PricingManagement from './components/Admin/PricingManagement.jsx';
-import Users from './components/Admin/Users.jsx';
-import CwsList from './components/Admin/Cws/CwsList.jsx';
-import CwsForm from './components/Admin/Cws/CwsForm.jsx';
-import PurchaseByStation from './components/Supervisor/PurchaseByStation.jsx';
-import PurchaseListAll from './components/Admin/Cherry/PurchaseListAll.jsx';
-import CherryPurchaseReportDetailed from './components/Admin/Reports/CherryPurchaseReportDetailed.jsx';
-import MyAccount from './components/Auth/MyAccount.jsx';
-import ProcessingListAll from './components/Admin/Cherry/ProcessingListAll.jsx';
-import WetTransfer from './components/Cws/WetTransfer.jsx';
-import WetTransferReceiver from './components/Cws/WetTransferReceiver.jsx';
-import BaggingOffList from './components/Admin/Reports/BaggingOffList.jsx';
-import BaggingOffReport from './components/Admin/Reports/BaggingOffReport.jsx';
-import WetTransferCwsMapping from './components/Cws/WetTransferCwsMapping.jsx';
-import WetTransferBoth from './components/Cws/WetTransferBoth.jsx';
-import Transport from './components/Admin/Transport/Transport.jsx';
-import WetTransferAdmin from './components/Admin/WetTransfer/WetTransferAdmin.jsx';
+import React, { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Login from "./components/Login.jsx";
+import Dashboard from "./components/Dashboard.jsx";
+import PurchaseForm from "./components/PurchaseForm.jsx";
+import PurchaseList from "./components/PurchaseList.jsx";
+import PrivateRoute from "./components/PrivateRoute.jsx";
+import SiteCollectionForm from "./components/SiteCollectionForm.jsx";
+import SiteCollectionList from "./components/SiteCollectionList.jsx";
+import ProcessingList from "./components/ProcessingList.jsx";
+import DailyPurchaseDetails from "./components/DailyPurchaseDetails.jsx";
+import Sidebar from "./components/Sidebar.jsx";
+import Transfer from "./components/Transfer.jsx";
+import PricingManagement from "./components/Admin/PricingManagement.jsx";
+import Users from "./components/Admin/Users.jsx";
+import CwsList from "./components/Admin/Cws/CwsList.jsx";
+import CwsForm from "./components/Admin/Cws/CwsForm.jsx";
+import PurchaseByStation from "./components/Supervisor/PurchaseByStation.jsx";
+import PurchaseListAll from "./components/Admin/Cherry/PurchaseListAll.jsx";
+import CherryPurchaseReportDetailed from "./components/Admin/Reports/CherryPurchaseReportDetailed.jsx";
+import MyAccount from "./components/Auth/MyAccount.jsx";
+import ProcessingListAll from "./components/Admin/Cherry/ProcessingListAll.jsx";
+import WetTransfer from "./components/Cws/WetTransfer.jsx";
+import WetTransferReceiver from "./components/Cws/WetTransferReceiver.jsx";
+import BaggingOffList from "./components/Admin/Reports/BaggingOffList.jsx";
+import BaggingOffReport from "./components/Admin/Reports/BaggingOffReport.jsx";
+import WetTransferCwsMapping from "./components/Cws/WetTransferCwsMapping.jsx";
+import WetTransferBoth from "./components/Cws/WetTransferBoth.jsx";
+import Transport from "./components/Admin/Transport/Transport.jsx";
+import WetTransferAdmin from "./components/Admin/WetTransfer/WetTransferAdmin.jsx";
+import Quality from "./components/Admin/quality/index.jsx";
+import { SampleForm } from "./components/Admin/quality/sample/index.jsx";
 
 const AppContent = () => {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/login';
+  const isLoginPage = location.pathname === "/login";
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -41,19 +48,22 @@ const AppContent = () => {
     };
 
     checkWidth();
-    window.addEventListener('resize', checkWidth);
-    return () => window.removeEventListener('resize', checkWidth);
+    window.addEventListener("resize", checkWidth);
+    return () => window.removeEventListener("resize", checkWidth);
   }, []);
 
   return (
-    <div className="d-flex min-vh-100" style={{ fontFamily: 'Inter, sans-serif', fontSize: "14px" }}>
+    <div
+      className="d-flex min-vh-100"
+      style={{ fontFamily: "Inter, sans-serif", fontSize: "14px" }}
+    >
       {!isLoginPage && <Sidebar />}
       <div
         className="flex-grow-1 bg-light overflow-auto"
         style={{
-          marginLeft: isLoginPage ? '0' : (isMobile ? '0' : '250px'),
-          height: '100vh',
-          transition: 'margin-left 0.3s ease-in-out'
+          marginLeft: isLoginPage ? "0" : isMobile ? "0" : "250px",
+          height: "100vh",
+          transition: "margin-left 0.3s ease-in-out",
         }}
       >
         {/* <div
@@ -77,87 +87,150 @@ const AppContent = () => {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/my-account" element={<MyAccount />} />
-            <Route path="/" element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            } />
-            <Route path="/purchases/new" element={
-              <PrivateRoute>
-                <PurchaseForm />
-              </PrivateRoute>
-            } />
-            <Route path="/purchases" element={
-              <PrivateRoute>
-                <PurchaseList />
-              </PrivateRoute>
-            } />
-            <Route path="/purchases-all" element={
-              <PrivateRoute>
-                <PurchaseListAll />
-              </PrivateRoute>
-            } />
-            <Route path="/processing-all" element={
-              <PrivateRoute>
-                <ProcessingListAll />
-              </PrivateRoute>
-            } />
-            <Route path="/transport" element={
-              <PrivateRoute>
-                <Transport />
-              </PrivateRoute>
-            } />
-            <Route path="/wet-transfer-admin" element={
-              <PrivateRoute>
-                <WetTransferAdmin />
-              </PrivateRoute>
-            } />
-            <Route path="/purchases/date/:date" element={<DailyPurchaseDetails />} />
-            <Route path="/purchase-by-station" element={<PurchaseByStation />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/purchases/new"
+              element={
+                <PrivateRoute>
+                  <PurchaseForm />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/purchases"
+              element={
+                <PrivateRoute>
+                  <PurchaseList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/purchases-all"
+              element={
+                <PrivateRoute>
+                  <PurchaseListAll />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/processing-all"
+              element={
+                <PrivateRoute>
+                  <ProcessingListAll />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/quality-all"
+              element={
+                <PrivateRoute>
+                  <Quality />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/quality-all/form"
+              element={
+                <PrivateRoute>
+                  <SampleForm />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/transport"
+              element={
+                <PrivateRoute>
+                  <Transport />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/wet-transfer-admin"
+              element={
+                <PrivateRoute>
+                  <WetTransferAdmin />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/purchases/date/:date"
+              element={<DailyPurchaseDetails />}
+            />
+            <Route
+              path="/purchase-by-station"
+              element={<PurchaseByStation />}
+            />
 
-
-            <Route path="/processing" element={
-              <PrivateRoute>
-                <ProcessingList />
-              </PrivateRoute>
-            } />
+            <Route
+              path="/processing"
+              element={
+                <PrivateRoute>
+                  <ProcessingList />
+                </PrivateRoute>
+              }
+            />
 
             {/* sender */}
-            <Route path="/wet-transfer" element={
-              <PrivateRoute>
-                <WetTransfer />
-              </PrivateRoute>
-            } />
+            <Route
+              path="/wet-transfer"
+              element={
+                <PrivateRoute>
+                  <WetTransfer />
+                </PrivateRoute>
+              }
+            />
             {/* wet transfer receiver */}
-            <Route path="/wet-transfer-receiver" element={
-              <PrivateRoute>
-                <WetTransferReceiver />
-              </PrivateRoute>
-            } />
+            <Route
+              path="/wet-transfer-receiver"
+              element={
+                <PrivateRoute>
+                  <WetTransferReceiver />
+                </PrivateRoute>
+              }
+            />
 
             {/* wet transfer sender and receiver */}
-            <Route path="/wet-transfer-both" element={
-              <PrivateRoute>
-                <WetTransferBoth />
-              </PrivateRoute>
-            } />
+            <Route
+              path="/wet-transfer-both"
+              element={
+                <PrivateRoute>
+                  <WetTransferBoth />
+                </PrivateRoute>
+              }
+            />
 
-            <Route path="/transfer" element={
-              <PrivateRoute>
-                <Transfer />
-              </PrivateRoute>
-            } />
+            <Route
+              path="/transfer"
+              element={
+                <PrivateRoute>
+                  <Transfer />
+                </PrivateRoute>
+              }
+            />
 
-            <Route path="/site-collections/new" element={
-              <PrivateRoute>
-                <SiteCollectionForm />
-              </PrivateRoute>
-            } />
-            <Route path="/site-collections" element={
-              <PrivateRoute>
-                <SiteCollectionList />
-              </PrivateRoute>
-            } />
+            <Route
+              path="/site-collections/new"
+              element={
+                <PrivateRoute>
+                  <SiteCollectionForm />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/site-collections"
+              element={
+                <PrivateRoute>
+                  <SiteCollectionList />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/users"
               element={
