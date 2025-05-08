@@ -13,6 +13,7 @@ import API_URL from "../../../../constants/Constants";
 import { loggedInUser } from "../../../../utils/loggedInUser";
 import { FormSelection } from "../sample/components/formSelections";
 import { useNavigate, useNavigation } from "react-router-dom";
+import { getHighgrades } from "../../../../apis/quality";
 
 const processingTheme = {
   // Base colors
@@ -120,7 +121,7 @@ const LoadingSkeleton = () => {
 };
 
 const HighGrades = () => {
-  console.log(loggedInUser());
+  const loggedinuser = loggedInUser();
   // State declarations
   const [processingBatches, setProcessingBatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -149,69 +150,50 @@ const HighGrades = () => {
     naturalKgs: 0,
   });
   const [selectedBatchId, setSelectedBatchId] = useState(null);
+  const [selectedBatchProcessingType, setSelectedBatchProcessingType] =
+    useState(null);
   const [batchNo, setBatchNo] = useState(null);
   const navigate = useNavigate();
   const processingTypes = ["All", "FULLY_WASHED", "NATURAL"];
-  const gradeOptions = ["All", "A", "B"];
-
-  const calculateSummaryData = (batches) => {
-    const totalKgs = batches.reduce(
-      (sum, batch) => sum + (Number(batch.totalKgs) || 0),
-      0
-    );
-    const fullyWashedKgs = batches
-      .filter((batch) => batch.processingType === "FULLY_WASHED")
-      .reduce((sum, batch) => sum + (Number(batch.totalKgs) || 0), 0);
-    const naturalKgs = batches
-      .filter((batch) => batch.processingType === "NATURAL")
-      .reduce((sum, batch) => sum + (Number(batch.totalKgs) || 0), 0);
-
-    setSummaryData({
-      totalBatches: batches.length,
-      totalKgs,
-      fullyWashedKgs,
-      naturalKgs,
-    });
-  };
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUxLCJ1c2VybmFtZSI6InRyZXNvciIsInJvbGUiOiJDV1NfTUFOQUdFUiIsImN3c0lkIjo2LCJpYXQiOjE3NDY2MDgyNzcsImV4cCI6MTc0NjY5NDY3N30.ETf89gSuxaP6EYRLHBt6js2Xun_1stPhRrVM9Dlmwgs";
-  // Add this useEffect to recalculate summary data when filters or processingBatches change
-  useEffect(() => {
-    const filteredData = filteredBatches(processingBatches);
-    calculateSummaryData(filteredData);
-  }, [filters, processingBatches]);
 
   // Update the fetchAllBatches function to avoid unnecessary calculations
   const fetchAllBatches = async () => {
     try {
-      const res = await axios.get(`${API_URL}/processing?limit=10000`);
+      const res = await axios.get(
+        `${API_URL}/processings/batch/gradeA/${loggedinuser?.cwsId}?page1&limit=100`,
+
+        {
+          headers: {
+            Authorization: `Bearer ${loggedinuser?.token}`,
+          },
+        }
+      );
       const batchData = res.data.data;
       setAllBatches(batchData);
-      // Calculate summary data for the initial load (all batches)
-      calculateSummaryData(batchData);
     } catch (error) {
-      console.error("Error fetching all batches:", error);
-      setError("Error fetching batch data");
+      console.error(
+        "Error fetching all batches:",
+        error?.response?.data?.message
+      );
+      setError(error?.response?.data?.message ?? "Error fetching batch data");
     }
   };
 
   const fetchProcessingBatches = async () => {
     setLoading(true);
-    try {
-      const res = await axios.get(`${API_URL}/processing?limit=100000`);
-      setProcessingBatches(res.data.data);
+    const res = await getHighgrades(1, 5);
+    if (res?.data) {
+      setProcessingBatches(res?.data);
       setPagination((prev) => ({
         ...prev,
-        total: res.data.pagination.total,
-        totalPages: Math.ceil(res.data.pagination.total / prev.limit),
+        total: res?.data?.pagination?.total,
+        totalPages: Math.ceil(res?.data?.pagination?.total / prev?.limit),
       }));
-    } catch (error) {
-      console.error("Error fetching processing batches:", error);
-      setError("Error fetching processing batches");
-    } finally {
-      setLoading(false);
-      setIsInitialLoad(false);
+    } else {
+      setError(error?.response?.data?.message ?? "Error fetching batchs data");
     }
+    setLoading(false);
+    setIsInitialLoad(false);
   };
 
   useEffect(() => {
@@ -281,9 +263,10 @@ const HighGrades = () => {
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const handleRowClick = (batchId, batchNo) => {
+  const handleRowClick = (batchId, batchNo, processingType) => {
     setSelectedBatchId(batchId);
     setBatchNo(batchNo);
+    setSelectedBatchProcessingType(processingType);
   };
 
   useEffect(() => {
@@ -467,6 +450,7 @@ const HighGrades = () => {
               selectedBatchId={selectedBatchId}
               batchNo={batchNo}
               setSelectedBatchId={setSelectedBatchId}
+              processType={selectedBatchProcessingType}
             />
           )}
         </div>
@@ -570,14 +554,44 @@ const HighGrades = () => {
                         e.currentTarget.style.backgroundColor = "yellow";
                       }}
                       onClick={() => {
-                        handleRowClick(batch?.id, batch?.batchNo);
+                        handleRowClick(
+                          batch?.id,
+                          batch?.batchNo,
+                          batch?.processingType
+                        );
                       }}
                     >
-                      <td className="align-middle">{batch.batchNo}</td>
-                      <td className="align-middle">
+                      <td
+                        className="align-middle"
+                        style={{
+                          backgroundColor:
+                            batchNo == batch?.batchNo && batchNo !== null
+                              ? processingTheme?.statusPending
+                              : "",
+                        }}
+                      >
+                        {batch.batchNo}
+                      </td>
+                      <td
+                        className="align-middle"
+                        style={{
+                          backgroundColor:
+                            batchNo == batch?.batchNo && batchNo !== null
+                              ? processingTheme?.statusPending
+                              : "",
+                        }}
+                      >
                         {batch.totalKgs?.toLocaleString() || 0} kg
                       </td>
-                      <td className="align-middle">
+                      <td
+                        className="align-middle"
+                        style={{
+                          backgroundColor:
+                            batchNo == batch?.batchNo && batchNo !== null
+                              ? processingTheme?.statusPending
+                              : "",
+                        }}
+                      >
                         <span
                           className="badge"
                           style={getGradeBadgeStyle(batch.grade)}
@@ -585,10 +599,26 @@ const HighGrades = () => {
                           {batch.grade || "N/A"}
                         </span>
                       </td>
-                      <td className="align-middle">
+                      <td
+                        className="align-middle"
+                        style={{
+                          backgroundColor:
+                            batchNo == batch?.batchNo && batchNo !== null
+                              ? processingTheme?.statusPending
+                              : "",
+                        }}
+                      >
                         {batch.cws?.name || "N/A"}
                       </td>
-                      <td className="align-middle">
+                      <td
+                        className="align-middle"
+                        style={{
+                          backgroundColor:
+                            batchNo == batch?.batchNo && batchNo !== null
+                              ? processingTheme?.statusPending
+                              : "",
+                        }}
+                      >
                         <span
                           className="badge"
                           style={getProcessingTypeBadgeStyle(

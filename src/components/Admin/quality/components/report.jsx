@@ -13,6 +13,7 @@ import API_URL from "../../../../constants/Constants";
 import { loggedInUser } from "../../../../utils/loggedInUser";
 import { useNavigate } from "react-router-dom";
 import GenericModal from "./model";
+import { getQualityBatchesInTesting } from "../../../../apis/quality";
 
 const processingTheme = {
   primary: "#008080", // Sucafina teal
@@ -128,6 +129,8 @@ const ShortSummary = () => {
     accent: "#D95032", // Complementary orange
     neutral: "#E6F3F3", // Very light teal
     tableHover: "#F8FAFA", // Ultra light teal for ta
+    yellow: "#D4AF37",
+    green: "#D3D3D3",
   };
   // State declarations
   const navigate = useNavigate();
@@ -141,7 +144,9 @@ const ShortSummary = () => {
     search: "",
     processingType: "",
     grade: "",
+    station: "",
   });
+  const [checkedBatch, setCheckedBatch] = useState(false);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -152,14 +157,7 @@ const ShortSummary = () => {
     key: null,
     direction: "asc",
   });
-  const [summaryData, setSummaryData] = useState({
-    totalBatches: 0,
-    totalKgs: 0,
-    fullyWashedKgs: 0,
-    naturalKgs: 0,
-  });
-  const [isDownloading, setIsDownloading] = useState(false);
-
+  const [stations, setStations] = useState([]);
   const processingTypes = [
     "Select_by_processing_type",
     "All",
@@ -168,36 +166,18 @@ const ShortSummary = () => {
   ];
 
   const calculateSummaryData = (batches) => {
-    const totalKgs = batches.reduce(
-      (sum, batch) => sum + (Number(batch.totalKgs) || 0),
-      0
-    );
-    const fullyWashedKgs = batches
-      .filter((batch) => batch.processingType === "FULLY_WASHED")
-      .reduce((sum, batch) => sum + (Number(batch.totalKgs) || 0), 0);
-    const naturalKgs = batches
-      .filter((batch) => batch.processingType === "NATURAL")
-      .reduce((sum, batch) => sum + (Number(batch.totalKgs) || 0), 0);
-
-    setSummaryData({
-      totalBatches: batches.length,
-      totalKgs,
-      fullyWashedKgs,
-      naturalKgs,
+    let stations = ["Select_by_stations"];
+    batches?.forEach((batch) => {
+      stations.push(batch?.cws?.name);
     });
+    setStations([...new Set(stations)]);
   };
-
-  // Add this useEffect to recalculate summary data when filters or processingBatches change
-  useEffect(() => {
-    const filteredData = filteredBatches(processingBatches);
-    calculateSummaryData(filteredData);
-  }, [filters, processingBatches]);
 
   // Update the fetchAllBatches function to avoid unnecessary calculations
   const fetchAllBatches = async () => {
     try {
-      const res = await axios.get(`${API_URL}/processing?limit=100000`);
-      const batchData = res.data.data;
+      const res = await getQualityBatchesInTesting(1, 100);
+      const batchData = res?.data?.batches;
       setAllBatches(batchData);
       // Calculate summary data for the initial load (all batches)
       calculateSummaryData(batchData);
@@ -210,12 +190,13 @@ const ShortSummary = () => {
   const fetchProcessingBatches = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/processing?limit=100000`);
-      setProcessingBatches(res.data.data);
+      const res = await getQualityBatchesInTesting(1, 100);
+      console.log(res, ":::::::::::::");
+      setProcessingBatches(res?.data?.batches);
       setPagination((prev) => ({
         ...prev,
-        total: res.data.pagination.total,
-        totalPages: Math.ceil(res.data.pagination.total / prev.limit),
+        total: res?.data?.pagination?.total,
+        totalPages: Math.ceil(res?.data?.pagination?.total / prev?.limit),
       }));
     } catch (error) {
       console.error("Error fetching processing batches:", error);
@@ -269,7 +250,12 @@ const ShortSummary = () => {
         filters.grade === "All" ||
         batch.grade === filters.grade;
 
-      return matchesSearch && matchesType && matchesGrade;
+      const matchesStation =
+        !filters?.station ||
+        filters?.station === "All" ||
+        batch?.cws?.name === filters?.station;
+
+      return matchesSearch && matchesType && matchesGrade && matchesStation;
     });
   };
 
@@ -440,6 +426,31 @@ const ShortSummary = () => {
 
   return (
     <div className="container-fluid">
+      {isAdmin ? (
+        <button
+          disabled={!checkedBatch}
+          className="btn text-white mb-2"
+          onClick={() => handleSelectedBatch(batch?.batchNo)}
+          style={{
+            backgroundColor: theme?.primary,
+          }}
+        >
+          {loading ? (
+            <>
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              Processing...
+            </>
+          ) : (
+            "Save"
+          )}
+        </button>
+      ) : (
+        ""
+      )}
       <Card className="mb-4">
         <Card.Body style={{ backgroundColor: processingTheme.neutral }}>
           <Row className=" g-3 mb-2">
@@ -476,6 +487,26 @@ const ShortSummary = () => {
             </Col>
             <Col md={4}>
               <Form.Select
+                value={filters?.station}
+                onChange={(e) => handleFilterChange("station", e.target.value)}
+                disabled={loading}
+              >
+                {stations.map((type) => (
+                  <option
+                    disabled={type == "Select_by_stations"}
+                    key={
+                      type == "Select_by_stations" ? "Select_by_stations" : type
+                    }
+                    value={type == "Select_by_stations" ? "" : type}
+                  >
+                    {type}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
+
+            <Col md={4}>
+              <Form.Select
                 value={filters.processingType}
                 onChange={(e) =>
                   handleFilterChange("processingType", e.target.value)
@@ -508,6 +539,7 @@ const ShortSummary = () => {
                   : [
                       { key: "CWS", label: "CWS" },
                       { key: "processingType", label: "Processing Type" },
+                      { key: "select", label: " Select " },
                       { key: "summary", label: "" },
                     ]
                 ).map(({ key, label }, index) => (
@@ -575,13 +607,27 @@ const ShortSummary = () => {
                         <span
                           className="badge"
                           style={getProcessingTypeBadgeStyle(
-                            batch.processingType
+                            batch?.processing?.processingType
                           )}
                         >
-                          {batch.processingType}
+                          {batch.processing?.processingType}
                         </span>
                       </td>
                       {/* Rwacof inputs */}
+                      {isAdmin && (
+                        <td className="align-middle">
+                          <div style={{ marginLeft: "1rem" }}>
+                            <input
+                              type="checkbox"
+                              defaultChecked={false}
+                              onChange={(e) =>
+                                e.target.checked == true &&
+                                setCheckedBatch(true)
+                              }
+                            />
+                          </div>
+                        </td>
+                      )}
                       <div>
                         <table
                           className=" table "
@@ -594,30 +640,129 @@ const ShortSummary = () => {
                                 Station Moisture
                               </td>
                               <td style={{ width: "10rem" }}>Lab Moisture</td>
-                              <td style={{ width: "5rem" }}>16+</td>
-                              <td style={{ width: "5rem" }}>15</td>
-                              <td style={{ width: "5rem" }}>14</td>
-                              <td style={{ width: "5rem" }}>13</td>
-                              <td style={{ width: "5rem" }}>B12</td>
-                              <td style={{ width: "10rem" }}>Potato cups</td>
-                              <td style={{ width: "10rem" }}>overall Score</td>
-                              <td style={{ width: "10rem" }}>PP Score</td>
-                              <td style={{ width: "10rem" }}>deffect</td>
-                              <td style={{ width: "10rem" }}>sample storage</td>
-                              {isAdmin && (
-                                <td style={{ width: "10rem" }}>Action</td>
-                              )}{" "}
+                              <td
+                                style={{
+                                  width: "5rem",
+                                  backgroundColor: isAdmin ? theme?.yellow : "",
+                                }}
+                              >
+                                +16(%)
+                              </td>
+                              <td
+                                style={{
+                                  width: "5rem",
+                                  backgroundColor: isAdmin ? theme?.yellow : "",
+                                }}
+                              >
+                                15(%)
+                              </td>
+                              <td
+                                style={{
+                                  width: "5rem",
+                                  backgroundColor: isAdmin ? theme?.yellow : "",
+                                }}
+                              >
+                                14(%)
+                              </td>
+                              <td
+                                style={{
+                                  width: "5rem",
+                                  backgroundColor: isAdmin ? theme?.yellow : "",
+                                }}
+                              >
+                                13(%)
+                              </td>
+                              <td
+                                style={{
+                                  width: "5rem",
+                                  backgroundColor: isAdmin ? theme?.yellow : "",
+                                }}
+                              >
+                                B12(%)
+                              </td>
+                              <td
+                                style={{
+                                  width: "10rem",
+                                  backgroundColor: isAdmin ? theme?.green : "",
+                                }}
+                              >
+                                Deffect(%)
+                              </td>
+                              <td
+                                style={{
+                                  width: "10rem",
+                                  backgroundColor: isAdmin ? theme?.green : "",
+                                }}
+                              >
+                                PP Score(%)
+                              </td>
+                              <td
+                                style={{
+                                  width: "10rem",
+                                  backgroundColor: isAdmin ? theme?.green : "",
+                                }}
+                              >
+                                Sample storage
+                              </td>
+                              <td
+                                style={{
+                                  width: "10rem",
+                                  backgroundColor: isAdmin ? theme?.green : "",
+                                }}
+                              >
+                                Category
+                              </td>
                             </tr>
                           </thead>
                           <tbody>
                             {Array.from({ length: 2 }, (_, index) => index).map(
                               (element, index) => {
                                 return (
-                                  <tr key={element}>
-                                    <td className="align-middle">{`${
-                                      batch?.batchNo
-                                    }-${index / 2 == 0 ? "(A0)" : "(A1)"}`}</td>
-                                    <td className="align-middle">12</td>
+                                  <tr
+                                    key={`${batch?.batchNo}-${
+                                      index / 2 == 0 ? "(A0)" : "(A1)"
+                                    }`}
+                                  >
+                                    <td className="align-middle">
+                                      <div style={{ width: "10rem" }}>
+                                        {`${batch?.batchNo}-${
+                                          index == 0 ? "(A0)" : "(A1)"
+                                        }`}
+                                      </div>
+                                    </td>
+                                    <td className="align-middle">
+                                      {index === 0
+                                        ? batch?.A0?.cwsMoisture1 ?? "N/A"
+                                        : batch?.A1?.cwsMoisture1 ?? "N/A"}
+                                    </td>
+                                    <td className="align-middle">
+                                      {isAdmin && (
+                                        <input
+                                          type="number"
+                                          className="form-control"
+                                          disabled={loading || !isAdmin}
+                                          style={{ width: "4rem" }}
+                                          defaultValue={0}
+                                          required
+                                        />
+                                      )}
+                                      {!isAdmin && index === 0
+                                        ? batch?.A0?.labMoisture ?? "N/A"
+                                        : batch?.A1?.labMoisture ?? "N/A"}
+                                    </td>
+                                    <td className="align-middle">
+                                      {isAdmin && (
+                                        <input
+                                          type="number"
+                                          className="form-control"
+                                          disabled={loading || !isAdmin}
+                                          style={{ width: "4rem" }}
+                                          defaultValue={1}
+                                          required
+                                        />
+                                      )}
+                                      {!isAdmin && 2}
+                                    </td>
                                     <td className="align-middle">
                                       {isAdmin && (
                                         <input
@@ -670,58 +815,6 @@ const ShortSummary = () => {
                                       )}
                                       {!isAdmin && 2}
                                     </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "4rem" }}
-                                          defaultValue={0}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "4rem" }}
-                                          defaultValue={0}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "7rem" }}
-                                          defaultValue={2}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "7rem" }}
-                                          defaultValue={2}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>{" "}
                                     <td className="align-middle">
                                       {isAdmin && (
                                         <input
@@ -751,44 +844,17 @@ const ShortSummary = () => {
                                     <td className="align-middle">
                                       {isAdmin && (
                                         <input
-                                          type="number"
+                                          type="text"
                                           className="form-control"
                                           disabled={loading || !isAdmin}
                                           style={{ width: "7rem" }}
-                                          defaultValue={2}
+                                          defaultValue={"A23"}
                                           required
                                         />
                                       )}
-                                      {!isAdmin && 2}
+                                      {!isAdmin && "A23"}
                                     </td>
-                                    <td>
-                                      {isAdmin ? (
-                                        <button
-                                          className="btn text-white"
-                                          onClick={() =>
-                                            handleSelectedBatch(batch?.batchNo)
-                                          }
-                                          style={{
-                                            backgroundColor: theme?.primary,
-                                          }}
-                                        >
-                                          {loading ? (
-                                            <>
-                                              <span
-                                                className="spinner-border spinner-border-sm me-2"
-                                                role="status"
-                                                aria-hidden="true"
-                                              ></span>
-                                              Processing...
-                                            </>
-                                          ) : (
-                                            "Save"
-                                          )}
-                                        </button>
-                                      ) : (
-                                        ""
-                                      )}
-                                    </td>
+                                    <td className="align-middle">C1</td>
                                     <GenericModal
                                       isOpen={
                                         selectedBatch !== null &&

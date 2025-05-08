@@ -135,6 +135,15 @@ const AppContent = () => {
                 </PrivateRoute>
               }
             />
+
+            <Route
+              path="/quality-delivery"
+              element={
+                <PrivateRoute>
+                  <Quality />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/quality-all/form"
               element={

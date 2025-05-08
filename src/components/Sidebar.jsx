@@ -215,6 +215,7 @@ const Sidebar = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+  const [qualityOpen, setQualityOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -241,6 +242,17 @@ const Sidebar = () => {
     }
   }, [location.pathname]);
 
+  // Check if current path is a reports page for initial dropdown state
+  useEffect(() => {
+    if (
+      location.pathname === "/quality-all" ||
+      location.pathname === "/quality-all/form" ||
+      location.pathname === "quality-delivery"
+    ) {
+      setQualityOpen(true);
+    }
+  }, [location.pathname]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -249,6 +261,11 @@ const Sidebar = () => {
 
   // Base menu items
   let menuItems = [{ path: "/", icon: "house-door", text: "Dashboard" }];
+  //quality menu items
+  const qualityItems = [
+    { path: "/quality-all", icon: "capsule", text: "Sample" },
+    { path: "/quality-delivery", icon: "box", text: "Delivery" },
+  ];
 
   // Reports menu items
   const reportItems = [
@@ -284,7 +301,6 @@ const Sidebar = () => {
       { path: "/purchases-all", icon: "coin", text: "Add Purchase" },
       { path: "/purchase-by-station", icon: "cash", text: "Purchases" },
       { path: "/processing-all", icon: "hourglass-split", text: "Processing" },
-      { path: "/quality-all", icon: "bookmark-check-fill", text: "Quality" },
       { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
       { path: "/transport", icon: "truck", text: "Transport" },
       // Report dropdown will be added separately
@@ -299,7 +315,6 @@ const Sidebar = () => {
       ...menuItems,
       { path: "/purchase-by-station", icon: "cash", text: "Purchases" },
       { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
-      { path: "/quality-all", icon: "bookmark-check-fill", text: "Quality" },
       // Report dropdown will be added separately
     ];
   } else {
@@ -307,7 +322,6 @@ const Sidebar = () => {
       ...menuItems,
       { path: "/purchases", icon: "cart", text: "Purchases" },
       { path: "/processing", icon: "bag-check", text: "Bagging Off" },
-      { path: "/quality-all", icon: "bookmark-check-fill", text: "Quality" },
     ];
 
     // add both when cws is sender and reciver at the sametime
@@ -391,6 +405,43 @@ const Sidebar = () => {
         {/* Navigation Links */}
         <nav className="flex-grow-1 py-3">
           {menuItems.map(renderNavLink)}
+          {/* Quality Dropdown - Show for ADMIN, SUPER_ADMIN, SUPERVISOR, OPERATIONS, FINANCE, MD */}
+          {(user.role === "ADMIN" ||
+            user.role === "SUPER_ADMIN" ||
+            user.role === "SUPERVISOR" ||
+            user.role === "OPERATIONS" ||
+            user.role === "FINANCE" ||
+            user.role === "CWS_MANAGER" ||
+            user.role === "MD") && (
+            <div>
+              <button
+                className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
+                style={{
+                  backgroundColor: "transparent",
+                  cursor: "pointer",
+                }}
+                onClick={() => setQualityOpen(!qualityOpen)}
+              >
+                <i className="bi bi-bookmark-check-fill me-3"></i>
+                Quality
+                <i
+                  className={`bi bi-chevron-${
+                    qualityOpen ? "down" : "right"
+                  } ms-auto`}
+                ></i>
+              </button>
+              {qualityOpen && (
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    marginLeft: "2rem",
+                  }}
+                >
+                  {qualityItems.map(renderNavLink)}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Reports Dropdown - Show for ADMIN, SUPER_ADMIN, SUPERVISOR, OPERATIONS, FINANCE, MD */}
           {(user.role === "ADMIN" ||
