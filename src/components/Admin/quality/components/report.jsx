@@ -13,7 +13,11 @@ import API_URL from "../../../../constants/Constants";
 import { loggedInUser } from "../../../../utils/loggedInUser";
 import { useNavigate } from "react-router-dom";
 import GenericModal from "./model";
-import { getQualityBatchesInTesting } from "../../../../apis/quality";
+import {
+  getQualityBatchesInTesting,
+  updateQualityInformation,
+} from "../../../../apis/quality";
+import { Error, Success } from "./responses";
 
 const processingTheme = {
   primary: "#008080", // Sucafina teal
@@ -140,6 +144,7 @@ const ShortSummary = () => {
   const [allBatches, setAllBatches] = useState([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [selectedBatch, setSelectedBatch] = useState(null);
+  const [checkedBatches, setCheckedBathes] = useState([]);
   const [filters, setFilters] = useState({
     search: "",
     processingType: "",
@@ -158,6 +163,8 @@ const ShortSummary = () => {
     direction: "asc",
   });
   const [stations, setStations] = useState([]);
+  const [respondSampleError, setRespondSampleError] = useState(false);
+
   const processingTypes = [
     "Select_by_processing_type",
     "All",
@@ -177,10 +184,19 @@ const ShortSummary = () => {
   const fetchAllBatches = async () => {
     try {
       const res = await getQualityBatchesInTesting(1, 100);
-      const batchData = res?.data?.batches;
-      setAllBatches(batchData);
-      // Calculate summary data for the initial load (all batches)
-      calculateSummaryData(batchData);
+      if (res?.data) {
+        if (res.data?.length <= 0) {
+          setError("You dont have sample in testing");
+          return;
+        }
+
+        const batchData = res?.data?.batches;
+        setAllBatches(batchData);
+        // Calculate summary data for the initial load (all batches)
+        calculateSummaryData(batchData);
+      } else {
+        setError(res?.response?.data?.message ?? "Something went wrong.");
+      }
     } catch (error) {
       console.error("Error fetching all batches:", error);
       setError("Error fetching batch data");
@@ -191,13 +207,20 @@ const ShortSummary = () => {
     setLoading(true);
     try {
       const res = await getQualityBatchesInTesting(1, 100);
-      console.log(res, ":::::::::::::");
-      setProcessingBatches(res?.data?.batches);
-      setPagination((prev) => ({
-        ...prev,
-        total: res?.data?.pagination?.total,
-        totalPages: Math.ceil(res?.data?.pagination?.total / prev?.limit),
-      }));
+      if (res?.data) {
+        if (res.data?.length <= 0) {
+          setError("You dont have sample in tesing");
+          return;
+        }
+        setProcessingBatches(res?.data?.batches);
+        setPagination((prev) => ({
+          ...prev,
+          total: res?.data?.pagination?.total,
+          totalPages: Math.ceil(res?.data?.pagination?.total / prev?.limit),
+        }));
+      } else {
+        setError(res?.response?.data?.message ?? "Something went wrong");
+      }
     } catch (error) {
       console.error("Error fetching processing batches:", error);
       setError("Error fetching processing batches");
@@ -279,8 +302,62 @@ const ShortSummary = () => {
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const handleSelectedBatch = (batchId) => {
-    setSelectedBatch(batchId);
+  const handleSubmit = async () => {
+    setLoading(true);
+    const res = await updateQualityInformation(checkedBatches);
+    console.log({ res }, ":::::::::::::::::::::");
+    setRespondSampleError(
+      res?.response?.data?.message ?? "something went wrong."
+    );
+    setLoading(false);
+    if (res?.message) {
+      setLoading(false);
+      console.log("success");
+    }
+    setLoading(false);
+  };
+  // sample
+  const handleCheckboxChange = (batchId) => {
+    setCheckedBathes((prev) => {
+      const isAlreadySelected = prev.find((item) => item.id === batchId);
+
+      if (isAlreadySelected) {
+        return prev.filter((item) => item.id !== batchId);
+      }
+      return [
+        ...prev,
+        {
+          id: batchId,
+          labMoisture: { A0: "", A1: "" },
+          "16+": { A0: "", A1: "" },
+          "15+": { A0: "", A1: "" },
+          "14+": { A0: "", A1: "" },
+          "13+": { A0: "", A1: "" },
+          "B/12": { A0: "", A1: "" },
+          deffect: { A0: "", A1: "" },
+          ppScore: { A0: "", A1: "" },
+          sampleStorage: { A0: "", A1: "" },
+          category: { A0: "", A1: "" },
+        },
+      ];
+    });
+  };
+
+  // sample
+  const handleInputChange = (batchId, field, aKey, value) => {
+    setCheckedBathes((prev) =>
+      prev.map((item) =>
+        item.id === batchId
+          ? {
+              ...item,
+              [field]: {
+                ...item[field],
+                [aKey]: value,
+              },
+            }
+          : item
+      )
+    );
   };
 
   useEffect(() => {
@@ -427,27 +504,31 @@ const ShortSummary = () => {
   return (
     <div className="container-fluid">
       {isAdmin ? (
-        <button
-          disabled={!checkedBatch}
-          className="btn text-white mb-2"
-          onClick={() => handleSelectedBatch(batch?.batchNo)}
-          style={{
-            backgroundColor: theme?.primary,
-          }}
-        >
-          {loading ? (
-            <>
-              <span
-                className="spinner-border spinner-border-sm me-2"
-                role="status"
-                aria-hidden="true"
-              ></span>
-              Processing...
-            </>
-          ) : (
-            "Save"
-          )}
-        </button>
+        <>
+          <button
+            disabled={!checkedBatch}
+            className="btn text-white mb-2"
+            onClick={() => handleSubmit()}
+            style={{
+              backgroundColor: theme?.primary,
+            }}
+          >
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Processing...
+              </>
+            ) : (
+              "Save"
+            )}
+          </button>
+          {/* {<Success message="something" />} */}
+          {respondSampleError && <Error error="error" />}{" "}
+        </>
       ) : (
         ""
       )}
@@ -485,26 +566,31 @@ const ShortSummary = () => {
                 />
               </InputGroup>
             </Col>
-            <Col md={4}>
-              <Form.Select
-                value={filters?.station}
-                onChange={(e) => handleFilterChange("station", e.target.value)}
-                disabled={loading}
-              >
-                {stations.map((type) => (
-                  <option
-                    disabled={type == "Select_by_stations"}
-                    key={
-                      type == "Select_by_stations" ? "Select_by_stations" : type
-                    }
-                    value={type == "Select_by_stations" ? "" : type}
-                  >
-                    {type}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-
+            {isAdmin && (
+              <Col md={4}>
+                <Form.Select
+                  value={filters?.station}
+                  onChange={(e) =>
+                    handleFilterChange("station", e.target.value)
+                  }
+                  disabled={loading}
+                >
+                  {stations?.map((type) => (
+                    <option
+                      disabled={type == "Select_by_stations"}
+                      key={
+                        type == "Select_by_stations"
+                          ? "Select_by_stations"
+                          : type
+                      }
+                      value={type == "Select_by_stations" ? "" : type}
+                    >
+                      {type}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Col>
+            )}
             <Col md={4}>
               <Form.Select
                 value={filters.processingType}
@@ -620,10 +706,11 @@ const ShortSummary = () => {
                             <input
                               type="checkbox"
                               defaultChecked={false}
-                              onChange={(e) =>
+                              onChange={(e) => {
                                 e.target.checked == true &&
-                                setCheckedBatch(true)
-                              }
+                                  setCheckedBatch(true);
+                                handleCheckboxChange(batch?.batchNo);
+                              }}
                             />
                           </div>
                         </td>
@@ -715,167 +802,262 @@ const ShortSummary = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {Array.from({ length: 2 }, (_, index) => index).map(
-                              (element, index) => {
-                                return (
-                                  <tr
-                                    key={`${batch?.batchNo}-${
-                                      index / 2 == 0 ? "(A0)" : "(A1)"
-                                    }`}
-                                  >
-                                    <td className="align-middle">
-                                      <div style={{ width: "10rem" }}>
-                                        {`${batch?.batchNo}-${
-                                          index == 0 ? "(A0)" : "(A1)"
-                                        }`}
-                                      </div>
-                                    </td>
-                                    <td className="align-middle">
-                                      {index === 0
-                                        ? batch?.A0?.cwsMoisture1 ?? "N/A"
-                                        : batch?.A1?.cwsMoisture1 ?? "N/A"}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "4rem" }}
-                                          defaultValue={0}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && index === 0
-                                        ? batch?.A0?.labMoisture ?? "N/A"
-                                        : batch?.A1?.labMoisture ?? "N/A"}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "4rem" }}
-                                          defaultValue={1}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "4rem" }}
-                                          defaultValue={0}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "4rem" }}
-                                          defaultValue={0}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "4rem" }}
-                                          defaultValue={0}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "4rem" }}
-                                          defaultValue={0}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "7rem" }}
-                                          defaultValue={2}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>{" "}
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "7rem" }}
-                                          defaultValue={2}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && 2}
-                                    </td>{" "}
-                                    <td className="align-middle">
-                                      {isAdmin && (
-                                        <input
-                                          type="text"
-                                          className="form-control"
-                                          disabled={loading || !isAdmin}
-                                          style={{ width: "7rem" }}
-                                          defaultValue={"A23"}
-                                          required
-                                        />
-                                      )}
-                                      {!isAdmin && "A23"}
-                                    </td>
-                                    <td className="align-middle">C1</td>
-                                    <GenericModal
-                                      isOpen={
-                                        selectedBatch !== null &&
-                                        selectedBatch == batch?.batchNo
-                                      }
-                                      onClose={() => setSelectedBatch(null)}
-                                      onConfirm={() => null}
-                                      isLoading={false}
-                                      title={"Mosture content"}
-                                      message={
-                                        "Are you sure you want to save the data"
-                                      }
-                                      confirmButtonText="Save"
-                                      confirmButtonColor="secondary"
-                                      cancelButtonText="Cancel"
-                                      cancelButtonColor="primary"
-                                    />
-                                  </tr>
-                                );
-                              }
-                            )}
+                            {[
+                              batch?.A0 || batch?.N1 || batch?.H1,
+                              batch?.A1 || batch?.N2 || batch?.H2,
+                            ].map((element, index) => {
+                              return (
+                                <tr
+                                  key={`${batch?.batchNo}-${
+                                    index / 2 == 0 ? "(A0)" : "(A1)"
+                                  }`}
+                                >
+                                  <td className="align-middle">
+                                    <div style={{ width: "10rem" }}>
+                                      {`${batch?.batchNo}-${
+                                        index == 0 ? "(A0)" : "(A1)"
+                                      }`}
+                                    </div>
+                                  </td>
+                                  <td className="align-middle">
+                                    {element?.cwsMoisture1 ?? 0}
+                                  </td>
+                                  {/* lab moisture */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={loading}
+                                        style={{ width: "4rem" }}
+                                        defaultValue={element?.labMoisture ?? 0}
+                                        required
+                                        value={batch?.labMoisture?.A0}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "labMoisture",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.labMoisture}
+                                  </td>
+                                  {/* +16 */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={loading}
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          element?.screen["16+"] ?? 0
+                                        }
+                                        required
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "16+",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.screen["16+"]}
+                                  </td>
+                                  {/* +15 */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={loading}
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          element?.screen["15+"] ?? 0
+                                        }
+                                        required
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "15+",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.screen["15+"]}
+                                  </td>
+                                  {/* +14 */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={loading}
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          element?.screen["14"] ?? ""
+                                        }
+                                        required
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "14+",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.screen["14+"]}
+                                  </td>
+                                  {/* +13 */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={loading}
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          element?.screen["12/13"] ?? 0
+                                        }
+                                        required
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "12/13",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.screen["12/13"]}
+                                  </td>
+                                  {/* +12 */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={loading}
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          element?.screen["B/12"] ?? 0
+                                        }
+                                        required
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "B/12",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.screen["B/12"]}
+                                  </td>
+                                  {/* deffect */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={loading || !isAdmin}
+                                        style={{ width: "7rem" }}
+                                        defaultValue={element?.defect}
+                                        required
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "deffect",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.defect}
+                                  </td>
+                                  {/* pp score */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={loading || !isAdmin}
+                                        style={{ width: "7rem" }}
+                                        defaultValue={element?.ppScore}
+                                        required
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "ppScore",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.ppScore}
+                                  </td>
+                                  {/**sample storage */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        disabled={loading || !isAdmin}
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          index / 2 == 0
+                                            ? element?.sampleStorage_0?.name
+                                            : element?.sampleStorage_1?.name
+                                        }
+                                        required
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "sampleStorage",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && "A23"}
+                                  </td>
+                                  <td className="align-middle">
+                                    {element?.category ?? "N/A"}
+                                  </td>
+                                  <GenericModal
+                                    isOpen={
+                                      selectedBatch !== null &&
+                                      selectedBatch == batch?.batchNo
+                                    }
+                                    onClose={() => setSelectedBatch(null)}
+                                    onConfirm={() => null}
+                                    isLoading={false}
+                                    title={"Mosture content"}
+                                    message={
+                                      "Are you sure you want to save the data"
+                                    }
+                                    confirmButtonText="Save"
+                                    confirmButtonColor="secondary"
+                                    cancelButtonText="Cancel"
+                                    cancelButtonColor="primary"
+                                  />
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
