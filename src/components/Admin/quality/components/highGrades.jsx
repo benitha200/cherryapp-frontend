@@ -182,7 +182,7 @@ const HighGrades = () => {
   const fetchProcessingBatches = async () => {
     setLoading(true);
     const res = await getHighgrades(1, 5);
-    if (res?.data) {
+    if (res?.data && res.data?.length > 0) {
       setProcessingBatches(res?.data);
       setPagination((prev) => ({
         ...prev,
@@ -208,7 +208,7 @@ const HighGrades = () => {
     if (!isInitialLoad) {
       fetchProcessingBatches();
     }
-  }, [pagination.page, isInitialLoad]);
+  }, [pagination.page, isInitialLoad, setSelectedBatchId]);
 
   const handleSort = (key) => {
     setSortConfig((prev) => ({
