@@ -35,7 +35,6 @@ export const FormSelection = ({
     setError(null);
 
     setloading(true);
-    refresh(true);
     if (!moisture?.A0 || !moisture?.A1) {
       setError(
         "Both A0 and A1 moisture values are required. Please fill them in before submitting."
@@ -56,6 +55,7 @@ export const FormSelection = ({
           setSelectedBatchId(null);
           setMoisture({ A0: null, A1: null });
           setSuccess(null);
+          refresh(true);
         }, 2000);
       } else {
         setError(
@@ -63,7 +63,6 @@ export const FormSelection = ({
         );
       }
       setloading(false);
-      console.log("response::::::::::", res);
       handleOpenModel();
     }
   };

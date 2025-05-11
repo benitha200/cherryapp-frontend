@@ -247,7 +247,7 @@ const ShortSummary = () => {
       await fetchProcessingBatches();
     };
     initializeData();
-  }, [page]);
+  }, [page, displayItems]);
 
   useEffect(() => {
     if (!isInitialLoad) {
@@ -873,7 +873,7 @@ const ShortSummary = () => {
                                         }
                                         style={{ width: "7rem" }}
                                         defaultValue={
-                                          element?.screen["15+"] ?? 0
+                                          element?.screen["15"] ?? 0
                                         }
                                         required
                                         onChange={(e) =>
@@ -886,7 +886,7 @@ const ShortSummary = () => {
                                         }
                                       />
                                     )}
-                                    {!isAdmin && element?.screen["15+"]}
+                                    {!isAdmin && element?.screen["15"]}
                                   </td>
                                   {/* +14 */}
                                   <td className="align-middle">
@@ -913,7 +913,7 @@ const ShortSummary = () => {
                                         }
                                       />
                                     )}
-                                    {!isAdmin && element?.screen["14+"]}
+                                    {!isAdmin && element?.screen["14"]}
                                   </td>
                                   {/* +13 */}
                                   <td className="align-middle">

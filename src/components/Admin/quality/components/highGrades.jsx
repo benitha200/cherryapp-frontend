@@ -201,7 +201,7 @@ const HighGrades = () => {
       await fetchProcessingBatches();
     };
     initializeData();
-  }, [refresh, page]);
+  }, [refresh, page, displayItems]);
 
   useEffect(() => {
     if (!isInitialLoad) {
