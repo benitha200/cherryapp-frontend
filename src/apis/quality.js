@@ -91,22 +91,29 @@ export const getQualityBatchesInTesting = async (page, limit) => {
 export const updateQualityInformation = async (payload) => {
   const loggedinuser = loggedInUser();
   console.log(payload);
+
   const new_payload = payload?.map((element) => {
+    const keys =
+      element?.processingType === "NATURAL"
+        ? { key1: "N1", key2: "N2" }
+        : element?.processingType === "HONEY"
+        ? { key1: "H1", key2: "H2" }
+        : { key1: "A0", key2: "A1" };
     return {
       batchNo: element?.id,
       labMoisture: {
-        A0: element?.labMoisture["A0"] ?? "",
-        A1: element?.labMoisture["A1"] ?? "",
+        [keys.key1]: element?.labMoisture["A0"] ?? "",
+        [keys.key2]: element?.labMoisture["A1"] ?? "",
       },
       screen: {
-        A0: {
+        [keys.key1]: {
           14: element["14+"]["A0"] ?? "",
           "16+": element["16+"]["A0"] ?? "",
           "15+": element["15+"]["A0"] ?? "",
           13: element["13+"]["A0"],
           "B/12": element["B/12"]["A0"] ?? "",
         },
-        A1: {
+        [keys.key2]: {
           14: element["14+"]["A1"] ?? "",
           "16+": element["16+"]["A1"] ?? "",
           "15+": element["15+"]["A1"] ?? "",
@@ -115,27 +122,26 @@ export const updateQualityInformation = async (payload) => {
         },
       },
       defect: {
-        A0: element?.deffect["A0"] ?? "",
-        A1: element?.deffect["A1"] ?? "",
+        [keys.key1]: element?.deffect["A0"] ?? "",
+        [keys.key2]: element?.deffect["A1"] ?? "",
       },
       ppScore: {
-        A0: element?.ppScore["A0"] ?? "",
-        A1: element?.ppScore["A1"] ?? "",
+        [keys.key1]: element?.ppScore["A0"] ?? "",
+        [keys.key2]: element?.ppScore["A1"] ?? "",
       },
-      sampleStorageId_0: 2,
-      sampleStorageId_1: 2,
+      sampleStorageId_0: element?.sampleStorage["A0"],
+      sampleStorageId_1: element?.sampleStorage["A1"],
       notes: {
-        A0: "Sample A0 notes",
-        A1: "Sample A1 notes",
+        [keys.key1]: "Sample A0 notes",
+        [keys.key2]: "Sample A1 notes",
       },
       category: {
-        A0: element?.category["A1"] ?? "",
-        A1: element?.category["A2"] ?? "",
+        [keys.key1]: parseInt(element?.category["A1"], 10) ?? "",
+        [keys.key2]: parseInt(element?.category["A2"], 10) ?? "",
       },
     };
   });
 
-  console.log(new_payload);
   try {
     const res = await axios.put(
       `${API_URL}/quality/sendTestResult`,

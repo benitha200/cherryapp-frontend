@@ -8,6 +8,7 @@ export const FormSelection = ({
   batchNo,
   setSelectedBatchId,
   processType,
+  refresh,
 }) => {
   const [moisture, setMoisture] = useState({
     A0: null,
@@ -32,7 +33,9 @@ export const FormSelection = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
     setloading(true);
+    refresh(true);
     if (!moisture?.A0 || !moisture?.A1) {
       setError(
         "Both A0 and A1 moisture values are required. Please fill them in before submitting."
