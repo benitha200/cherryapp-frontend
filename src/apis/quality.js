@@ -109,14 +109,14 @@ export const updateQualityInformation = async (payload) => {
         [keys.key1]: {
           14: element["14+"]["A0"] ?? "",
           "16+": element["16+"]["A0"] ?? "",
-          "15+": element["15+"]["A0"] ?? "",
+          15: element["15+"]["A0"] ?? "",
           13: element["13+"]["A0"],
           "B/12": element["B/12"]["A0"] ?? "",
         },
         [keys.key2]: {
           14: element["14+"]["A1"] ?? "",
           "16+": element["16+"]["A1"] ?? "",
-          "15+": element["15+"]["A1"] ?? "",
+          15: element["15+"]["A1"] ?? "",
           13: element["13+"]["A1"] ?? "",
           "B/12": element["B/12"]["A1"] ?? "",
         },
