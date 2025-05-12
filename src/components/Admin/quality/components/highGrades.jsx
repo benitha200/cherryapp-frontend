@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  Button,
-  Form,
-  Row,
-  Col,
-  Card,
-  InputGroup,
-  Placeholder,
-} from "react-bootstrap";
+import { Form, Row, Col, Card, InputGroup, Placeholder } from "react-bootstrap";
 import API_URL from "../../../../constants/Constants";
 import { loggedInUser } from "../../../../utils/loggedInUser";
 import { FormSelection } from "../sample/components/formSelections";
-import { useNavigate, useNavigation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getHighgrades } from "../../../../apis/quality";
+import { Pagination } from "./paginations";
 
 const processingTheme = {
   // Base colors
@@ -143,16 +136,16 @@ const HighGrades = () => {
     key: null,
     direction: "asc",
   });
-  const [summaryData, setSummaryData] = useState({
-    totalBatches: 0,
-    totalKgs: 0,
-    fullyWashedKgs: 0,
-    naturalKgs: 0,
-  });
+
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [selectedBatchProcessingType, setSelectedBatchProcessingType] =
     useState(null);
   const [batchNo, setBatchNo] = useState(null);
+  const [paginationData, setPaginationData] = useState(null);
+  const [page, setPage] = useState(1);
+  const [displayItems, setDisplayItems] = useState(5);
+  const [refresh, setRefresh] = useState(false);
+
   const navigate = useNavigate();
   const processingTypes = ["All", "FULLY_WASHED", "NATURAL"];
 
@@ -181,14 +174,12 @@ const HighGrades = () => {
 
   const fetchProcessingBatches = async () => {
     setLoading(true);
-    const res = await getHighgrades(1, 5);
-    if (res?.data) {
+    const res = await getHighgrades(page, displayItems);
+    if (res?.data && res.data?.length > 0) {
       setProcessingBatches(res?.data);
-      setPagination((prev) => ({
-        ...prev,
-        total: res?.data?.pagination?.total,
-        totalPages: Math.ceil(res?.data?.pagination?.total / prev?.limit),
-      }));
+      setPaginationData(res?.pagination);
+    } else if (res?.data?.length == 0) {
+      setError("There is no bagged off butches.");
     } else {
       setError(error?.response?.data?.message ?? "Error fetching batchs data");
     }
@@ -205,10 +196,18 @@ const HighGrades = () => {
   }, []);
 
   useEffect(() => {
+    const initializeData = async () => {
+      await fetchAllBatches();
+      await fetchProcessingBatches();
+    };
+    initializeData();
+  }, [refresh, page, displayItems]);
+
+  useEffect(() => {
     if (!isInitialLoad) {
       fetchProcessingBatches();
     }
-  }, [pagination.page, isInitialLoad]);
+  }, [pagination.page, isInitialLoad, setSelectedBatchId]);
 
   const handleSort = (key) => {
     setSortConfig((prev) => ({
@@ -250,7 +249,7 @@ const HighGrades = () => {
   };
 
   const handlePageChange = (newPage) => {
-    setPagination((prev) => ({ ...prev, page: newPage }));
+    setPage(newPage);
   };
 
   const handleFilterChange = (key, value) => {
@@ -315,109 +314,6 @@ const HighGrades = () => {
     display: "inline-block",
   });
 
-  const renderPagination = (filteredData) => {
-    const totalFilteredItems = filteredData.length;
-    const totalPages = Math.ceil(totalFilteredItems / pagination.limit);
-
-    if (totalFilteredItems <= pagination.limit) {
-      return (
-        <div className="d-flex justify-content-between align-items-center mt-4 px-3">
-          <div className="text-muted">
-            Showing {totalFilteredItems} of {totalFilteredItems} entries
-          </div>
-        </div>
-      );
-    }
-
-    const paginationStyle = {
-      pageLink: {
-        color: processingTheme.primary,
-        border: `1px solid ${processingTheme.neutral}`,
-        ":hover": {
-          backgroundColor: processingTheme.neutral,
-        },
-      },
-      activePageLink: {
-        backgroundColor: processingTheme.primary,
-        borderColor: processingTheme.primary,
-        color: "white",
-      },
-      disabledPageLink: {
-        color: "#6c757d",
-        backgroundColor: "#f8f9fa",
-        borderColor: "#dee2e6",
-      },
-    };
-
-    return (
-      <div className="d-flex justify-content-between align-items-center mt-4 px-3">
-        <div className="text-muted">
-          Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-          {Math.min(pagination.page * pagination.limit, totalFilteredItems)} of{" "}
-          {totalFilteredItems} entries
-        </div>
-        <nav>
-          <ul className="pagination mb-0">
-            <li
-              className={`page-item ${pagination.page === 1 ? "disabled" : ""}`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-                style={
-                  pagination.page === 1
-                    ? paginationStyle.disabledPageLink
-                    : paginationStyle.pageLink
-                }
-              >
-                Previous
-              </button>
-            </li>
-            {[...Array(totalPages)].map((_, idx) => (
-              <li
-                key={idx + 1}
-                className={`page-item ${
-                  pagination.page === idx + 1 ? "active" : ""
-                }`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange(idx + 1)}
-                  style={
-                    pagination.page === idx + 1
-                      ? paginationStyle.activePageLink
-                      : paginationStyle.pageLink
-                  }
-                >
-                  {idx + 1}
-                </button>
-              </li>
-            ))}
-            <li
-              className={`page-item ${
-                pagination.page === totalPages ? "disabled" : ""
-              }`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page === totalPages}
-                style={
-                  pagination.page === totalPages
-                    ? paginationStyle.disabledPageLink
-                    : paginationStyle.pageLink
-                }
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    );
-  };
-
   if (isInitialLoad) return <LoadingSkeleton />;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
@@ -451,6 +347,7 @@ const HighGrades = () => {
               batchNo={batchNo}
               setSelectedBatchId={setSelectedBatchId}
               processType={selectedBatchProcessingType}
+              refresh={setRefresh}
             />
           )}
         </div>
@@ -477,6 +374,22 @@ const HighGrades = () => {
                   disabled={loading}
                 >
                   {processingTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Col>
+              <Col md={1}>
+                <Form.Select
+                  style={{ marginLeft: "6rem" }}
+                  value={displayItems}
+                  onChange={(e) => {
+                    setDisplayItems(e.target.value);
+                  }}
+                  disabled={loading}
+                >
+                  {[5, 10, 20].map((type) => (
                     <option key={type} value={type}>
                       {type}
                     </option>
@@ -581,7 +494,7 @@ const HighGrades = () => {
                               : "",
                         }}
                       >
-                        {batch.totalKgs?.toLocaleString() || 0} kg
+                        {batch?.totalOutputKgs?.toLocaleString() || 0} kg
                       </td>
                       <td
                         className="align-middle"
@@ -596,7 +509,7 @@ const HighGrades = () => {
                           className="badge"
                           style={getGradeBadgeStyle(batch.grade)}
                         >
-                          {batch.grade || "N/A"}
+                          {batch?.processing?.grade || "N/A"}
                         </span>
                       </td>
                       <td
@@ -608,7 +521,7 @@ const HighGrades = () => {
                               : "",
                         }}
                       >
-                        {batch.cws?.name || "N/A"}
+                        {batch?.processing?.cws?.name ?? "N/A"}
                       </td>
                       <td
                         className="align-middle"
@@ -634,7 +547,15 @@ const HighGrades = () => {
               </tbody>
             </table>
           </div>
-          {!loading && renderPagination(filteredData)}
+          {!loading && (
+            <Pagination
+              currentPage={page}
+              totalPages={paginationData?.totalPages ?? 0}
+              totalItems={paginationData?.total ?? 0}
+              itemsPerPage={displayItems}
+              onPageChange={handlePageChange}
+            />
+          )}
         </Card>
       </div>
     </>

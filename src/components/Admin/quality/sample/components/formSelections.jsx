@@ -8,6 +8,7 @@ export const FormSelection = ({
   batchNo,
   setSelectedBatchId,
   processType,
+  refresh,
 }) => {
   const [moisture, setMoisture] = useState({
     A0: null,
@@ -32,6 +33,7 @@ export const FormSelection = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
     setloading(true);
     if (!moisture?.A0 || !moisture?.A1) {
       setError(
@@ -53,6 +55,7 @@ export const FormSelection = ({
           setSelectedBatchId(null);
           setMoisture({ A0: null, A1: null });
           setSuccess(null);
+          refresh(true);
         }, 2000);
       } else {
         setError(
@@ -60,7 +63,6 @@ export const FormSelection = ({
         );
       }
       setloading(false);
-      console.log("response::::::::::", res);
       handleOpenModel();
     }
   };
