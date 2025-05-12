@@ -32,13 +32,13 @@ export const createMoistureContent = async (
       ? "N1"
       : ProcessingType === "HONEY"
       ? "H1"
-      : "A1";
+      : "A0";
   const keyTWO =
     ProcessingType == "NATURAL"
       ? "N2"
       : ProcessingType === "HONEY"
       ? "H2"
-      : "A2";
+      : "A1";
   const payload = {
     batches: [
       {
