@@ -521,7 +521,7 @@ const HighGrades = () => {
                               : "",
                         }}
                       >
-                        {batch.cws?.name || "N/A"}
+                        {batch?.processing?.cws?.name ?? "N/A"}
                       </td>
                       <td
                         className="align-middle"

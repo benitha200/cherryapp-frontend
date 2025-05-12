@@ -775,7 +775,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.green : "",
                                 }}
                               >
-                                Category
+                                Sample storage
                               </td>
                               <td
                                 style={{
@@ -783,7 +783,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.green : "",
                                 }}
                               >
-                                Sample storage
+                                Category
                               </td>
                             </tr>
                           </thead>
@@ -1061,7 +1061,9 @@ const ShortSummary = () => {
                                     {!isAdmin && element?.category}
                                   </td>
                                   {/**sample storage */}
-                                  <td className="align-middle">{"C1"}</td>
+                                  <td className="align-middle">
+                                    {element?.category ?? ""}
+                                  </td>
 
                                   <GenericModal
                                     isOpen={
