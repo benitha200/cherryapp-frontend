@@ -264,7 +264,7 @@ const Sidebar = () => {
   //quality menu items
   const qualityItems = [
     { path: "/quality-all", icon: "capsule", text: "Sample" },
-    { path: "/quality-delivery", icon: "box", text: "Delivery" },
+    // { path: "/quality-delivery", icon: "box", text: "Delivery" },
   ];
 
   // Reports menu items
@@ -315,6 +315,7 @@ const Sidebar = () => {
       ...menuItems,
       { path: "/purchase-by-station", icon: "cash", text: "Purchases" },
       { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
+      { path: "/transport", icon: "truck", text: "Transport" },
       // Report dropdown will be added separately
     ];
   } else {
@@ -408,11 +409,11 @@ const Sidebar = () => {
           {/* Quality Dropdown - Show for ADMIN, SUPER_ADMIN, SUPERVISOR, OPERATIONS, FINANCE, MD */}
           {(user.role === "ADMIN" ||
             user.role === "SUPER_ADMIN" ||
-            user.role === "SUPERVISOR" ||
-            user.role === "OPERATIONS" ||
-            user.role === "FINANCE" ||
-            user.role === "CWS_MANAGER" ||
-            user.role === "MD") && (
+            // || user.role === "SUPERVISOR" ||
+            // user.role === "OPERATIONS" ||
+            // user.role === "FINANCE" ||
+            user.role === "CWS_MANAGER") && (
+            // user.role === "MD"
             <div>
               <button
                 className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"

@@ -32,13 +32,13 @@ export const createMoistureContent = async (
       ? "N1"
       : ProcessingType === "HONEY"
       ? "H1"
-      : "A1";
+      : "A0";
   const keyTWO =
     ProcessingType == "NATURAL"
       ? "N2"
       : ProcessingType === "HONEY"
       ? "H2"
-      : "A2";
+      : "A1";
   const payload = {
     batches: [
       {
@@ -91,6 +91,7 @@ export const getQualityBatchesInTesting = async (page, limit) => {
 export const updateQualityInformation = async (payload) => {
   const loggedinuser = loggedInUser();
   console.log(payload);
+<<<<<<< HEAD
   const new_payload = payload?.map((element) => {
     return {
       batchNo: element?.id,
@@ -110,11 +111,40 @@ export const updateQualityInformation = async (payload) => {
           14: element["14+"]["A1"] ?? "",
           "16+": element["16+"]["A1"] ?? "",
           "15+": element["15+"]["A1"] ?? "",
+=======
+
+  const new_payload = payload?.map((element) => {
+    const keys =
+      element?.processingType === "NATURAL"
+        ? { key1: "N1", key2: "N2" }
+        : element?.processingType === "HONEY"
+        ? { key1: "H1", key2: "H2" }
+        : { key1: "A0", key2: "A1" };
+    return {
+      batchNo: element?.id,
+      labMoisture: {
+        [keys.key1]: element?.labMoisture["A0"] ?? "",
+        [keys.key2]: element?.labMoisture["A1"] ?? "",
+      },
+      screen: {
+        [keys.key1]: {
+          14: element["14+"]["A0"] ?? "",
+          "16+": element["16+"]["A0"] ?? "",
+          15: element["15+"]["A0"] ?? "",
+          13: element["13+"]["A0"],
+          "B/12": element["B/12"]["A0"] ?? "",
+        },
+        [keys.key2]: {
+          14: element["14+"]["A1"] ?? "",
+          "16+": element["16+"]["A1"] ?? "",
+          15: element["15+"]["A1"] ?? "",
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
           13: element["13+"]["A1"] ?? "",
           "B/12": element["B/12"]["A1"] ?? "",
         },
       },
       defect: {
+<<<<<<< HEAD
         A0: element?.deffect["A0"] ?? "",
         A1: element?.deffect["A1"] ?? "",
       },
@@ -131,11 +161,32 @@ export const updateQualityInformation = async (payload) => {
       category: {
         A0: element?.category["A1"] ?? "",
         A1: element?.category["A2"] ?? "",
+=======
+        [keys.key1]: element?.deffect["A0"] ?? "",
+        [keys.key2]: element?.deffect["A1"] ?? "",
+      },
+      ppScore: {
+        [keys.key1]: element?.ppScore["A0"] ?? "",
+        [keys.key2]: element?.ppScore["A1"] ?? "",
+      },
+      sampleStorageId_0: element?.sampleStorage["A0"],
+      sampleStorageId_1: element?.sampleStorage["A1"],
+      notes: {
+        [keys.key1]: "Sample A0 notes",
+        [keys.key2]: "Sample A1 notes",
+      },
+      category: {
+        [keys.key1]: parseInt(element?.category["A1"], 10) ?? "",
+        [keys.key2]: parseInt(element?.category["A2"], 10) ?? "",
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
       },
     };
   });
 
+<<<<<<< HEAD
   console.log(new_payload);
+=======
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
   try {
     const res = await axios.put(
       `${API_URL}/quality/sendTestResult`,

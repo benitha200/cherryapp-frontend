@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import {
-  Button,
-  Form,
-  Row,
-  Col,
-  Card,
-  InputGroup,
-  Placeholder,
-} from "react-bootstrap";
-import API_URL from "../../../../constants/Constants";
+import { Form, Row, Col, Card, InputGroup, Placeholder } from "react-bootstrap";
 import { loggedInUser } from "../../../../utils/loggedInUser";
 import { useNavigate } from "react-router-dom";
 import GenericModal from "./model";
@@ -18,6 +8,11 @@ import {
   updateQualityInformation,
 } from "../../../../apis/quality";
 import { Error, Success } from "./responses";
+<<<<<<< HEAD
+=======
+import { Pagination } from "./paginations";
+import { sampleStorage as storage } from "../../../../apis/sampleStorage";
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
 
 const processingTheme = {
   primary: "#008080", // Sucafina teal
@@ -142,6 +137,7 @@ const ShortSummary = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [allBatches, setAllBatches] = useState([]);
+  const [paginationData, setPaginationData] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [checkedBatches, setCheckedBathes] = useState([]);
@@ -151,7 +147,6 @@ const ShortSummary = () => {
     grade: "",
     station: "",
   });
-  const [checkedBatch, setCheckedBatch] = useState(false);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -164,6 +159,14 @@ const ShortSummary = () => {
   });
   const [stations, setStations] = useState([]);
   const [respondSampleError, setRespondSampleError] = useState(false);
+<<<<<<< HEAD
+=======
+  const [respondSampleSuccess, setRespondSampleSuccess] = useState(false);
+  const [activatedBatches, setActivivatedBatches] = useState([]);
+  const [displayItems, setDisplayItems] = useState(5);
+  const [page, setPage] = useState(1);
+  const [sampleStorage, setSampleStorage] = useState([]);
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
 
   const processingTypes = [
     "Select_by_processing_type",
@@ -171,7 +174,6 @@ const ShortSummary = () => {
     "FULLY_WASHED",
     "NATURAL",
   ];
-
   const calculateSummaryData = (batches) => {
     let stations = ["Select_by_stations"];
     batches?.forEach((batch) => {
@@ -180,10 +182,17 @@ const ShortSummary = () => {
     setStations([...new Set(stations)]);
   };
 
+  // check if field is activate
+  const isInActivatedBatches = (id) => activatedBatches?.includes(id);
+
   // Update the fetchAllBatches function to avoid unnecessary calculations
   const fetchAllBatches = async () => {
     try {
+<<<<<<< HEAD
       const res = await getQualityBatchesInTesting(1, 100);
+=======
+      const res = await getQualityBatchesInTesting(1, displayItems);
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
       if (res?.data) {
         if (res.data?.length <= 0) {
           setError("You dont have sample in testing");
@@ -192,7 +201,10 @@ const ShortSummary = () => {
 
         const batchData = res?.data?.batches;
         setAllBatches(batchData);
+<<<<<<< HEAD
         // Calculate summary data for the initial load (all batches)
+=======
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
         calculateSummaryData(batchData);
       } else {
         setError(res?.response?.data?.message ?? "Something went wrong.");
@@ -206,13 +218,21 @@ const ShortSummary = () => {
   const fetchProcessingBatches = async () => {
     setLoading(true);
     try {
+<<<<<<< HEAD
       const res = await getQualityBatchesInTesting(1, 100);
+=======
+      const res = await getQualityBatchesInTesting(page, displayItems);
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
       if (res?.data) {
         if (res.data?.length <= 0) {
           setError("You dont have sample in tesing");
           return;
         }
         setProcessingBatches(res?.data?.batches);
+<<<<<<< HEAD
+=======
+        setPaginationData(res?.data?.pagination);
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
         setPagination((prev) => ({
           ...prev,
           total: res?.data?.pagination?.total,
@@ -234,9 +254,21 @@ const ShortSummary = () => {
     const initializeData = async () => {
       await fetchAllBatches();
       await fetchProcessingBatches();
+      const getSampleStorage = await storage();
+      if (getSampleStorage?.length > 0) {
+        setSampleStorage(getSampleStorage || []);
+      }
     };
     initializeData();
   }, []);
+
+  useEffect(() => {
+    const initializeData = async () => {
+      await fetchAllBatches();
+      await fetchProcessingBatches();
+    };
+    initializeData();
+  }, [page, displayItems]);
 
   useEffect(() => {
     if (!isInitialLoad) {
@@ -266,7 +298,7 @@ const ShortSummary = () => {
       const matchesType =
         !filters.processingType ||
         filters.processingType === "All" ||
-        batch.processingType === filters.processingType;
+        batch.processing?.processingType === filters.processingType;
 
       const matchesGrade =
         !filters.grade ||
@@ -289,7 +321,7 @@ const ShortSummary = () => {
   };
 
   const handlePageChange = (newPage) => {
-    setPagination((prev) => ({ ...prev, page: newPage }));
+    setPage(newPage);
   };
 
   const handleFilterChange = (key, value) => {
@@ -305,6 +337,7 @@ const ShortSummary = () => {
   const handleSubmit = async () => {
     setLoading(true);
     const res = await updateQualityInformation(checkedBatches);
+<<<<<<< HEAD
     console.log({ res }, ":::::::::::::::::::::");
     setRespondSampleError(
       res?.response?.data?.message ?? "something went wrong."
@@ -313,11 +346,48 @@ const ShortSummary = () => {
     if (res?.message) {
       setLoading(false);
       console.log("success");
+=======
+
+    if (res?.response?.data?.error) {
+      setCheckedBathes([]);
+      setActivivatedBatches([]);
+      setRespondSampleError(
+        res?.response?.data?.message ?? "Something went wrong."
+      );
+      setTimeout(() => {
+        setRespondSampleError(false);
+      }, 4000);
+    } else {
+      await fetchAllBatches();
+      await fetchProcessingBatches();
+      setActivivatedBatches([]);
+      setCheckedBathes([]);
+      setRespondSampleSuccess(
+        res?.response?.data?.message ?? "Sample data, updated successfully."
+      );
+      setTimeout(() => {
+        setRespondSampleSuccess(false);
+      }, 4000);
+    }
+
+    setLoading(false);
+    if (res?.message) {
+      setLoading(false);
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
     }
     setLoading(false);
   };
   // sample
+<<<<<<< HEAD
   const handleCheckboxChange = (batchId) => {
+=======
+  const handleCheckboxChange = (batchId, processingType, ischecked) => {
+    ischecked == true
+      ? setActivivatedBatches((prev) => [...new Set([...prev, batchId])])
+      : setActivivatedBatches((prev) =>
+          prev.filter((eleme) => batchId !== eleme)
+        );
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
     setCheckedBathes((prev) => {
       const isAlreadySelected = prev.find((item) => item.id === batchId);
 
@@ -328,6 +398,10 @@ const ShortSummary = () => {
         ...prev,
         {
           id: batchId,
+<<<<<<< HEAD
+=======
+          processingType,
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
           labMoisture: { A0: "", A1: "" },
           "16+": { A0: "", A1: "" },
           "15+": { A0: "", A1: "" },
@@ -383,7 +457,7 @@ const ShortSummary = () => {
     display: "inline-block",
   });
 
-  const renderPagination = (filteredData) => {
+  const renderPagination = async (filteredData) => {
     const totalFilteredItems = filteredData.length;
     const totalPages = Math.ceil(totalFilteredItems / pagination.limit);
 
@@ -416,74 +490,6 @@ const ShortSummary = () => {
         borderColor: "#dee2e6",
       },
     };
-
-    return (
-      <div className="d-flex justify-content-between align-items-center mt-4 px-3">
-        <div className="text-muted">
-          Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-          {Math.min(pagination.page * pagination.limit, totalFilteredItems)} of{" "}
-          {totalFilteredItems} entries
-        </div>
-        <nav>
-          <ul className="pagination mb-0">
-            <li
-              className={`page-item ${pagination.page === 1 ? "disabled" : ""}`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-                style={
-                  pagination.page === 1
-                    ? paginationStyle.disabledPageLink
-                    : paginationStyle.pageLink
-                }
-              >
-                Previous
-              </button>
-            </li>
-            {[...Array(totalPages)].map((_, idx) => (
-              <li
-                key={idx + 1}
-                className={`page-item ${
-                  pagination.page === idx + 1 ? "active" : ""
-                }`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange(idx + 1)}
-                  style={
-                    pagination.page === idx + 1
-                      ? paginationStyle.activePageLink
-                      : paginationStyle.pageLink
-                  }
-                >
-                  {idx + 1}
-                </button>
-              </li>
-            ))}
-            <li
-              className={`page-item ${
-                pagination.page === totalPages ? "disabled" : ""
-              }`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page === totalPages}
-                style={
-                  pagination.page === totalPages
-                    ? paginationStyle.disabledPageLink
-                    : paginationStyle.pageLink
-                }
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    );
   };
 
   if (isInitialLoad) return <LoadingSkeleton />;
@@ -506,7 +512,11 @@ const ShortSummary = () => {
       {isAdmin ? (
         <>
           <button
+<<<<<<< HEAD
             disabled={!checkedBatch}
+=======
+            disabled={checkedBatches?.length <= 0}
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
             className="btn text-white mb-2"
             onClick={() => handleSubmit()}
             style={{
@@ -526,8 +536,13 @@ const ShortSummary = () => {
               "Save"
             )}
           </button>
+<<<<<<< HEAD
           {/* {<Success message="something" />} */}
           {respondSampleError && <Error error="error" />}{" "}
+=======
+          {respondSampleSuccess && <Success message={respondSampleSuccess} />}
+          {respondSampleError && <Error error={respondSampleError} />}
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
         </>
       ) : (
         ""
@@ -555,7 +570,7 @@ const ShortSummary = () => {
             </Col>
           </Row>
           <Row className="g-3">
-            <Col md={4}>
+            <Col md={2}>
               <InputGroup>
                 <Form.Control
                   type="text"
@@ -567,7 +582,11 @@ const ShortSummary = () => {
               </InputGroup>
             </Col>
             {isAdmin && (
+<<<<<<< HEAD
               <Col md={4}>
+=======
+              <Col md={2}>
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                 <Form.Select
                   value={filters?.station}
                   onChange={(e) =>
@@ -605,6 +624,22 @@ const ShortSummary = () => {
                     key={type == "Select_by_processing_type" ? "All" : type}
                     value={type == "Select_by_processing_type" ? "" : type}
                   >
+                    {type}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
+            <Col md={1}>
+              <Form.Select
+                style={{ marginLeft: "6rem" }}
+                value={displayItems}
+                onChange={(e) => {
+                  setDisplayItems(e.target.value);
+                }}
+                disabled={loading}
+              >
+                {[5, 10, 20].map((type) => (
+                  <option key={type} value={type}>
                     {type}
                   </option>
                 ))}
@@ -707,9 +742,18 @@ const ShortSummary = () => {
                               type="checkbox"
                               defaultChecked={false}
                               onChange={(e) => {
+<<<<<<< HEAD
                                 e.target.checked == true &&
                                   setCheckedBatch(true);
                                 handleCheckboxChange(batch?.batchNo);
+=======
+                                const isChecked = e.target?.checked;
+                                handleCheckboxChange(
+                                  batch?.batchNo,
+                                  batch?.processing?.processingType,
+                                  isChecked
+                                );
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                               }}
                             />
                           </div>
@@ -733,7 +777,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.yellow : "",
                                 }}
                               >
-                                +16(%)
+                                +16
                               </td>
                               <td
                                 style={{
@@ -741,7 +785,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.yellow : "",
                                 }}
                               >
-                                15(%)
+                                15
                               </td>
                               <td
                                 style={{
@@ -749,7 +793,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.yellow : "",
                                 }}
                               >
-                                14(%)
+                                14
                               </td>
                               <td
                                 style={{
@@ -757,7 +801,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.yellow : "",
                                 }}
                               >
-                                13(%)
+                                13
                               </td>
                               <td
                                 style={{
@@ -765,7 +809,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.yellow : "",
                                 }}
                               >
-                                B12(%)
+                                B12
                               </td>
                               <td
                                 style={{
@@ -773,7 +817,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.green : "",
                                 }}
                               >
-                                Deffect(%)
+                                Deffect
                               </td>
                               <td
                                 style={{
@@ -828,8 +872,16 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
+<<<<<<< HEAD
                                         disabled={loading}
                                         style={{ width: "4rem" }}
+=======
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+                                        style={{ width: "7rem" }}
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         defaultValue={element?.labMoisture ?? 0}
                                         required
                                         value={batch?.labMoisture?.A0}
@@ -851,7 +903,14 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
+<<<<<<< HEAD
                                         disabled={loading}
+=======
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["16+"] ?? 0
@@ -875,10 +934,20 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
+<<<<<<< HEAD
                                         disabled={loading}
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["15+"] ?? 0
+=======
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          element?.screen["15"] ?? 0
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         }
                                         required
                                         onChange={(e) =>
@@ -891,7 +960,11 @@ const ShortSummary = () => {
                                         }
                                       />
                                     )}
+<<<<<<< HEAD
                                     {!isAdmin && element?.screen["15+"]}
+=======
+                                    {!isAdmin && element?.screen["15"]}
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                   </td>
                                   {/* +14 */}
                                   <td className="align-middle">
@@ -899,7 +972,14 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
+<<<<<<< HEAD
                                         disabled={loading}
+=======
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["14"] ?? ""
@@ -915,7 +995,11 @@ const ShortSummary = () => {
                                         }
                                       />
                                     )}
+<<<<<<< HEAD
                                     {!isAdmin && element?.screen["14+"]}
+=======
+                                    {!isAdmin && element?.screen["14"]}
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                   </td>
                                   {/* +13 */}
                                   <td className="align-middle">
@@ -923,23 +1007,41 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
+<<<<<<< HEAD
                                         disabled={loading}
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["12/13"] ?? 0
+=======
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          element?.screen["13"] ?? 0
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         }
                                         required
                                         onChange={(e) =>
                                           handleInputChange(
                                             batch?.batchNo,
+<<<<<<< HEAD
                                             "12/13",
+=======
+                                            "13+",
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                             index / 2 == 0 ? "A0" : "A1",
                                             e.target.value
                                           )
                                         }
                                       />
                                     )}
+<<<<<<< HEAD
                                     {!isAdmin && element?.screen["12/13"]}
+=======
+                                    {!isAdmin && element?.screen["13"]}
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                   </td>
                                   {/* +12 */}
                                   <td className="align-middle">
@@ -947,7 +1049,14 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
+<<<<<<< HEAD
                                         disabled={loading}
+=======
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["B/12"] ?? 0
@@ -971,7 +1080,14 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
+<<<<<<< HEAD
                                         disabled={loading || !isAdmin}
+=======
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={element?.defect}
                                         required
@@ -993,7 +1109,14 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
+<<<<<<< HEAD
                                         disabled={loading || !isAdmin}
+=======
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={element?.ppScore}
                                         required
@@ -1009,6 +1132,7 @@ const ShortSummary = () => {
                                     )}
                                     {!isAdmin && element?.ppScore}
                                   </td>
+<<<<<<< HEAD
                                   {/**sample storage */}
                                   <td className="align-middle">
                                     {isAdmin && (
@@ -1038,6 +1162,54 @@ const ShortSummary = () => {
                                   <td className="align-middle">
                                     {element?.category ?? "N/A"}
                                   </td>
+=======
+                                  {/* category  */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <div style={{ width: "7rem" }}>
+                                        <Form.Select
+                                          onChange={(e) =>
+                                            handleInputChange(
+                                              batch?.batchNo,
+                                              "sampleStorage",
+                                              index / 2 == 0 ? "A0" : "A1",
+                                              e.target.value
+                                            )
+                                          }
+                                          disabled={
+                                            loading ||
+                                            !isInActivatedBatches(
+                                              batch?.batchNo
+                                            )
+                                          }
+                                          defaultValue={
+                                            index % 2 == 0
+                                              ? element?.sampleStorage_0?.id
+                                              : element?.sampleStorage_1?.id
+                                          }
+                                        >
+                                          {sampleStorage?.map((type) => (
+                                            <option
+                                              key={type?.id}
+                                              value={type?.id}
+                                              style={{
+                                                outline: "none",
+                                              }}
+                                            >
+                                              {type?.name}
+                                            </option>
+                                          ))}
+                                        </Form.Select>
+                                      </div>
+                                    )}
+                                    {!isAdmin && element?.category}
+                                  </td>
+                                  {/**sample storage */}
+                                  <td className="align-middle">
+                                    {element?.category ?? ""}
+                                  </td>
+
+>>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                   <GenericModal
                                     isOpen={
                                       selectedBatch !== null &&
@@ -1069,7 +1241,15 @@ const ShortSummary = () => {
             </tbody>
           </table>
         </div>
-        {!loading && renderPagination(filteredData)}
+        {!loading && (
+          <Pagination
+            currentPage={page}
+            totalPages={paginationData?.totalPages ?? 0}
+            totalItems={paginationData?.total ?? 0}
+            itemsPerPage={displayItems}
+            onPageChange={handlePageChange}
+          />
+        )}
       </Card>
     </div>
   );

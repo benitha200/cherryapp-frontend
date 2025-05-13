@@ -1233,6 +1233,62 @@ const WetTransfer = () => {
         setShowTransferModal(true);
     };
 
+    // const handleTransferConfirm = async () => {
+    //     try {
+    //         const recordsToTransfer = [];
+
+    //         Object.keys(selectedGrades).forEach(grade => {
+    //             if (selectedGrades[grade]) {
+    //                 const outputKgs = fullyWashedOutputKgs[grade];
+    //                 if (outputKgs && parseFloat(outputKgs) > 0) {
+    //                     const referenceRecord = groupedRecords[selectedBatch][0];
+
+    //                     recordsToTransfer.push({
+    //                         id: referenceRecord.id,
+    //                         batchNo: referenceRecord.batchNo,
+    //                         grade: grade,
+    //                         processingType: referenceRecord.processingType,
+    //                         moistureContent: parseFloat(moistureValues[`${selectedBatch}-${grade}`] || 0.0),
+    //                         outputKgs: parseFloat(outputKgs || 0)
+    //                     });
+    //                 }
+    //             }
+    //         });
+
+    //         await Promise.all(recordsToTransfer.map(record =>
+    //             axios.post(`${API_URL}/wet-transfer`, {
+    //                 processingId: record.id,
+    //                 batchNo: record.batchNo,
+    //                 date: new Date().toISOString(),
+    //                 sourceCwsId: userInfo.cwsId,
+    //                 destinationCwsId: selectedDestinationCws,
+    //                 totalKgs: record.totalKgs || 0,
+    //                 outputKgs: record.outputKgs,
+    //                 grade: record.grade,
+    //                 processingType: record.processingType,
+    //                 moistureContent: record.moistureContent
+    //             })
+    //         ));
+
+    //         await fetchProcessingRecords();
+    //         setSelectedBatch(null);
+    //         setSelectedGrades({});
+    //         setMoistureValues({});
+    //         setFullyWashedOutputKgs({ A0: '', A1: '' });
+    //         setShowTransferModal(false);
+
+    //         setAlertTitle('Success');
+    //         setAlertMessage('Wet Transfer completed successfully');
+    //         setShowAlertModal(true);
+    //     } catch (error) {
+    //         console.error('Transfer error:', error);
+    //         setAlertTitle('Error');
+    //         setAlertMessage('Failed to complete wet transfer');
+    //         setShowAlertModal(true);
+    //     }
+    // };
+
+
     const handleTransferConfirm = async () => {
         try {
             const recordsToTransfer = [];
@@ -1243,17 +1299,28 @@ const WetTransfer = () => {
                     if (outputKgs && parseFloat(outputKgs) > 0) {
                         const referenceRecord = groupedRecords[selectedBatch][0];
 
-                        recordsToTransfer.push({
-                            id: referenceRecord.id,
-                            batchNo: referenceRecord.batchNo,
-                            grade: grade,
-                            processingType: referenceRecord.processingType,
-                            moistureContent: parseFloat(moistureValues[`${selectedBatch}-${grade}`] || 0.0),
-                            outputKgs: parseFloat(outputKgs || 0)
-                        });
+                        // Check if a record with the same id, batchNo, and grade already exists
+                        const isDuplicate = recordsToTransfer.some(record =>
+                            record.id === referenceRecord.id &&
+                            record.batchNo === referenceRecord.batchNo &&
+                            record.grade === grade
+                        );
+
+                        if (!isDuplicate) {
+                            recordsToTransfer.push({
+                                id: referenceRecord.id,
+                                batchNo: referenceRecord.batchNo,
+                                grade: grade,
+                                processingType: referenceRecord.processingType,
+                                moistureContent: parseFloat(moistureValues[`${selectedBatch}-${grade}`] || 0.0),
+                                outputKgs: parseFloat(outputKgs || 0)
+                            });
+                        }
                     }
                 }
             });
+
+            console.log('Unique Records to Transfer:', recordsToTransfer);
 
             await Promise.all(recordsToTransfer.map(record =>
                 axios.post(`${API_URL}/wet-transfer`, {
