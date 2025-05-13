@@ -8,11 +8,8 @@ import {
   updateQualityInformation,
 } from "../../../../apis/quality";
 import { Error, Success } from "./responses";
-<<<<<<< HEAD
-=======
 import { Pagination } from "./paginations";
 import { sampleStorage as storage } from "../../../../apis/sampleStorage";
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
 
 const processingTheme = {
   primary: "#008080", // Sucafina teal
@@ -159,14 +156,11 @@ const ShortSummary = () => {
   });
   const [stations, setStations] = useState([]);
   const [respondSampleError, setRespondSampleError] = useState(false);
-<<<<<<< HEAD
-=======
   const [respondSampleSuccess, setRespondSampleSuccess] = useState(false);
   const [activatedBatches, setActivivatedBatches] = useState([]);
   const [displayItems, setDisplayItems] = useState(5);
   const [page, setPage] = useState(1);
   const [sampleStorage, setSampleStorage] = useState([]);
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
 
   const processingTypes = [
     "Select_by_processing_type",
@@ -188,11 +182,7 @@ const ShortSummary = () => {
   // Update the fetchAllBatches function to avoid unnecessary calculations
   const fetchAllBatches = async () => {
     try {
-<<<<<<< HEAD
-      const res = await getQualityBatchesInTesting(1, 100);
-=======
       const res = await getQualityBatchesInTesting(1, displayItems);
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
       if (res?.data) {
         if (res.data?.length <= 0) {
           setError("You dont have sample in testing");
@@ -201,10 +191,6 @@ const ShortSummary = () => {
 
         const batchData = res?.data?.batches;
         setAllBatches(batchData);
-<<<<<<< HEAD
-        // Calculate summary data for the initial load (all batches)
-=======
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
         calculateSummaryData(batchData);
       } else {
         setError(res?.response?.data?.message ?? "Something went wrong.");
@@ -218,21 +204,14 @@ const ShortSummary = () => {
   const fetchProcessingBatches = async () => {
     setLoading(true);
     try {
-<<<<<<< HEAD
-      const res = await getQualityBatchesInTesting(1, 100);
-=======
       const res = await getQualityBatchesInTesting(page, displayItems);
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
       if (res?.data) {
         if (res.data?.length <= 0) {
           setError("You dont have sample in tesing");
           return;
         }
         setProcessingBatches(res?.data?.batches);
-<<<<<<< HEAD
-=======
         setPaginationData(res?.data?.pagination);
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
         setPagination((prev) => ({
           ...prev,
           total: res?.data?.pagination?.total,
@@ -337,16 +316,6 @@ const ShortSummary = () => {
   const handleSubmit = async () => {
     setLoading(true);
     const res = await updateQualityInformation(checkedBatches);
-<<<<<<< HEAD
-    console.log({ res }, ":::::::::::::::::::::");
-    setRespondSampleError(
-      res?.response?.data?.message ?? "something went wrong."
-    );
-    setLoading(false);
-    if (res?.message) {
-      setLoading(false);
-      console.log("success");
-=======
 
     if (res?.response?.data?.error) {
       setCheckedBathes([]);
@@ -373,21 +342,16 @@ const ShortSummary = () => {
     setLoading(false);
     if (res?.message) {
       setLoading(false);
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
     }
     setLoading(false);
   };
   // sample
-<<<<<<< HEAD
-  const handleCheckboxChange = (batchId) => {
-=======
   const handleCheckboxChange = (batchId, processingType, ischecked) => {
     ischecked == true
       ? setActivivatedBatches((prev) => [...new Set([...prev, batchId])])
       : setActivivatedBatches((prev) =>
           prev.filter((eleme) => batchId !== eleme)
         );
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
     setCheckedBathes((prev) => {
       const isAlreadySelected = prev.find((item) => item.id === batchId);
 
@@ -398,10 +362,7 @@ const ShortSummary = () => {
         ...prev,
         {
           id: batchId,
-<<<<<<< HEAD
-=======
           processingType,
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
           labMoisture: { A0: "", A1: "" },
           "16+": { A0: "", A1: "" },
           "15+": { A0: "", A1: "" },
@@ -512,11 +473,7 @@ const ShortSummary = () => {
       {isAdmin ? (
         <>
           <button
-<<<<<<< HEAD
-            disabled={!checkedBatch}
-=======
             disabled={checkedBatches?.length <= 0}
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
             className="btn text-white mb-2"
             onClick={() => handleSubmit()}
             style={{
@@ -536,13 +493,8 @@ const ShortSummary = () => {
               "Save"
             )}
           </button>
-<<<<<<< HEAD
-          {/* {<Success message="something" />} */}
-          {respondSampleError && <Error error="error" />}{" "}
-=======
           {respondSampleSuccess && <Success message={respondSampleSuccess} />}
           {respondSampleError && <Error error={respondSampleError} />}
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
         </>
       ) : (
         ""
@@ -582,11 +534,7 @@ const ShortSummary = () => {
               </InputGroup>
             </Col>
             {isAdmin && (
-<<<<<<< HEAD
-              <Col md={4}>
-=======
               <Col md={2}>
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                 <Form.Select
                   value={filters?.station}
                   onChange={(e) =>
@@ -742,18 +690,12 @@ const ShortSummary = () => {
                               type="checkbox"
                               defaultChecked={false}
                               onChange={(e) => {
-<<<<<<< HEAD
-                                e.target.checked == true &&
-                                  setCheckedBatch(true);
-                                handleCheckboxChange(batch?.batchNo);
-=======
                                 const isChecked = e.target?.checked;
                                 handleCheckboxChange(
                                   batch?.batchNo,
                                   batch?.processing?.processingType,
                                   isChecked
                                 );
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                               }}
                             />
                           </div>
@@ -872,16 +814,11 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
-<<<<<<< HEAD
-                                        disabled={loading}
-                                        style={{ width: "4rem" }}
-=======
                                         disabled={
                                           loading ||
                                           !isInActivatedBatches(batch?.batchNo)
                                         }
                                         style={{ width: "7rem" }}
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         defaultValue={element?.labMoisture ?? 0}
                                         required
                                         value={batch?.labMoisture?.A0}
@@ -903,14 +840,10 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
-<<<<<<< HEAD
-                                        disabled={loading}
-=======
                                         disabled={
                                           loading ||
                                           !isInActivatedBatches(batch?.batchNo)
                                         }
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["16+"] ?? 0
@@ -934,12 +867,6 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
-<<<<<<< HEAD
-                                        disabled={loading}
-                                        style={{ width: "7rem" }}
-                                        defaultValue={
-                                          element?.screen["15+"] ?? 0
-=======
                                         disabled={
                                           loading ||
                                           !isInActivatedBatches(batch?.batchNo)
@@ -947,7 +874,6 @@ const ShortSummary = () => {
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["15"] ?? 0
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         }
                                         required
                                         onChange={(e) =>
@@ -960,11 +886,7 @@ const ShortSummary = () => {
                                         }
                                       />
                                     )}
-<<<<<<< HEAD
-                                    {!isAdmin && element?.screen["15+"]}
-=======
                                     {!isAdmin && element?.screen["15"]}
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                   </td>
                                   {/* +14 */}
                                   <td className="align-middle">
@@ -972,14 +894,10 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
-<<<<<<< HEAD
-                                        disabled={loading}
-=======
                                         disabled={
                                           loading ||
                                           !isInActivatedBatches(batch?.batchNo)
                                         }
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["14"] ?? ""
@@ -995,11 +913,7 @@ const ShortSummary = () => {
                                         }
                                       />
                                     )}
-<<<<<<< HEAD
-                                    {!isAdmin && element?.screen["14+"]}
-=======
                                     {!isAdmin && element?.screen["14"]}
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                   </td>
                                   {/* +13 */}
                                   <td className="align-middle">
@@ -1007,12 +921,6 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
-<<<<<<< HEAD
-                                        disabled={loading}
-                                        style={{ width: "7rem" }}
-                                        defaultValue={
-                                          element?.screen["12/13"] ?? 0
-=======
                                         disabled={
                                           loading ||
                                           !isInActivatedBatches(batch?.batchNo)
@@ -1020,28 +928,19 @@ const ShortSummary = () => {
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["13"] ?? 0
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         }
                                         required
                                         onChange={(e) =>
                                           handleInputChange(
                                             batch?.batchNo,
-<<<<<<< HEAD
-                                            "12/13",
-=======
                                             "13+",
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                             index / 2 == 0 ? "A0" : "A1",
                                             e.target.value
                                           )
                                         }
                                       />
                                     )}
-<<<<<<< HEAD
-                                    {!isAdmin && element?.screen["12/13"]}
-=======
                                     {!isAdmin && element?.screen["13"]}
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                   </td>
                                   {/* +12 */}
                                   <td className="align-middle">
@@ -1049,14 +948,10 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
-<<<<<<< HEAD
-                                        disabled={loading}
-=======
                                         disabled={
                                           loading ||
                                           !isInActivatedBatches(batch?.batchNo)
                                         }
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={
                                           element?.screen["B/12"] ?? 0
@@ -1080,14 +975,10 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
-<<<<<<< HEAD
-                                        disabled={loading || !isAdmin}
-=======
                                         disabled={
                                           loading ||
                                           !isInActivatedBatches(batch?.batchNo)
                                         }
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={element?.defect}
                                         required
@@ -1109,14 +1000,10 @@ const ShortSummary = () => {
                                       <input
                                         type="number"
                                         className="form-control"
-<<<<<<< HEAD
-                                        disabled={loading || !isAdmin}
-=======
                                         disabled={
                                           loading ||
                                           !isInActivatedBatches(batch?.batchNo)
                                         }
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                         style={{ width: "7rem" }}
                                         defaultValue={element?.ppScore}
                                         required
@@ -1132,37 +1019,6 @@ const ShortSummary = () => {
                                     )}
                                     {!isAdmin && element?.ppScore}
                                   </td>
-<<<<<<< HEAD
-                                  {/**sample storage */}
-                                  <td className="align-middle">
-                                    {isAdmin && (
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        disabled={loading || !isAdmin}
-                                        style={{ width: "7rem" }}
-                                        defaultValue={
-                                          index / 2 == 0
-                                            ? element?.sampleStorage_0?.name
-                                            : element?.sampleStorage_1?.name
-                                        }
-                                        required
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            batch?.batchNo,
-                                            "sampleStorage",
-                                            index / 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    )}
-                                    {!isAdmin && "A23"}
-                                  </td>
-                                  <td className="align-middle">
-                                    {element?.category ?? "N/A"}
-                                  </td>
-=======
                                   {/* category  */}
                                   <td className="align-middle">
                                     {isAdmin && (
@@ -1209,7 +1065,6 @@ const ShortSummary = () => {
                                     {element?.category ?? ""}
                                   </td>
 
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
                                   <GenericModal
                                     isOpen={
                                       selectedBatch !== null &&

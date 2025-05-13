@@ -174,11 +174,7 @@ const HighGrades = () => {
 
   const fetchProcessingBatches = async () => {
     setLoading(true);
-<<<<<<< HEAD
-    const res = await getHighgrades(1, 5);
-=======
     const res = await getHighgrades(page, displayItems);
->>>>>>> e71f4a8aef11e4d63b1044d7488be510fb559e8c
     if (res?.data && res.data?.length > 0) {
       setProcessingBatches(res?.data);
       setPaginationData(res?.pagination);
