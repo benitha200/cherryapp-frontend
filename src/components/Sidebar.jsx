@@ -264,7 +264,7 @@ const Sidebar = () => {
   //quality menu items
   const qualityItems = [
     { path: "/quality-all", icon: "capsule", text: "Sample" },
-    // { path: "/quality-delivery", icon: "box", text: "Delivery" },
+    { path: "/quality-delivery", icon: "box", text: "Delivery" },
   ];
 
   // Reports menu items
