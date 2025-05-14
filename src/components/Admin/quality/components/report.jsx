@@ -10,6 +10,7 @@ import {
 import { Error, Success } from "./responses";
 import { Pagination } from "./paginations";
 import { sampleStorage as storage } from "../../../../apis/sampleStorage";
+import { GenericModel } from "../../../../sharedCompoents/genericModel";
 
 const processingTheme = {
   primary: "#008080", // Sucafina teal

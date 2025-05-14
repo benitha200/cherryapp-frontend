@@ -247,7 +247,8 @@ const Sidebar = () => {
     if (
       location.pathname === "/quality-all" ||
       location.pathname === "/quality-all/form" ||
-      location.pathname === "quality-delivery"
+      location.pathname === "quality-delivery" ||
+      location.pathname === "delivery-track"
     ) {
       setQualityOpen(true);
     }
@@ -262,9 +263,14 @@ const Sidebar = () => {
   // Base menu items
   let menuItems = [{ path: "/", icon: "house-door", text: "Dashboard" }];
   //quality menu items
-  const qualityItems = [
+  const qualityItemsCws = [
     { path: "/quality-all", icon: "capsule", text: "Sample" },
-    // { path: "/quality-delivery", icon: "box", text: "Delivery" },
+  ];
+
+  const qualityItemsAdmin = [
+    { path: "/quality-all", icon: "capsule", text: "Sample" },
+    { path: "/delivery-track", icon: "bus-front", text: "Receive Track" },
+    { path: "/quality-delivery", icon: "box", text: "Delivery" },
   ];
 
   // Reports menu items
@@ -406,13 +412,9 @@ const Sidebar = () => {
         {/* Navigation Links */}
         <nav className="flex-grow-1 py-3">
           {menuItems.map(renderNavLink)}
+
           {/* Quality Dropdown - Show for ADMIN, SUPER_ADMIN, SUPERVISOR, OPERATIONS, FINANCE, MD */}
-          {(user.role === "ADMIN" ||
-            user.role === "SUPER_ADMIN" ||
-            // || user.role === "SUPERVISOR" ||
-            // user.role === "OPERATIONS" ||
-            // user.role === "FINANCE" ||
-            user.role === "CWS_MANAGER") && (
+          {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
             // user.role === "MD"
             <div>
               <button
@@ -438,7 +440,38 @@ const Sidebar = () => {
                     marginLeft: "2rem",
                   }}
                 >
-                  {qualityItems.map(renderNavLink)}
+                  {qualityItemsAdmin.map(renderNavLink)}
+                </div>
+              )}
+            </div>
+          )}
+
+          {user.role === "CWS_MANAGER" && (
+            <div>
+              <button
+                className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
+                style={{
+                  backgroundColor: "transparent",
+                  cursor: "pointer",
+                }}
+                onClick={() => setQualityOpen(!qualityOpen)}
+              >
+                <i className="bi bi-bookmark-check-fill me-3"></i>
+                Quality
+                <i
+                  className={`bi bi-chevron-${
+                    qualityOpen ? "down" : "right"
+                  } ms-auto`}
+                ></i>
+              </button>
+              {qualityOpen && (
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    marginLeft: "2rem",
+                  }}
+                >
+                  {qualityItemsCws.map(renderNavLink)}
                 </div>
               )}
             </div>
