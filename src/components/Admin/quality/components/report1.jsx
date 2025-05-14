@@ -5,12 +5,12 @@ import { useNavigate } from "react-router-dom";
 import GenericModal from "./model";
 import {
   getQualityBatchesInTesting,
-  updateQualityInformation,
+  updateQualityInformationOnDelivary,
 } from "../../../../apis/quality";
 import { Error, Success } from "./responses";
 import { Pagination } from "./paginations";
 import { sampleStorage as storage } from "../../../../apis/sampleStorage";
-import { GenericModel } from "../../../../sharedCompoents/genericModel";
+import { getDelivary } from "../../../../apis/delivaryCapping";
 
 const processingTheme = {
   primary: "#008080", // Sucafina teal
@@ -116,7 +116,7 @@ const LoadingSkeleton = () => {
   );
 };
 
-const ShortSummary = () => {
+const DelivarySummary = () => {
   const loggedinUser = loggedInUser();
   const isAdmin = loggedinUser?.role == "ADMIN";
   const isWorkingStations = loggedinUser?.role === "CWS_MANAGER";
@@ -205,7 +205,8 @@ const ShortSummary = () => {
   const fetchProcessingBatches = async () => {
     setLoading(true);
     try {
-      const res = await getQualityBatchesInTesting(page, displayItems);
+      const v = await getQualityBatchesInTesting(page, displayItems);
+      const res = await getDelivary(1, 20);
       if (res?.data) {
         if (res.data?.length <= 0) {
           setError("You dont have sample in tesing");
@@ -316,7 +317,7 @@ const ShortSummary = () => {
 
   const handleSubmit = async () => {
     setLoading(true);
-    const res = await updateQualityInformation(checkedBatches);
+    const res = await updateQualityInformationOnDelivary(checkedBatches);
 
     if (res?.response?.data?.error) {
       setCheckedBathes([]);
@@ -347,7 +348,7 @@ const ShortSummary = () => {
     setLoading(false);
   };
   // sample
-  const handleCheckboxChange = (batchId, processingType, ischecked) => {
+  const handleCheckboxChange = (batchId, ischecked, id, transfer) => {
     ischecked == true
       ? setActivivatedBatches((prev) => [...new Set([...prev, batchId])])
       : setActivivatedBatches((prev) =>
@@ -362,8 +363,10 @@ const ShortSummary = () => {
       return [
         ...prev,
         {
-          id: batchId,
-          processingType,
+          batchId: batchId,
+          id: { A0: id["A0"], A1: id["A1"] },
+          transferId: { A0: transfer["A0"], A1: transfer["A1"] },
+          batchNo: { A0: "", A1: "" },
           labMoisture: { A0: "", A1: "" },
           "16+": { A0: "", A1: "" },
           "15+": { A0: "", A1: "" },
@@ -374,6 +377,8 @@ const ShortSummary = () => {
           ppScore: { A0: "", A1: "" },
           sampleStorage: { A0: "", A1: "" },
           category: { A0: "", A1: "" },
+          qualityDelivaryId: { A0: "", A1: "" },
+          qualityId: { A0: "", A1: "" },
         },
       ];
     });
@@ -694,8 +699,15 @@ const ShortSummary = () => {
                                 const isChecked = e.target?.checked;
                                 handleCheckboxChange(
                                   batch?.batchNo,
-                                  batch?.processing?.processingType,
-                                  isChecked
+                                  isChecked,
+                                  {
+                                    A0: batch["A0"]?.id ?? "",
+                                    A1: batch["A1"]?.id ?? "",
+                                  },
+                                  {
+                                    A0: batch["A0"]?.transferId ?? "",
+                                    A1: batch["A1"]?.transferId ?? "",
+                                  }
                                 );
                               }}
                             />
@@ -713,6 +725,7 @@ const ShortSummary = () => {
                               <td style={{ width: "10rem" }}>
                                 Station Moisture
                               </td>
+                              <td style={{ width: "10rem" }}>KGs</td>
                               <td style={{ width: "10rem" }}>Lab Moisture</td>
                               <td
                                 style={{
@@ -808,6 +821,32 @@ const ShortSummary = () => {
                                   </td>
                                   <td className="align-middle">
                                     {element?.cwsMoisture1 ?? 0}
+                                  </td>
+                                  {/* totalkg */}
+                                  <td className="align-middle">
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+                                        style={{ width: "7rem" }}
+                                        defaultValue={element?.labMoisture ?? 0}
+                                        required
+                                        value={batch?.labMoisture?.A0}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "labMoisture",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.kgs}
                                   </td>
                                   {/* lab moisture */}
                                   <td className="align-middle">
@@ -1111,4 +1150,4 @@ const ShortSummary = () => {
   );
 };
 
-export default ShortSummary;
+export default DelivarySummary;

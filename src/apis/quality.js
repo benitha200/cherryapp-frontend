@@ -159,3 +159,63 @@ export const updateQualityInformation = async (payload) => {
     return error;
   }
 };
+
+export const updateQualityInformationOnDelivary = async (payload) => {
+  const loggedinuser = loggedInUser();
+  console.log(";;;;;;;;payload", payload);
+  const new_payload = payload?.map((element) => {
+    return [
+      {
+        id: element?.id["A1"],
+        batchNo: element?.batchId,
+        transferId: element?.transferId["A1"],
+        screen: {
+          14: element["14+"]["A1"] ?? "",
+          16: element["16+"]["A1"] ?? "",
+          15: element["15+"]["A1"] ?? "",
+          13: element["13+"]["A1"],
+          "B/12": element["B/12"]["A1"] ?? "",
+        },
+        defect: element?.deffect["A1"] ?? "",
+        ppScore: element?.ppScore["A1"] ?? "",
+        sampleStorageId: element?.sampleStorage["A1"],
+        notes: "",
+      },
+      {
+        id: element?.id["A0"],
+        batchNo: element?.batchId,
+        transferId: element?.transferId["A0"],
+        screen: {
+          14: element["14+"]["A0"] ?? "",
+          16: element["16+"]["A0"] ?? "",
+          15: element["15+"]["A0"] ?? "",
+          13: element["13+"]["A0"],
+          "B/12": element["B/12"]["A0"] ?? "",
+        },
+        defect: element?.deffect["A0"] ?? "",
+        ppScore: element?.ppScore["A0"] ?? "",
+        sampleStorageId: element?.sampleStorage["A0"],
+        notes: "",
+      },
+    ];
+  });
+
+  console.log("new payload::::::::::::", new_payload?.flat(1));
+
+  try {
+    const res = await axios.put(
+      `${API_URL}/quality-delivery/send-delivery-test-result`,
+      { batches: new_payload?.flat(1) },
+      {
+        headers: {
+          Authorization: `Bearer ${loggedinuser?.token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return res?.data;
+  } catch (error) {
+    return error;
+  }
+};

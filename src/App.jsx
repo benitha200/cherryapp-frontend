@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -36,37 +39,49 @@ import Transport from "./components/Admin/Transport/Transport.jsx";
 import WetTransferAdmin from "./components/Admin/WetTransfer/WetTransferAdmin.jsx";
 import Quality from "./components/Admin/quality/index.jsx";
 import { SampleForm } from "./components/Admin/quality/sample/index.jsx";
+import OfflineModal from "./sharedCompoents/networkError.jsx";
+import NotFoundPage from "./sharedCompoents/404/404.jsx";
+import Delivery from "./components/Admin/quality/delivaly/index.jsx";
+import DelivarySummary from "./components/Admin/quality/components/report1.jsx";
 
 const AppContent = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
   const [isMobile, setIsMobile] = useState(false);
+  const [isOffiline, setIsOffline] = useState(false);
 
   useEffect(() => {
     const checkWidth = () => {
       setIsMobile(window.innerWidth < 768);
     };
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
 
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
     checkWidth();
     window.addEventListener("resize", checkWidth);
     return () => window.removeEventListener("resize", checkWidth);
   }, []);
+  const queryClient = new QueryClient();
 
   return (
-    <div
-      className="d-flex min-vh-100"
-      style={{ fontFamily: "Inter, sans-serif", fontSize: "14px" }}
-    >
-      {!isLoginPage && <Sidebar />}
+    <QueryClientProvider client={queryClient}>
+      {isOffiline && <OfflineModal />}
       <div
-        className="flex-grow-1 bg-light overflow-auto"
-        style={{
-          marginLeft: isLoginPage ? "0" : isMobile ? "0" : "250px",
-          height: "100vh",
-          transition: "margin-left 0.3s ease-in-out",
-        }}
+        className="d-flex min-vh-100"
+        style={{ fontFamily: "Inter, sans-serif", fontSize: "14px" }}
       >
-        {/* <div
+        {!isLoginPage && <Sidebar />}
+        <div
+          className="flex-grow-1 bg-light overflow-auto"
+          style={{
+            marginLeft: isLoginPage ? "0" : isMobile ? "0" : "250px",
+            height: "100vh",
+            transition: "margin-left 0.3s ease-in-out",
+          }}
+        >
+          {/* <div
   className="alert m-2 text-center"
   role="alert"
   style={{
@@ -83,232 +98,237 @@ const AppContent = () => {
   This is for Testing purpose only
 </div> */}
 
-        <div className="container-fluid p-4">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/my-account" element={<MyAccount />} />
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/purchases/new"
-              element={
-                <PrivateRoute>
-                  <PurchaseForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/purchases"
-              element={
-                <PrivateRoute>
-                  <PurchaseList />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/purchases-all"
-              element={
-                <PrivateRoute>
-                  <PurchaseListAll />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/processing-all"
-              element={
-                <PrivateRoute>
-                  <ProcessingListAll />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/quality-all"
-              element={
-                <PrivateRoute>
-                  <Quality />
-                </PrivateRoute>
-              }
-            />
+          <div className="container-fluid p-4">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/my-account" element={<MyAccount />} />
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/purchases/new"
+                element={
+                  <PrivateRoute>
+                    <PurchaseForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/purchases"
+                element={
+                  <PrivateRoute>
+                    <PurchaseList />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/purchases-all"
+                element={
+                  <PrivateRoute>
+                    <PurchaseListAll />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/processing-all"
+                element={
+                  <PrivateRoute>
+                    <ProcessingListAll />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/quality-all"
+                element={
+                  <PrivateRoute>
+                    <Quality />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/quality-delivery"
-              element={
-                <PrivateRoute>
-                  <Quality />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/quality-all/form"
-              element={
-                <PrivateRoute>
-                  <SampleForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/transport"
-              element={
-                <PrivateRoute>
-                  <Transport />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/wet-transfer-admin"
-              element={
-                <PrivateRoute>
-                  <WetTransferAdmin />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/purchases/date/:date"
-              element={<DailyPurchaseDetails />}
-            />
-            <Route
-              path="/purchase-by-station"
-              element={<PurchaseByStation />}
-            />
+              <Route
+                path="/quality-delivery"
+                element={
+                  <PrivateRoute>
+                    <Quality />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/quality-all/form"
+                element={
+                  <PrivateRoute>
+                    <SampleForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/transport"
+                element={
+                  <PrivateRoute>
+                    <Transport />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/wet-transfer-admin"
+                element={
+                  <PrivateRoute>
+                    <WetTransferAdmin />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/purchases/date/:date"
+                element={<DailyPurchaseDetails />}
+              />
+              <Route
+                path="/purchase-by-station"
+                element={<PurchaseByStation />}
+              />
 
-            <Route
-              path="/processing"
-              element={
-                <PrivateRoute>
-                  <ProcessingList />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/processing"
+                element={
+                  <PrivateRoute>
+                    <ProcessingList />
+                  </PrivateRoute>
+                }
+              />
 
-            {/* sender */}
-            <Route
-              path="/wet-transfer"
-              element={
-                <PrivateRoute>
-                  <WetTransfer />
-                </PrivateRoute>
-              }
-            />
-            {/* wet transfer receiver */}
-            <Route
-              path="/wet-transfer-receiver"
-              element={
-                <PrivateRoute>
-                  <WetTransferReceiver />
-                </PrivateRoute>
-              }
-            />
+              {/* sender */}
+              <Route
+                path="/wet-transfer"
+                element={
+                  <PrivateRoute>
+                    <WetTransfer />
+                  </PrivateRoute>
+                }
+              />
+              {/* wet transfer receiver */}
+              <Route
+                path="/wet-transfer-receiver"
+                element={
+                  <PrivateRoute>
+                    <WetTransferReceiver />
+                  </PrivateRoute>
+                }
+              />
 
-            {/* wet transfer sender and receiver */}
-            <Route
-              path="/wet-transfer-both"
-              element={
-                <PrivateRoute>
-                  <WetTransferBoth />
-                </PrivateRoute>
-              }
-            />
+              {/* wet transfer sender and receiver */}
+              <Route
+                path="/wet-transfer-both"
+                element={
+                  <PrivateRoute>
+                    <WetTransferBoth />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/transfer"
-              element={
-                <PrivateRoute>
-                  <Transfer />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/transfer"
+                element={
+                  <PrivateRoute>
+                    <Transfer />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/site-collections/new"
-              element={
-                <PrivateRoute>
-                  <SiteCollectionForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/site-collections"
-              element={
-                <PrivateRoute>
-                  <SiteCollectionList />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/users"
-              element={
-                <PrivateRoute>
-                  <Users />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/pricing"
-              element={
-                <PrivateRoute>
-                  <PricingManagement />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/cws"
-              element={
-                <PrivateRoute>
-                  <CwsList />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/cws/new"
-              element={
-                <PrivateRoute>
-                  <CwsForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/wet-transfer-cws-mapping"
-              element={
-                <PrivateRoute>
-                  <WetTransferCwsMapping />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/site-collections/new"
+                element={
+                  <PrivateRoute>
+                    <SiteCollectionForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/site-collections"
+                element={
+                  <PrivateRoute>
+                    <SiteCollectionList />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/users"
+                element={
+                  <PrivateRoute>
+                    <Users />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/pricing"
+                element={
+                  <PrivateRoute>
+                    <PricingManagement />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/cws"
+                element={
+                  <PrivateRoute>
+                    <CwsList />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/cws/new"
+                element={
+                  <PrivateRoute>
+                    <CwsForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/wet-transfer-cws-mapping"
+                element={
+                  <PrivateRoute>
+                    <WetTransferCwsMapping />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/cherry-purchase-report"
-              element={
-                <PrivateRoute>
-                  <CherryPurchaseReportDetailed />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/bagg-off-list"
-              element={
-                <PrivateRoute>
-                  <BaggingOffList />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/bagging-off-report"
-              element={
-                <PrivateRoute>
-                  <BaggingOffReport />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
+              <Route
+                path="/cherry-purchase-report"
+                element={
+                  <PrivateRoute>
+                    <CherryPurchaseReportDetailed />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/bagg-off-list"
+                element={
+                  <PrivateRoute>
+                    <BaggingOffList />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/bagging-off-report"
+                element={
+                  <PrivateRoute>
+                    <BaggingOffReport />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/quality-delivery" element={<DelivarySummary />} />
+
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </div>
         </div>
       </div>
-    </div>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 };
 
