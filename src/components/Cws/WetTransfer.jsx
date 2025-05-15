@@ -1790,7 +1790,7 @@ const WetTransfer = () => {
                     <Row className="mt-3">
                         <Col>
                             <Alert variant="warning">
-                                Please confirm that you are about to transfer coffee from {sourceCwsName} to {destinationCwsName}.
+                                Please confirm that you are about to transfer wet parchment from {sourceCwsName} to {destinationCwsName}.
                                 This action cannot be undone.
                             </Alert>
                         </Col>
