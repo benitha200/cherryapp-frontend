@@ -41,8 +41,9 @@ import Quality from "./components/Admin/quality/index.jsx";
 import { SampleForm } from "./components/Admin/quality/sample/index.jsx";
 import OfflineModal from "./sharedCompoents/networkError.jsx";
 import NotFoundPage from "./sharedCompoents/404/404.jsx";
-import Delivery from "./components/Admin/quality/delivaly/index.jsx";
-import DelivarySummary from "./components/Admin/quality/components/report1.jsx";
+import DelivarySummary from "./components/Admin/quality/delivery/components/report.jsx";
+import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
+
 
 const AppContent = () => {
   const location = useLocation();
@@ -155,7 +156,8 @@ const AppContent = () => {
                 path="/quality-delivery"
                 element={
                   <PrivateRoute>
-                    <Quality />
+                    <DeliveryTracks />
+
                   </PrivateRoute>
                 }
               />
@@ -320,7 +322,8 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-              <Route path="/quality-delivery" element={<DelivarySummary />} />
+              {/* <Route path="/delivery-track" element={<DeliveryTracks />} /> */}
+
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

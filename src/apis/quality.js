@@ -6,7 +6,7 @@ export const getHighgrades = async (page, limit) => {
   const loggedinuser = loggedInUser();
   try {
     const res = await axios.get(
-      `${API_URL}/processings/batch/gradeA/${loggedinuser?.cwsId}?page=${page}&limit=${limit}`,
+      `${API_URL}/batches/sample/gradeA/${loggedinuser?.cwsId}?page=${page}&limit=${limit}`,
 
       {
         headers: {
@@ -166,9 +166,10 @@ export const updateQualityInformationOnDelivary = async (payload) => {
   const new_payload = payload?.map((element) => {
     return [
       {
-        id: element?.id["A1"],
+        // id: element?.id["A1"],
         batchNo: element?.batchId,
-        transferId: element?.transferId["A1"],
+        // transferId: element?.transferId["A1"],
+
         screen: {
           14: element["14+"]["A1"] ?? "",
           16: element["16+"]["A1"] ?? "",
@@ -182,9 +183,10 @@ export const updateQualityInformationOnDelivary = async (payload) => {
         notes: "",
       },
       {
-        id: element?.id["A0"],
+        // id: element?.id["A0"],
         batchNo: element?.batchId,
-        transferId: element?.transferId["A0"],
+        // transferId: element?.transferId["A0"],
+
         screen: {
           14: element["14+"]["A0"] ?? "",
           16: element["16+"]["A0"] ?? "",

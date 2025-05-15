@@ -243,15 +243,17 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   // Check if current path is a reports page for initial dropdown state
-  // useEffect(() => {
-  //   if (
-  //     location.pathname === "/quality-all" ||
-  //     location.pathname === "/quality-all/form" ||
-  //     location.pathname === "quality-delivery"
-  //   ) {
-  //     setQualityOpen(true);
-  //   }
-  // }, [location.pathname]);
+
+  useEffect(() => {
+    if (
+      location.pathname === "/quality-all" ||
+      location.pathname === "/quality-all/form" ||
+      location.pathname === "quality-delivery" ||
+      location.pathname === "delivery-track"
+    ) {
+      setQualityOpen(true);
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -262,10 +264,16 @@ const Sidebar = () => {
   // Base menu items
   let menuItems = [{ path: "/", icon: "house-door", text: "Dashboard" }];
   //quality menu items
-  // const qualityItems = [
-  //   { path: "/quality-all", icon: "capsule", text: "Sample" },
-  //   { path: "/quality-delivery", icon: "box", text: "Delivery" },
-  // ];
+
+  const qualityItemsCws = [
+    { path: "/quality-all", icon: "capsule", text: "Sample" },
+  ];
+
+  const qualityItemsAdmin = [
+    { path: "/quality-all", icon: "capsule", text: "Sample" },
+    // { path: "/delivery-track", icon: "bus-front", text: "Receive Track" },
+    { path: "/quality-delivery", icon: "box", text: "Delivery" },
+  ];
 
   // Reports menu items
   const reportItems = [
@@ -333,8 +341,8 @@ const Sidebar = () => {
           cwsInfo?.is_wet_parchment_sender === 1
             ? "/wet-transfer"
             : cwsInfo?.is_wet_parchment_sender === 3
-              ? "/wet-transfer-both"
-              : "/wet-transfer-receiver",
+            ? "/wet-transfer-both"
+            : "/wet-transfer-receiver",
         icon: "bag-check",
         text: "Wet Transfer",
       });
@@ -406,42 +414,71 @@ const Sidebar = () => {
         {/* Navigation Links */}
         <nav className="flex-grow-1 py-3">
           {menuItems.map(renderNavLink)}
+
           {/* Quality Dropdown - Show for ADMIN, SUPER_ADMIN, SUPERVISOR, OPERATIONS, FINANCE, MD */}
-          {/* {(user.role === "ADMIN" ||
-            user.role === "SUPER_ADMIN" ||
-            // || user.role === "SUPERVISOR" ||
-            // user.role === "OPERATIONS" ||
-            // user.role === "FINANCE" ||
-            user.role === "CWS_MANAGER") && (
-              // user.role === "MD"
-              <div>
-                <button
-                  className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
+          {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
+            // user.role === "MD"
+            <div>
+              <button
+                className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
+                style={{
+                  backgroundColor: "transparent",
+                  cursor: "pointer",
+                }}
+                onClick={() => setQualityOpen(!qualityOpen)}
+              >
+                <i className="bi bi-bookmark-check-fill me-3"></i>
+                Quality
+                <i
+                  className={`bi bi-chevron-${
+                    qualityOpen ? "down" : "right"
+                  } ms-auto`}
+                ></i>
+              </button>
+              {qualityOpen && (
+                <div
                   style={{
                     backgroundColor: "transparent",
                     cursor: "pointer",
                   }}
                   onClick={() => setQualityOpen(!qualityOpen)}
                 >
-                  <i className="bi bi-bookmark-check-fill me-3"></i>
-                  Quality
-                  <i
-                    className={`bi bi-chevron-${qualityOpen ? "down" : "right"
-                      } ms-auto`}
-                  ></i>
-                </button>
-                {qualityOpen && (
-                  <div
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.05)",
-                      marginLeft: "2rem",
-                    }}
-                  >
-                    {qualityItems.map(renderNavLink)}
-                  </div>
-                )}
-              </div>
-            )} */}
+                  {qualityItemsAdmin.map(renderNavLink)}
+                </div>
+              )}
+            </div>
+          )}
+
+          {user.role === "CWS_MANAGER" && (
+            <div>
+              <button
+                className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
+                style={{
+                  backgroundColor: "transparent",
+                  cursor: "pointer",
+                }}
+                onClick={() => setQualityOpen(!qualityOpen)}
+              >
+                <i className="bi bi-bookmark-check-fill me-3"></i>
+                Quality
+                <i
+                  className={`bi bi-chevron-${
+                    qualityOpen ? "down" : "right"
+                  } ms-auto`}
+                ></i>
+              </button>
+              {qualityOpen && (
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    marginLeft: "2rem",
+                  }}
+                >
+                  {qualityItemsCws.map(renderNavLink)}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Reports Dropdown - Show for ADMIN, SUPER_ADMIN, SUPERVISOR, OPERATIONS, FINANCE, MD */}
           {(user.role === "ADMIN" ||
@@ -450,29 +487,30 @@ const Sidebar = () => {
             user.role === "OPERATIONS" ||
             user.role === "FINANCE" ||
             user.role === "MD") && (
-              <div>
-                <button
-                  className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
-                  style={{
-                    backgroundColor: "transparent",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setReportsOpen(!reportsOpen)}
-                >
-                  <i className="bi bi-pie-chart me-3"></i>
-                  Reports
-                  <i
-                    className={`bi bi-chevron-${reportsOpen ? "down" : "right"
-                      } ms-auto`}
-                  ></i>
-                </button>
-                {reportsOpen && (
-                  <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
-                    {reportItems.map(renderNavLink)}
-                  </div>
-                )}
-              </div>
-            )}
+            <div>
+              <button
+                className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
+                style={{
+                  backgroundColor: "transparent",
+                  cursor: "pointer",
+                }}
+                onClick={() => setReportsOpen(!reportsOpen)}
+              >
+                <i className="bi bi-pie-chart me-3"></i>
+                Reports
+                <i
+                  className={`bi bi-chevron-${
+                    reportsOpen ? "down" : "right"
+                  } ms-auto`}
+                ></i>
+              </button>
+              {reportsOpen && (
+                <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
+                  {reportItems.map(renderNavLink)}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Settings Section for Admin */}
           {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
@@ -488,8 +526,9 @@ const Sidebar = () => {
                 <i className="bi bi-gear me-3"></i>
                 Settings
                 <i
-                  className={`bi bi-chevron-${settingsOpen ? "down" : "right"
-                    } ms-auto`}
+                  className={`bi bi-chevron-${
+                    settingsOpen ? "down" : "right"
+                  } ms-auto`}
                 ></i>
               </button>
               {settingsOpen && (

@@ -1,4 +1,5 @@
-import { Form, Row, Col, Card } from "react-bootstrap";
+import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
+
 
 const processingTheme = {
   primary: "#008080",
@@ -38,15 +39,11 @@ const ReusableTable = ({
     <div>
       <div className="">
         <Card.Body>
-          <Row>
-            <Col
-              md={1}
-              style={{
-                marginBottom: "1rem",
-              }}
-            >
+          <div className="d-flex justify-content-between align-items-center">
+            {/* Items per page select on left */}
+            <div style={{ width: "5rem" }}>
               <Form.Select
-                style={{ minWidth: "5rem" }}
+
                 value={itemsPerPage}
                 onChange={(e) => {
                   onPageSizeChange(e.target.value);
@@ -59,10 +56,27 @@ const ReusableTable = ({
                   </option>
                 ))}
               </Form.Select>
-            </Col>
-          </Row>
+            </div>
+
+            {/* Search box on right */}
+            <div style={{ width: "250px" }}>
+              <InputGroup>
+                <InputGroup.Text>
+                  <i className="bi bi-search"></i>
+                </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="Search..."
+                  // value={searchQuery}
+                  // onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </InputGroup>
+            </div>
+          </div>
         </Card.Body>
       </div>
+
+
       <div className="table-responsive">
         <table
           className="table"

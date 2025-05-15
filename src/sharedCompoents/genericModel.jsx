@@ -23,9 +23,11 @@ export const GenericModel = ({
   title,
   confirmButtonText = "Confirm",
   cancelButtonText = "Cancel",
+  modalSize = "lg",
+  onConfirmDisalbe = false,
 }) => {
   return (
-    <Modal show={isOpen} onHide={onClose} size="lg">
+    <Modal show={isOpen} onHide={onClose} size={modalSize}>
       <Modal.Header
         style={{
           backgroundColor: processingTheme.neutral,
@@ -42,7 +44,11 @@ export const GenericModel = ({
           <Button variant="secondary" onClick={onClose} disabled={isLoading}>
             {cancelButtonText}
           </Button>
-          <Button variant="success" onClick={onConfirm} disabled={isLoading}>
+          <Button
+            variant="success"
+            onClick={onConfirm}
+            disabled={isLoading || onConfirmDisalbe}
+          >
             {confirmButtonText}
           </Button>
         </>
