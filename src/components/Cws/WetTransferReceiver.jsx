@@ -616,7 +616,7 @@ const WetTransferReceiver = () => {
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
-                                                                {batch.status !== 'PENDING' && batch.transfers.some(t => t.moistureAtReceival || t.defectPercentage || t.cleanCupScore) && (
+                                                                {/* {batch.status !== 'PENDING' && batch.transfers.some(t => t.moistureAtReceival || t.defectPercentage || t.cleanCupScore) && (
                                                                     <div className="mt-3">
                                                                         <h6>Quality Assessment</h6>
                                                                         <div className="table-responsive">
@@ -637,7 +637,7 @@ const WetTransferReceiver = () => {
                                                                             </table>
                                                                         </div>
                                                                     </div>
-                                                                )}
+                                                                )} */}
 
 
                                                             </div>
