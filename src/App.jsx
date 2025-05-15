@@ -44,6 +44,7 @@ import NotFoundPage from "./sharedCompoents/404/404.jsx";
 import DelivarySummary from "./components/Admin/quality/delivery/components/report.jsx";
 import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
 
+
 const AppContent = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
@@ -156,6 +157,7 @@ const AppContent = () => {
                 element={
                   <PrivateRoute>
                     <DeliveryTracks />
+
                   </PrivateRoute>
                 }
               />
@@ -321,6 +323,7 @@ const AppContent = () => {
                 }
               />
               {/* <Route path="/delivery-track" element={<DeliveryTracks />} /> */}
+
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

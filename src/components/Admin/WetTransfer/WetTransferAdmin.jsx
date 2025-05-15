@@ -977,7 +977,7 @@ const WetTransferAdmin = () => {
                                                                         </tbody>
                                                                     </table>
                                                                 </div>
-                                                                {batch.transfers.some(t => t.notes || t.moistureAtReceival || t.defectPercentage || t.cleanCupScore) && (
+                                                                {/* {batch.transfers.some(t => t.notes || t.moistureAtReceival || t.defectPercentage || t.cleanCupScore) && (
                                                                     <div className="mt-3">
                                                                         <h6 className="border-bottom pb-2 mb-3">Quality Assessment</h6>
                                                                         <div className="table-responsive">
@@ -1005,7 +1005,7 @@ const WetTransferAdmin = () => {
                                                                             </table>
                                                                         </div>
                                                                     </div>
-                                                                )}
+                                                                )} */}
                                                             </div>
                                                         </td>
                                                     </tr>

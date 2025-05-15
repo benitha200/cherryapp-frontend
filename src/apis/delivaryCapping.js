@@ -74,11 +74,13 @@ export const updateDelivaryById = async ({ id, payload }) => {
     ];
   });
   console.log(new_payload, "::::::::::new payload");
+
   const loggedinuser = loggedInUser();
   try {
     const res = await axios.get(
       `${API_URL}/quality-delivery/getBatches-delivery-testing?page=${page}&limit=${limit}`,
       payload,
+
 
       {
         headers: {

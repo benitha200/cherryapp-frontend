@@ -1,5 +1,6 @@
 import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
 
+
 const processingTheme = {
   primary: "#008080",
   secondary: "#4FB3B3",
@@ -42,6 +43,7 @@ const ReusableTable = ({
             {/* Items per page select on left */}
             <div style={{ width: "5rem" }}>
               <Form.Select
+
                 value={itemsPerPage}
                 onChange={(e) => {
                   onPageSizeChange(e.target.value);
@@ -73,6 +75,7 @@ const ReusableTable = ({
           </div>
         </Card.Body>
       </div>
+
 
       <div className="table-responsive">
         <table

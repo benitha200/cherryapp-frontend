@@ -169,6 +169,7 @@ export const updateQualityInformationOnDelivary = async (payload) => {
         // id: element?.id["A1"],
         batchNo: element?.batchId,
         // transferId: element?.transferId["A1"],
+
         screen: {
           14: element["14+"]["A1"] ?? "",
           16: element["16+"]["A1"] ?? "",
@@ -185,6 +186,7 @@ export const updateQualityInformationOnDelivary = async (payload) => {
         // id: element?.id["A0"],
         batchNo: element?.batchId,
         // transferId: element?.transferId["A0"],
+
         screen: {
           14: element["14+"]["A0"] ?? "",
           16: element["16+"]["A0"] ?? "",

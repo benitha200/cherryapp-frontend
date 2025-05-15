@@ -27,6 +27,7 @@ export const GenericModel = ({
 }) => {
   return (
     <Modal show={isOpen} onHide={onClose} size={modalSize}>
+
       <Modal.Header
         style={{
           backgroundColor: processingTheme.neutral,
