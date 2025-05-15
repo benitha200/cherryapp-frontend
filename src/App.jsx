@@ -81,7 +81,7 @@ const AppContent = () => {
             transition: "margin-left 0.3s ease-in-out",
           }}
         >
-          {/* <div
+          <div
   className="alert m-2 text-center"
   role="alert"
   style={{
@@ -96,7 +96,7 @@ const AppContent = () => {
 >
   <i className="bi bi-exclamation-triangle-fill me-2"></i>
   This is for Testing purpose only
-</div> */}
+</div>
 
           <div className="container-fluid p-4">
             <Routes>
