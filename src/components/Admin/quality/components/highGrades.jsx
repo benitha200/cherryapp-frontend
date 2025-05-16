@@ -153,7 +153,7 @@ const HighGrades = () => {
   const fetchAllBatches = async () => {
     try {
       const res = await axios.get(
-        `${API_URL}/processings/batch/gradeA/${loggedinuser?.cwsId}?page1&limit=100`,
+        `${API_URL}/batches/sample/gradeA/${loggedinuser?.cwsId}?page1&limit=100`,
 
         {
           headers: {
