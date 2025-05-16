@@ -1,15 +1,11 @@
-import { useState } from "react";
-import { Form, Row, Col, Card, InputGroup, Placeholder } from "react-bootstrap";
+import { Form, Row, Col, Card } from "react-bootstrap";
 
-export const QuantityReceived = ({ info, setInfo, categories }) => {
-  const storageOptions = ["a1", "a2", "a3"];
-  // const categories = {
-  //   c2: 0,
-  //   c1: 0,
-  //   s86: 0,
-  //   s87: 0,
-  //   s88: 0,
-  // };
+export const QuantityReceived = ({
+  info,
+  setInfo,
+  categories,
+  selectedTransportInfo,
+}) => {
   return (
     <Card.Body>
       <Row className="mb-3">
@@ -20,17 +16,17 @@ export const QuantityReceived = ({ info, setInfo, categories }) => {
                 <Row className="mb-1">
                   <Col xs="auto">
                     <p className="mb-1">
-                      <strong>Station:</strong> Ngororero
+                      <strong>Station:</strong> {selectedTransportInfo?.cws}
                     </p>
                   </Col>
                   <Col xs="auto">
                     <p>
-                      <strong>Driver:</strong> Eric
+                      <strong>Driver:</strong> {selectedTransportInfo?.quantity}
                     </p>
                   </Col>
                   <Col xs="auto">
                     <p className="mb-1">
-                      <strong>Quantity:</strong> 40000
+                      <strong>Quantity:</strong> {selectedTransportInfo?.driver}
                     </p>
                   </Col>
                 </Row>

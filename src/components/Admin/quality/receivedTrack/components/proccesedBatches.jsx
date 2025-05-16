@@ -12,6 +12,7 @@ import { Pagination } from "../../../../../sharedCompoents/paginations";
 import { SubTableHeading } from "./subTableHeading";
 import { GetDelivaryById } from "../actions";
 import { DelivarySkeleton } from "../../delivery/components/skeleton";
+import { Error } from "../../components/responses";
 const theme = {
   primary: "#008080", // Sucafina teal
   secondary: "#4FB3B3", // Lighter teal
@@ -84,7 +85,7 @@ export const ProcessedBatches = ({
   const formatArray = (data, processingType) => {
     const keys = handleProcessingType(processingType);
     return [data[keys.ky1], data[keys.key2]].filter(
-      (element) => element !== null
+      (element) => element !== (null || undefined)
     );
   };
   const handleCheckboxChange = (batchId, ischecked, spId, transferId) => {
@@ -139,9 +140,15 @@ export const ProcessedBatches = ({
   };
 
   if (getByIdPending) return <DelivarySkeleton />;
-  delivary?.data?.batches?.map((bths) => {
-    console.log(formatArray(bths, "m"));
-  });
+  if (getByIdError)
+    return (
+      <Error
+        error={
+          getByIdError?.message ??
+          "Failed to fetch Transefer, please reaload and try again."
+        }
+      />
+    );
 
   return (
     <div className="container-fluid ">
@@ -208,7 +215,12 @@ export const ProcessedBatches = ({
                                   element?.N1?.id ||
                                   element?.H1?.id ||
                                   "N/A",
-                                A1:
+                                [formatArray(
+                                  element,
+                                  element?.processing?.processingType
+                                ).length == 1
+                                  ? "A0"
+                                  : "A1"]:
                                   element?.A1?.id ||
                                   element?.N2?.id ||
                                   element?.H2?.id ||
@@ -220,7 +232,12 @@ export const ProcessedBatches = ({
                                   element?.N1?.transferId ||
                                   element?.H1?.transferId ||
                                   "N/A",
-                                A1:
+                                [formatArray(
+                                  element,
+                                  element?.processing?.processingType
+                                ).length == 1
+                                  ? "A0"
+                                  : "A1"]:
                                   element?.A1?.transferId ||
                                   element?.N2?.transferId ||
                                   element?.H2?.transferId ||
