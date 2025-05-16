@@ -316,7 +316,8 @@ const Sidebar = () => {
       ...menuItems,
       { path: "/purchase-by-station", icon: "cash", text: "Purchases" },
       { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
-      // { path: "/transport", icon: "truck", text: "Transport" },
+      { path: "/transport", icon: "truck", text: "Transport" },
+      { path: "/stock", icon: "house", text: "Stock" },
      
     ];
   } else {
