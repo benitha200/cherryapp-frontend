@@ -1121,7 +1121,7 @@ const Transport = () => {
                             <td className="align-middle">{transferDate}</td>
                             <td className="align-middle">{washingStations}</td>
                             <td className="align-middle">{group.truckNumber}</td>
-                            <td className="align-middle">{totalKgs.toFixed(2)} kg</td>
+                            <td className="align-middle">{totalKgs.toLocaleString(2)} kg</td>
                             <td className="align-middle">
                               {Array.from(cupProfiles).map(profile => (
                                 <Badge 
@@ -1301,7 +1301,7 @@ const Transport = () => {
                   <thead>
                     <tr>
                       <th>Station</th>
-                      <th>Batches</th>
+                      {/* <th>Batches</th> */}
                       <th>Total KGs</th>
                       <th>High Grade %</th>
                     </tr>
@@ -1310,8 +1310,8 @@ const Transport = () => {
                     {Object.entries(summaryData.washingStationStats).map(([station, stats]) => (
                       <tr key={station}>
                         <td>{station}</td>
-                        <td>{stats.batches}</td>
-                        <td>{stats.totalKgs.toFixed(2)} kg</td>
+                        {/* <td>{stats.batches}</td> */}
+                        <td>{stats.totalKgs.toLocaleString(2)} kg</td>
                         <td>
                           <div className="d-flex align-items-center">
                             <div className="me-2">
@@ -1361,7 +1361,7 @@ const Transport = () => {
                         <tr key={grade}>
                           <td>
                             <Badge
-                              bg={GRADE_GROUPS.HIGH.includes(grade) ? 'primary' : 'secondary'}
+                              bg={GRADE_GROUPS.HIGH.includes(grade) ? 'sucafina' : 'secondary'}
                               style={{ 
                                 backgroundColor: GRADE_GROUPS.HIGH.includes(grade) ? processingTheme.primary : '#6c757d'
                               }}
@@ -1369,11 +1369,11 @@ const Transport = () => {
                               {grade}
                             </Badge>
                           </td>
-                          <td>{kg.toFixed(2)} kg</td>
+                          <td>{kg.toLocaleString(2)} kg</td>
                           <td>
                             <div className="d-flex align-items-center">
                               <div className="me-2">
-                                {((kg / summaryData.totalKgs) * 100).toFixed(1)}%
+                                {((kg / summaryData.totalKgs) * 100).toLocaleString(1)}%
                               </div>
                               <div className="progress flex-grow-1" style={{ height: '6px' }}>
                                 <div 
