@@ -39,11 +39,14 @@ export const getDelivaryById = async (id) => {
 };
 
 export const updateDelivaryById = async ({ id, payload }) => {
+  const sv = [];
   const new_payload = payload?.activatedBatchesData?.map((element) => {
-    return [
-      {
+    console.log(payload);
+
+    if (!isNaN(element?.transferId["A1"])) {
+      sv.push({
         id: element?.spId["A1"],
-        transferId: element?.transferId["A1"],
+        transferId: Number(element?.transferId["A1"] || ""),
         labMoisture: Number(element?.labMoisture["A1"]),
         screen: {
           14: element[14]["A1"] ?? "",
@@ -52,14 +55,16 @@ export const updateDelivaryById = async ({ id, payload }) => {
           13: element[13]["A1"],
           "B/12": element["B/12"]["A1"] ?? "",
         },
-        defect: element?.deffect["A1"] ?? "",
-        ppScore: element?.ppScore["A1"] ?? "",
+        defect: Number(element?.deffect["A1"]) ?? "",
+        ppScore: Number(element?.ppScore["A1"]) ?? "",
         sampleStorageId: element?.storage["A1"],
         notes: "",
-      },
-      {
+      });
+    }
+    if (!isNaN(element?.transferId["A0"])) {
+      sv.push({
         id: element?.spId["A0"],
-        transferId: element?.transferId["A0"],
+        transferId: Number(element?.transferId["A0"]),
         labMoisture: Number(element?.labMoisture["A0"]),
         screen: {
           14: element["14"]["A0"] ?? "",
@@ -68,25 +73,22 @@ export const updateDelivaryById = async ({ id, payload }) => {
           13: element["13"]["A0"],
           "B/12": element["B/12"]["A0"] ?? "",
         },
-        defect: element?.deffect["A0"] ?? "",
-        ppScore: element?.ppScore["A0"] ?? "",
+        defect: Number(element?.deffect["A0"]) ?? "",
+        ppScore: Number(element?.ppScore["A0"]) ?? "",
         sampleStorageId: element?.storage["A0"],
         notes: "",
-      },
-    ];
+      });
+    }
   });
 
   const loggedinuser = loggedInUser();
-  const payloadsxxx = {
-    batches: new_payload?.flat(1),
-    categoryKgs: payload?.info,
-  };
-  console.log("::::::::::payload", payloadsxxx);
+
+  console.log("::::::::::payload", sv);
 
   try {
     const res = await axios.put(
       `${API_URL}/quality-delivery/send-delivery-test-result`,
-      { batches: new_payload?.flat(1), categoryKgs: payload?.info },
+      { batches: sv, categoryKgs: payload?.info },
       {
         headers: {
           Authorization: `Bearer ${loggedinuser?.token}`,
