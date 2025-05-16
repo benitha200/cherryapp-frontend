@@ -129,7 +129,7 @@ const StockDashboardSkeleton = () => (
     </div>
 
     {/* Summary Cards - Grade Totals */}
-    <div className="row g-4 mb-4">
+    {/* <div className="row g-4 mb-4">
       {Array(4).fill().map((_, i) => (
         <div key={i} className="col-6 col-md-3">
           <SkeletonCard />
@@ -137,7 +137,6 @@ const StockDashboardSkeleton = () => (
       ))}
     </div>
 
-    {/* Charts Row */}
     <div className="row g-4 mb-4">
       <div className="col-12 col-lg-8">
         <SkeletonPieChart />
@@ -146,7 +145,7 @@ const StockDashboardSkeleton = () => (
       <div className="col-12 col-lg-4">
         <SkeletonContributionTable />
       </div>
-    </div>
+    </div> */}
 
     {/* Detailed Grade Table */}
     <div className="row g-4">
