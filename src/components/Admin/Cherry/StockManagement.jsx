@@ -464,7 +464,7 @@ const StockManagement = () => {
             </div>
 
             {/* CWS Distribution for Specific Grade */}
-            <div className="row g-4 mb-4">
+            {/* <div className="row g-4 mb-4">
                 <div className="col-12 col-lg-8">
                     <div className="card h-100 shadow-sm">
                         <div className="card-header d-flex justify-content-between align-items-center" style={{ backgroundColor: theme.neutral, color: theme.primary }}>
@@ -566,7 +566,7 @@ const StockManagement = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Detailed Grade Table */}
             <div className="row g-4">
