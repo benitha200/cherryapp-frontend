@@ -1,83 +1,44 @@
 import { useEffect, useState } from "react";
-import {
-  Form,
-  Row,
-  Col,
-  Card,
-  InputGroup,
-  Placeholder,
-  Button,
-} from "react-bootstrap";
+import { Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { loggedInUser } from "../../../../../utils/loggedInUser";
 import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 import { Pagination } from "../../../../../sharedCompoents/paginations";
 import { GetAllDelivaries, UpdateDelivary } from "../actions";
 import { GenericModel } from "../../../../../sharedCompoents/genericModel";
 import { QuantityReceived } from "./quantityReceived";
 import { ProcessedBatches } from "./proccesedBatches";
-import { Error } from "../../components/responses";
-
-const processingTheme = {
-  primary: "#008080", // Sucafina teal
-  secondary: "#4FB3B3", // Lighter teal
-  accent: "#D95032", // Complementary orange
-  neutral: "#E6F3F3", // Very light teal
-  tableHover: "#F8FAFA", // Ultra light teal for table hover
-
-  // Grade colors
-  gradeA: "#4FB3B3", // Lighter teal
-  gradeB: "#6ECECE", // Even lighter teal
-  gradeDefault: "#87CEEB", // Light blue
-
-  // Processing Type colors
-  fullyWashed: "#008080", // Main teal
-  natural: "#4FB3B3", // Lighter teal
-
-  // Status colors
-  statusCompleted: "#2E8B57", // Sea green
-  statusInProgress: "#D4AF37", // Golden
-  statusPending: "#808080", // Gray
-};
+import { Error, Success } from "../../components/responses";
+import { DeliveryTableSkeleton } from "./skeleton";
 
 export const DerivalyTable = () => {
-  const theme = {
-    primary: "#008080", // Sucafina teal
-    secondary: "#4FB3B3", // Lighter teal
-    accent: "#D95032", // Complementary orange
-    neutral: "#E6F3F3", // Very light teal
-    tableHover: "#F8FAFA", // Ultra light teal for ta
-    yellow: "#D4AF37",
-    green: "#D3D3D3",
-  };
   // State declarations
   const navigate = useNavigate();
   const [openModle, setOpenModle] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  // received quenatity
-  const [info, setInfo] = useState({
+
+  // batches
+  const [activatedBatches, setActivivatedBatches] = useState([]);
+  const [activatedBatchesData, setActivatedBatchesData] = useState([]);
+  const [categories, setCategories] = useState({
     c1: null,
     c2: null,
     s86: null,
     s87: null,
     s88: null,
+    relatedCategories: [],
   });
-  // batches
-  const [activatedBatches, setActivivatedBatches] = useState([]);
-  const [activatedBatchesData, setActivatedBatchesData] = useState([]);
-  const [categories, setCategories] = useState({
-    c2: 0,
-    c1: 0,
-    s86: 0,
-    s87: 0,
-    s88: 0,
-  });
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allTransportInfo, setAllTransportInfo] = useState([]);
 
   const [selectedTransportInfo, setSelectedTransportInfo] = useState({
     cws: null,
     quantity: null,
     driver: null,
   });
+
+  // logs
+
   // data query
   const { getAllPending, getAllError, allDelivaries } = GetAllDelivaries(1, 10);
   const handleopenModel = () => {
@@ -89,21 +50,37 @@ export const DerivalyTable = () => {
     setSelectedId(null);
     setActivivatedBatches([]);
     setActivatedBatchesData([]);
+    setCategories({
+      c1: null,
+      c2: null,
+      s86: null,
+      s87: null,
+      s88: null,
+      relatedCategories: [],
+    });
   };
   const { updatingError, isUpdating, mutate } = UpdateDelivary(
     selectedId,
     onUpdateSuccess
   );
 
-  useEffect(() => {}, [allDelivaries]);
+  useEffect(() => {
+    const data = allDelivaries?.data?.trucks ?? [];
+    let skip = (currentPage - 1) * itemsPerPage;
+    if (skip >= allTransportInfo.length + itemsPerPage - 1) {
+      const res = data.slice(0, itemsPerPage);
+      setAllTransportInfo(res);
+    } else {
+      const res = data.slice(skip, skip + itemsPerPage);
+      setAllTransportInfo(res);
+    }
+  }, [allDelivaries, selectedTransportInfo, currentPage, itemsPerPage]);
+
+  useEffect(() => {}, [currentPage]);
 
   const handleFormSubmission = () => {
-    mutate({ info, activatedBatchesData });
-    console.log({ info, activatedBatchesData });
-    // handleopenModel();
+    mutate({ categories, activatedBatchesData });
   };
-
-  console.log(":::::::::::error", updatingError);
   // columns
   const columns = [
     {
@@ -126,37 +103,6 @@ export const DerivalyTable = () => {
     { field: "driverName", header: "Driver_Name" },
     { field: "driverPhone", header: "Driver_PHone" },
 
-    // {
-    //   field: "+16",
-    //   header: "+16",
-    //   render: (item) => (
-    //     <div style={{ backgroundColor: "#D4AF37" }}>
-    //       {item?.screen["16"] ?? "N/A"}
-    //     </div>
-    //   ),
-    // },
-    // {
-    //   field: "15",
-    //   header: "15",
-    //   render: (item) => <span>{item?.screen["16"] ?? "N/A"}</span>,
-    // },
-    // {
-    //   field: "14",
-    //   header: "14",
-    //   render: (item) => <span>{item?.screen["14"] ?? "N/A"}</span>,
-    // },
-    // {
-    //   field: "13",
-    //   header: "13",
-    //   render: (item) => <span>{item?.screen["13"] ?? "N/A"}</span>,
-    // },
-
-    // {
-    //   field: "B/12",
-    //   header: "B/12",
-    //   render: (item) => <span>{item?.screen["B/12"] ?? "N/A"}</span>,
-    // },
-
     {
       field: "category",
       header: "Actions",
@@ -166,6 +112,12 @@ export const DerivalyTable = () => {
           onClick={() => {
             handleopenModel();
             setSelectedId(item?.truckNumber ?? "");
+            setSelectedTransportInfo((prev) => ({
+              ...prev,
+              cws: item?.cws,
+              quantity: 200,
+              driver: item?.driverName,
+            }));
           }}
         >
           <i class="bi bi-pencil-square"></i>{" "}
@@ -174,27 +126,43 @@ export const DerivalyTable = () => {
     },
   ];
 
-  if (getAllPending) return <div>Loading ....</div>;
+  if (getAllPending) return <DeliveryTableSkeleton />;
+  if (getAllError)
+    return (
+      <Error error={getAllError?.message ?? "Failed to get Delivered Tracks"} />
+    );
+
+  const paginationData = {
+    totalPages: 0,
+    totalItems: 0,
+    itemsPerPage: 0,
+  };
+  if (allDelivaries) {
+    const delivariersSize = allDelivaries?.data?.trucks?.length ?? 0;
+    paginationData.totalPages = Math.ceil(delivariersSize / itemsPerPage);
+    paginationData.totalItems = delivariersSize;
+    paginationData.itemsPerPage = itemsPerPage;
+  }
 
   return (
     <div className="container-fluid">
       <Card className="mb-4">
         <ReusableTable
-          data={allDelivaries?.data?.trucks ?? []}
+          data={allTransportInfo}
           columns={columns}
           pageSizeOptions={[5, 10, 20]}
           initialPageSize={5}
           isLoading={false}
-          onPageSizeChange={() => null}
+          onPageSizeChange={setItemsPerPage}
           rowKeyField="id"
-          itemsPerPage={4}
+          itemsPerPage={itemsPerPage}
         >
           <Pagination
-            currentPage={allDelivaries?.pagination?.page ?? 1}
-            totalPages={3 ?? 0}
-            totalItems={allDelivaries?.pagination?.total ?? 1}
-            itemsPerPage={5}
-            onPageChange={() => null}
+            currentPage={currentPage}
+            totalPages={paginationData?.totalPages}
+            totalItems={paginationData?.totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
           />
         </ReusableTable>
       </Card>
@@ -216,9 +184,9 @@ export const DerivalyTable = () => {
         )}
         {/* Quantiy received */}
         <QuantityReceived
-          info={info}
-          setInfo={setInfo}
+          setInfo={setCategories}
           categories={categories}
+          selectedTransportInfo={selectedTransportInfo}
         />
         {/* proccessed batches */}
         <ProcessedBatches

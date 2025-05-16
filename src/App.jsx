@@ -43,7 +43,7 @@ import OfflineModal from "./sharedCompoents/networkError.jsx";
 import NotFoundPage from "./sharedCompoents/404/404.jsx";
 import DelivarySummary from "./components/Admin/quality/delivery/components/report.jsx";
 import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
-
+import { Toaster } from "react-hot-toast";
 
 const AppContent = () => {
   const location = useLocation();
@@ -157,7 +157,6 @@ const AppContent = () => {
                 element={
                   <PrivateRoute>
                     <DeliveryTracks />
-
                   </PrivateRoute>
                 }
               />
@@ -324,12 +323,28 @@ const AppContent = () => {
               />
               {/* <Route path="/delivery-track" element={<DeliveryTracks />} /> */}
 
-
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </div>
         </div>
       </div>
+      <Toaster
+        position="top-center"
+        gutter={12}
+        containerStyle={{ margin: "8px" }}
+        toastOptions={{
+          success: {
+            duration: 3000,
+          },
+          error: {
+            duration: 5000,
+          },
+          style: {
+            fontSize: "16px",
+            padding: "16px 24px",
+          },
+        }}
+      />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

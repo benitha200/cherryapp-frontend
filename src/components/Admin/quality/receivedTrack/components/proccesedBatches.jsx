@@ -1,26 +1,10 @@
 import { useEffect, useState } from "react";
-import {
-  Form,
-  Row,
-  Col,
-  Card,
-  InputGroup,
-  Placeholder,
-  Button,
-} from "react-bootstrap";
-import { Pagination } from "../../../../../sharedCompoents/paginations";
+import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
 import { SubTableHeading } from "./subTableHeading";
+import { SubBatchTable } from "./subBatchTable";
 import { GetDelivaryById } from "../actions";
 import { DelivarySkeleton } from "../../delivery/components/skeleton";
-const theme = {
-  primary: "#008080", // Sucafina teal
-  secondary: "#4FB3B3", // Lighter teal
-  accent: "#D95032", // Complementary orange
-  neutral: "#E6F3F3", // Very light teal
-  tableHover: "#F8FAFA", // Ultra light teal for table hover
-  yellow: "#D4AF37",
-  green: "#D3D3D3",
-};
+import { Error } from "../../components/responses";
 
 const processingTheme = {
   primary: "#008080", // Sucafina teal
@@ -64,29 +48,24 @@ export const ProcessedBatches = ({
   selectedTrackPlat,
   setCategories,
 }) => {
+  // state
+  const [deliveryData, setDeliveryData] = useState({
+    baggingOff: null,
+    batchNo: null,
+    mainbatch: [],
+    processing: null,
+  });
   // get track
   const { getByIdError, getByIdPending, delivary } =
     GetDelivaryById(selectedTrackPlat);
 
   useEffect(() => {
-    setCategories((prev) => ({ ...prev, ...delivary?.data?.categoryKgs }));
+    setCategories((prev) => ({
+      ...delivary?.data?.categoryKgs,
+      relatedCategories,
+    }));
+    setDeliveryData(delivary?.data);
   }, [delivary]);
-  // handle processing type
-  const handleProcessingType = (processingType) => {
-    return processingType == "NATURAL"
-      ? { ky1: "N1", key2: "N2" }
-      : processingType == "HONEY"
-      ? { ky1: "H1", key2: "H2" }
-      : { ky1: "A0", key2: "A1" };
-  };
-
-  // FORMAT ARRAY
-  const formatArray = (data, processingType) => {
-    const keys = handleProcessingType(processingType);
-    return [data[keys.ky1], data[keys.key2]].filter(
-      (element) => element !== null
-    );
-  };
   const handleCheckboxChange = (batchId, ischecked, spId, transferId) => {
     ischecked == true
       ? setActivivatedBatches((prev) => [...new Set([...prev, batchId])])
@@ -138,17 +117,30 @@ export const ProcessedBatches = ({
     );
   };
 
-  if (getByIdPending) return <DelivarySkeleton />;
-  delivary?.data?.batches?.map((bths) => {
-    console.log(formatArray(bths, "m"));
-  });
-
-  return (
+  if (getByIdError)
+    return (
+      <Error
+        error={
+          getByIdError?.message ??
+          "Failed to fetch Transefer, please reaload and try again."
+        }
+      />
+    );
+  const relatedCategories = [];
+  if (delivary) {
+    delivary?.data?.batches?.map((batch) => {
+      batch?.mainbatch?.map((subBatch) => {
+        relatedCategories.push(subBatch?.category);
+      });
+    });
+  }
+  return getByIdPending ? (
+    <DelivarySkeleton />
+  ) : (
     <div className="container-fluid ">
       <Card className="mb-4">
         {/* Filters Section */}
         <Card.Body style={{ backgroundColor: processingTheme.neutral }}>
-          <Row className="g-3 mb-2"></Row>
           <Row className="g-3">
             <Col md={2}>
               <InputGroup>
@@ -180,7 +172,7 @@ export const ProcessedBatches = ({
             <tbody>
               {/* Card */}
 
-              {delivary?.data?.batches.map((element) => {
+              {deliveryData?.batches?.map((element) => {
                 return (
                   <tr>
                     {/* processing type  */}
@@ -203,28 +195,12 @@ export const ProcessedBatches = ({
                               element.batchNo,
                               isChecked,
                               {
-                                A0:
-                                  element?.A0?.id ||
-                                  element?.N1?.id ||
-                                  element?.H1?.id ||
-                                  "N/A",
-                                A1:
-                                  element?.A1?.id ||
-                                  element?.N2?.id ||
-                                  element?.H2?.id ||
-                                  "N/A",
+                                A0: element?.mainbatch[0]?.id ?? "N/A",
+                                A1: element?.mainbatch[1]?.id ?? "N/A",
                               },
                               {
-                                A0:
-                                  element?.A0?.transferId ||
-                                  element?.N1?.transferId ||
-                                  element?.H1?.transferId ||
-                                  "N/A",
-                                A1:
-                                  element?.A1?.transferId ||
-                                  element?.N2?.transferId ||
-                                  element?.H2?.transferId ||
-                                  "N/A",
+                                A0: element?.mainbatch[0]?.transferId ?? "N/A",
+                                A1: element?.mainbatch[1]?.transferId ?? "N/A",
                               }
                             );
                           }}
@@ -243,186 +219,18 @@ export const ProcessedBatches = ({
                           <thead>
                             <SubTableHeading />
                           </thead>
-
                           <tbody>
-                            {formatArray(
-                              element,
-                              element?.processing?.processingType
-                            ).map((subelement, index) => {
-                              return (
-                                <>
-                                  {/* First low*/}
-                                  <tr>
-                                    {/* station moisture */}
-                                    <td className="align-middle">
-                                      {subelement?.cwsMoisture ?? ""}
-                                    </td>
-                                    {/* total kgs */}
-                                    <td className="align-middle">
-                                      {Object.values(
-                                        subelement?.transfer?.outputKgs ?? {}
-                                      ).reduce(
-                                        (acc, value) => acc + value,
-                                        0
-                                      ) ?? "N/A"}
-                                    </td>
-                                    {/* lab moisture */}
-                                    <td className="align-middle">
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        style={{ width: "7rem" }}
-                                        defaultValue={subelement?.labMoisture}
-                                        disabled={!isChecked(element?.batchNo)}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            element?.batchNo,
-                                            "labMoisture",
-                                            index % 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    {/* +16 */}
-                                    <td className="align-middle">
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        style={{ width: "7rem" }}
-                                        defaultValue={subelement?.screen["16+"]}
-                                        disabled={!isChecked(element?.batchNo)}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            element?.batchNo,
-                                            "16",
-                                            index % 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td className="align-middle">
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        style={{ width: "7rem" }}
-                                        defaultValue={subelement?.screen["15"]}
-                                        disabled={!isChecked(element?.batchNo)}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            element?.batchNo,
-                                            "15",
-                                            index % 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td className="align-middle">
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        style={{ width: "7rem" }}
-                                        defaultValue={subelement?.screen["14"]}
-                                        disabled={!isChecked(element?.batchNo)}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            element?.batchNo,
-                                            "14",
-                                            index % 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td className="align-middle">
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        style={{ width: "7rem" }}
-                                        defaultValue={subelement?.screen["13"]}
-                                        disabled={!isChecked(element?.batchNo)}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            element?.batchNo,
-                                            "13",
-                                            index % 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    <td className="align-middle">
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        style={{ width: "7rem" }}
-                                        defaultValue={
-                                          subelement?.screen["B/12"]
-                                        }
-                                        disabled={!isChecked(element?.batchNo)}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            element?.batchNo,
-                                            "B/12",
-                                            index % 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-
-                                    {/* deffect */}
-                                    <td className="align-middle">
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        style={{ width: "7rem" }}
-                                        defaultValue={subelement?.defect}
-                                        disabled={!isChecked(element?.batchNo)}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            element?.batchNo,
-                                            "deffect",
-                                            index % 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    {/* pp score */}
-                                    <td className="align-middle">
-                                      <input
-                                        type="number"
-                                        className="form-control"
-                                        style={{ width: "7rem" }}
-                                        defaultValue={subelement?.ppScore}
-                                        disabled={!isChecked(element?.batchNo)}
-                                        onChange={(e) =>
-                                          handleInputChange(
-                                            element?.batchNo,
-                                            "ppScore",
-                                            index % 2 == 0 ? "A0" : "A1",
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </td>
-                                    {/* storage */}
-                                    <td className="align-middle">
-                                      <div style={{ width: "7rem" }}>
-                                        {subelement?.sampleStorage?.name ??
-                                          "N/A"}
-                                      </div>
-                                    </td>
-                                    <td className="align-middle">
-                                      {subelement?.category}
-                                    </td>
-                                  </tr>
-                                </>
-                              );
-                            })}
+                            {element?.mainbatch?.map(
+                              (subElement, subElementIndex) => (
+                                <SubBatchTable
+                                  subelement={subElement}
+                                  index={subElementIndex}
+                                  isChecked={isChecked}
+                                  batchNo={element?.batchNo}
+                                  handleInputChange={handleInputChange}
+                                />
+                              )
+                            )}
                           </tbody>
                         </table>
                       </div>
