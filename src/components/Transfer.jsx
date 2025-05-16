@@ -257,8 +257,6 @@ const Transfer = () => {
 
     try {
       // Generate a unique transportGroupId first
-      // const transportGroupResponse = await axios.post(`${API_URL}/transfer/generate-group-id`);
-      // const transportGroupId = transportGroupResponse.data.transportGroupId;
       const transportGroupId = `TG-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
       const transferPromises = [];
