@@ -4,6 +4,7 @@ import {
     ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts';
 import API_URL from '../../../constants/Constants';
+import StockDashboardSkeleton from './StockDashboardSkeleton';
 
 const theme = {
     primary: '#008080',    // Sucafina teal
@@ -391,14 +392,7 @@ const StockManagement = () => {
 
     if (loading) {
         return (
-            <div className="container-fluid p-4 d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-                <div className="text-center">
-                    <div className="spinner-border text-primary mb-3" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <p className="text-muted">Loading coffee stock data...</p>
-                </div>
-            </div>
+            <StockDashboardSkeleton/>
         );
     }
 
@@ -568,49 +562,6 @@ const StockManagement = () => {
                                         )}
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="row g-4 mb-4">
-                <div className="col-12">
-                    <div className="card shadow-sm">
-                        <div className="card-header d-flex justify-content-between align-items-center" style={{ backgroundColor: theme.neutral, color: theme.primary }}>
-                            <span>Coffee Washing Station Grade Distribution</span>
-                        </div>
-                        <div className="card-body">
-                            <div style={{ width: '100%', overflowX: 'auto' }}>
-                                <div style={{ minWidth: '800px', width: '100%', height: '500px' }}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            data={cwsGradeDistribution}
-                                            layout="vertical"
-                                            margin={{ top: 20, right: 30, left: 150, bottom: 20 }}
-                                        >
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis type="number" />
-                                            <YAxis
-                                                dataKey="cws"
-                                                type="category"
-                                                width={120}
-                                                tick={{ fontSize: 12 }}
-                                            />
-                                            <Tooltip formatter={(value) => [`${value.toLocaleString()} kg`, 'Amount']} />
-                                            <Legend />
-                                            {mainGrades.map(grade => (
-                                                <Bar 
-                                                    key={grade}
-                                                    dataKey={grade} 
-                                                    stackId="a" 
-                                                    fill={gradeColors[grade]} 
-                                                    name={grade} 
-                                                />
-                                            ))}
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
                             </div>
                         </div>
                     </div>
