@@ -43,6 +43,7 @@ import OfflineModal from "./sharedCompoents/networkError.jsx";
 import NotFoundPage from "./sharedCompoents/404/404.jsx";
 import Delivery from "./components/Admin/quality/delivaly/index.jsx";
 import DelivarySummary from "./components/Admin/quality/components/report1.jsx";
+import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -200,6 +201,16 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
+
+              <Route
+                path="/stock"
+                element={
+                  <PrivateRoute>
+                    <StockManagement />
+                  </PrivateRoute>
+                }
+              />
+
 
               {/* sender */}
               <Route

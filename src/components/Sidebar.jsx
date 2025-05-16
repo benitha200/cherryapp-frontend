@@ -301,6 +301,7 @@ const Sidebar = () => {
       { path: "/purchases-all", icon: "coin", text: "Add Purchase" },
       { path: "/purchase-by-station", icon: "cash", text: "Purchases" },
       { path: "/processing-all", icon: "hourglass-split", text: "Processing" },
+      { path: "/stock", icon: "house", text: "Stock" },
       { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
       { path: "/transport", icon: "truck", text: "Transport" },
       // Report dropdown will be added separately
