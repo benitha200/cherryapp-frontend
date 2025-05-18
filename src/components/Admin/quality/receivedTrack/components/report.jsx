@@ -15,27 +15,21 @@ export const DerivalyTable = () => {
   const navigate = useNavigate();
   const [openModle, setOpenModle] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  // received quenatity
-  const [info, setInfo] = useState({
+
+  // batches
+  const [activatedBatches, setActivivatedBatches] = useState([]);
+  const [activatedBatchesData, setActivatedBatchesData] = useState([]);
+  const [categories, setCategories] = useState({
     c1: null,
     c2: null,
     s86: null,
     s87: null,
     s88: null,
-  });
-  // batches
-  const [activatedBatches, setActivivatedBatches] = useState([]);
-  const [activatedBatchesData, setActivatedBatchesData] = useState([]);
-  const [categories, setCategories] = useState({
-    c2: 0,
-    c1: 0,
-    s86: 0,
-    s87: 0,
-    s88: 0,
+    relatedCategories: [],
   });
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
-  const [transportData, setTransportData] = useState([]);
+  const [allTransportInfo, setAllTransportInfo] = useState([]);
 
   const [selectedTransportInfo, setSelectedTransportInfo] = useState({
     cws: null,
@@ -45,7 +39,6 @@ export const DerivalyTable = () => {
 
   // logs
 
-  console.log(transportData, ":::::::::::::::transport data");
   // data query
   const { getAllPending, getAllError, allDelivaries } = GetAllDelivaries(1, 10);
   const handleopenModel = () => {
@@ -57,19 +50,37 @@ export const DerivalyTable = () => {
     setSelectedId(null);
     setActivivatedBatches([]);
     setActivatedBatchesData([]);
+    setCategories({
+      c1: null,
+      c2: null,
+      s86: null,
+      s87: null,
+      s88: null,
+      relatedCategories: [],
+    });
   };
   const { updatingError, isUpdating, mutate } = UpdateDelivary(
     selectedId,
     onUpdateSuccess
   );
 
-  useEffect(() => {}, [allDelivaries, selectedTransportInfo]);
+  useEffect(() => {
+    const data = allDelivaries?.data?.trucks ?? [];
+    let skip = (currentPage - 1) * itemsPerPage;
+    if (skip >= allTransportInfo.length + itemsPerPage - 1) {
+      const res = data.slice(0, itemsPerPage);
+      setAllTransportInfo(res);
+    } else {
+      const res = data.slice(skip, skip + itemsPerPage);
+      setAllTransportInfo(res);
+    }
+  }, [allDelivaries, selectedTransportInfo, currentPage, itemsPerPage]);
+
+  useEffect(() => {}, [currentPage]);
 
   const handleFormSubmission = () => {
-    mutate({ info, activatedBatchesData });
-    // handleopenModel();
+    mutate({ categories, activatedBatchesData });
   };
-
   // columns
   const columns = [
     {
@@ -120,6 +131,7 @@ export const DerivalyTable = () => {
     return (
       <Error error={getAllError?.message ?? "Failed to get Delivered Tracks"} />
     );
+
   const paginationData = {
     totalPages: 0,
     totalItems: 0,
@@ -128,15 +140,15 @@ export const DerivalyTable = () => {
   if (allDelivaries) {
     const delivariersSize = allDelivaries?.data?.trucks?.length ?? 0;
     paginationData.totalPages = Math.ceil(delivariersSize / itemsPerPage);
-    (paginationData.totalItems = delivariersSize),
-      (paginationData.itemsPerPage = itemsPerPage);
+    paginationData.totalItems = delivariersSize;
+    paginationData.itemsPerPage = itemsPerPage;
   }
 
   return (
     <div className="container-fluid">
       <Card className="mb-4">
         <ReusableTable
-          data={allDelivaries?.data?.trucks ?? []}
+          data={allTransportInfo}
           columns={columns}
           pageSizeOptions={[5, 10, 20]}
           initialPageSize={5}
@@ -172,8 +184,7 @@ export const DerivalyTable = () => {
         )}
         {/* Quantiy received */}
         <QuantityReceived
-          info={info}
-          setInfo={setInfo}
+          setInfo={setCategories}
           categories={categories}
           selectedTransportInfo={selectedTransportInfo}
         />

@@ -40,7 +40,7 @@ export const getDelivaryById = async (id) => {
 
 export const updateDelivaryById = async ({ id, payload }) => {
   const sv = [];
-  const new_payload = payload?.activatedBatchesData?.map((element) => {
+  payload?.activatedBatchesData?.map((element) => {
     console.log(payload);
 
     if (!isNaN(element?.transferId["A1"])) {
@@ -50,7 +50,7 @@ export const updateDelivaryById = async ({ id, payload }) => {
         labMoisture: Number(element?.labMoisture["A1"]),
         screen: {
           14: element[14]["A1"] ?? "",
-          16: element[16]["A1"] ?? "",
+          "16+": element[16]["A1"] ?? "",
           15: element[15]["A1"] ?? "",
           13: element[13]["A1"],
           "B/12": element["B/12"]["A1"] ?? "",
@@ -68,7 +68,7 @@ export const updateDelivaryById = async ({ id, payload }) => {
         labMoisture: Number(element?.labMoisture["A0"]),
         screen: {
           14: element["14"]["A0"] ?? "",
-          16: element["16"]["A0"] ?? "",
+          "16+": element["16"]["A0"] ?? "",
           15: element["15"]["A0"] ?? "",
           13: element["13"]["A0"],
           "B/12": element["B/12"]["A0"] ?? "",
@@ -83,12 +83,11 @@ export const updateDelivaryById = async ({ id, payload }) => {
 
   const loggedinuser = loggedInUser();
 
-  console.log("::::::::::payload", sv);
-
+  delete payload?.categories;
   try {
     const res = await axios.put(
       `${API_URL}/quality-delivery/send-delivery-test-result`,
-      { batches: sv, categoryKgs: payload?.info },
+      { batches: sv, categoryKgs: payload?.categories },
       {
         headers: {
           Authorization: `Bearer ${loggedinuser?.token}`,

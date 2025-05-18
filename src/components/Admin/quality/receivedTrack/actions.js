@@ -5,6 +5,7 @@ import {
   getDelivaryById,
   updateDelivaryById,
 } from "../../../../apis/delivaryCapping";
+import toast from "react-hot-toast";
 
 // export const CreatePost = () => {
 //   const queryClient = useQueryClient();
@@ -67,11 +68,13 @@ export const UpdateDelivary = (id, onupdateSuccess) => {
   } = useMutation({
     mutationFn: (formData) => updateDelivaryById({ id, payload: formData }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["Derivary"] });
-      queryClient.resetQueries({ queryKey: ["Post"] });
+      queryClient.invalidateQueries({ queryKey: ["Derivary", "Derivaries"] });
+      queryClient.resetQueries({ queryKey: ["Derivaries"] });
       onupdateSuccess();
     },
-    onError: (error) => error?.message ?? "Failed to update Quality accessment",
+    onError: (error) => {
+      toast.error(error?.message ?? "Failed to update the ");
+    },
   });
   return { updatingError, isUpdating, mutate };
 };
