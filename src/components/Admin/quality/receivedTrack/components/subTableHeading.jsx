@@ -82,7 +82,7 @@ export const SubTableHeading = () => (
         backgroundColor: theme.green,
       }}
     >
-      Transfer Category
+      Sample Category
     </td>
     <td
       style={{
