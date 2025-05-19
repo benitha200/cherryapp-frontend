@@ -41,9 +41,9 @@ import Quality from "./components/Admin/quality/index.jsx";
 import { SampleForm } from "./components/Admin/quality/sample/index.jsx";
 import OfflineModal from "./sharedCompoents/networkError.jsx";
 import NotFoundPage from "./sharedCompoents/404/404.jsx";
-import DelivarySummary from "./components/Admin/quality/delivery/components/report.jsx";
 import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
 import { Toaster } from "react-hot-toast";
+import QualityReport from "./components/Admin/quality/report/index.jsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -168,6 +168,16 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
+
+              <Route
+                path="/quality-report"
+                element={
+                  <PrivateRoute>
+                    <QualityReport />
+                  </PrivateRoute>
+                }
+              />
+
               <Route
                 path="/transport"
                 element={

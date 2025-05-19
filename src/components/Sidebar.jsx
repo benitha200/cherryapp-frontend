@@ -287,6 +287,11 @@ const Sidebar = () => {
       icon: "file-earmark-text",
       text: "Out Turns Report",
     },
+    {
+      path: "quality-report",
+      icon: "file-earmark-text",
+      text: "Quality Report",
+    },
   ];
 
   // Settings menu items for admin
@@ -506,7 +511,12 @@ const Sidebar = () => {
                 ></i>
               </button>
               {reportsOpen && (
-                <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    marginLeft: "2rem",
+                  }}
+                >
                   {reportItems.map(renderNavLink)}
                 </div>
               )}
