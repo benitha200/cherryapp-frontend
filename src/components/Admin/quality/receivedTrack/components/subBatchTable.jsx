@@ -158,13 +158,16 @@ export const SubBatchTable = ({
             }
           />
         </td>
+
         {/* storage */}
         <td className="align-middle">
           <div style={{ width: "7rem" }}>
             {subelement?.sampleStorage?.name ?? "N/A"}
           </div>
         </td>
+
         <td className="align-middle">{subelement?.category}</td>
+        <td className="align-middle">{subelement?.newCategory ?? "-"}</td>
       </tr>
     </>
   );
