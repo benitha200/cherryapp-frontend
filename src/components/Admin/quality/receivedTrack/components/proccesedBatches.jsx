@@ -3,7 +3,7 @@ import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
 import { SubTableHeading } from "./subTableHeading";
 import { SubBatchTable } from "./subBatchTable";
 import { GetDelivaryById } from "../actions";
-import { DelivarySkeleton } from "../../delivery/components/skeleton";
+import { DelivarySkeleton } from "./dskeleton";
 import { Error } from "../../components/responses";
 
 const processingTheme = {
