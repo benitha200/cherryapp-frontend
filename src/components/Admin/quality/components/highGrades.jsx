@@ -323,6 +323,14 @@ const HighGrades = () => {
   if (baggedOffBatchesSize == 0)
     return (
       <div className="table-responsive mx-4 mt-4">
+        <button
+          className="btn text-white mb-3"
+          style={{ backgroundColor: "#008080" }}
+          onClick={() => navigate(-1)}
+          type="button"
+        >
+          Back
+        </button>
         <table className="table-hover">
           <tbody>
             <tr>
