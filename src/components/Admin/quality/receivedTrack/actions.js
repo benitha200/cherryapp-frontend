@@ -7,19 +7,6 @@ import {
 } from "../../../../apis/delivaryCapping";
 import toast from "react-hot-toast";
 
-// export const CreatePost = () => {
-//   const queryClient = useQueryClient();
-//   const { error, isPending, mutate } = useMutation({
-//     mutationFn: (formData) => createPost(formData),
-//     onSuccess: () => {
-//       toast.success("Post created successfully!");
-//       queryClient.invalidateQueries({ queryKey: ["Posts"] });
-//     },
-//     onError: (error) => toast.error(error.originalError),
-//   });
-//   return { error, isPending, mutate };
-// };
-
 export const GetAllDelivaries = (page, size) => {
   const {
     isPending: getAllPending,
@@ -43,21 +30,6 @@ export const GetDelivaryById = (id) => {
   });
   return { getByIdPending, getByIdError, delivary };
 };
-
-// export const DeletePost = () => {
-//   const queryClient = useQueryClient();
-//   const { isPending, mutate: Destroy } = useMutation({
-//     mutationFn: (id) => deletePost(id),
-//     onSuccess: (res) => {
-//       queryClient.invalidateQueries({ queryKey: ["Posts"] });
-//       toast.success(res.message);
-//     },
-//     onError: (error) => {
-//       toast.error(error.originalError);
-//     },
-//   });
-//   return { isPending, Destroy };
-// };
 
 export const UpdateDelivary = (id, onupdateSuccess) => {
   const queryClient = useQueryClient();
