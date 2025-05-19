@@ -82,7 +82,15 @@ export const SubTableHeading = () => (
         backgroundColor: theme.green,
       }}
     >
-      Category
+      Transfer Category
+    </td>
+    <td
+      style={{
+        width: "10rem",
+        backgroundColor: theme.green,
+      }}
+    >
+      Delivery Category
     </td>
   </tr>
 );
