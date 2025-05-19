@@ -83,7 +83,7 @@ export const updateDelivaryById = async ({ id, payload }) => {
 
   const loggedinuser = loggedInUser();
 
-  delete payload?.categories;
+  delete payload?.categories?.relatedCategories;
   try {
     const res = await axios.put(
       `${API_URL}/quality-delivery/send-delivery-test-result`,

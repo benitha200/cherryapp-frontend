@@ -440,8 +440,9 @@ const Sidebar = () => {
                   style={{
                     backgroundColor: "transparent",
                     cursor: "pointer",
+                    marginLeft: "2rem",
                   }}
-                  onClick={() => setQualityOpen(!qualityOpen)}
+                  // onClick={() => setQualityOpen(!qualityOpen)}
                 >
                   {qualityItemsAdmin.map(renderNavLink)}
                 </div>

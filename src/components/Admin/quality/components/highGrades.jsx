@@ -145,6 +145,7 @@ const HighGrades = () => {
   const [page, setPage] = useState(1);
   const [displayItems, setDisplayItems] = useState(5);
   const [refresh, setRefresh] = useState(false);
+  const [baggedOffBatchesSize, setBaggedOffBathesSize] = useState(null);
 
   const navigate = useNavigate();
   const processingTypes = ["All", "FULLY_WASHED", "NATURAL"];
@@ -178,8 +179,10 @@ const HighGrades = () => {
     if (res?.data && res.data?.length > 0) {
       setProcessingBatches(res?.data);
       setPaginationData(res?.pagination);
+      setBaggedOffBathesSize(res.data?.length);
     } else if (res?.data?.length == 0) {
-      setError("There is no bagged off butches.");
+      setBaggedOffBathesSize(0);
+      // setError("There is no bagged off butches.");
     } else {
       setError(error?.response?.data?.message ?? "Error fetching batchs data");
     }
@@ -188,6 +191,7 @@ const HighGrades = () => {
   };
 
   useEffect(() => {
+    setBaggedOffBathesSize(0);
     const initializeData = async () => {
       await fetchAllBatches();
       await fetchProcessingBatches();
@@ -316,6 +320,46 @@ const HighGrades = () => {
 
   if (isInitialLoad) return <LoadingSkeleton />;
   if (error) return <div className="alert alert-danger">{error}</div>;
+  if (baggedOffBatchesSize == 0)
+    return (
+      <div className="table-responsive mx-4 mt-4">
+        <button
+          className="btn text-white mb-3"
+          style={{ backgroundColor: "#008080" }}
+          onClick={() => navigate(-1)}
+          type="button"
+        >
+          Back
+        </button>
+        <table className="table-hover">
+          <tbody>
+            <tr>
+              <td colSpan="4">
+                {" "}
+                {/* Fixed string instead of template literal */}
+                <div className="d-flex justify-content-center align-items-center p-5">
+                  <div
+                    className="text-center p-4 border border-warning rounded-3 bg-light"
+                    style={{ maxWidth: "500px" }}
+                  >
+                    <div className="mb-3">
+                      <i
+                        className="bi bi-inbox text-warning"
+                        style={{ fontSize: "2.5rem" }}
+                      ></i>
+                    </div>
+                    <h5 className="mb-2">No Batches Available</h5>
+                    <p className="text-muted mb-0">
+                      There are no bagged off batches at the moment.
+                    </p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
 
   const filteredData = filteredBatches(processingBatches);
   const displayData = getPaginatedBatches(filteredData);
