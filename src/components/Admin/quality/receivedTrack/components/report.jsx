@@ -25,6 +25,7 @@ export const DerivalyTable = () => {
     s86: null,
     s87: null,
     s88: null,
+    lg: null,
     relatedCategories: [],
   });
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -56,6 +57,7 @@ export const DerivalyTable = () => {
       s86: null,
       s87: null,
       s88: null,
+      lg: null,
       relatedCategories: [],
     });
   };
@@ -97,7 +99,12 @@ export const DerivalyTable = () => {
       field: "quantity",
       header: "Quantity(kg)",
       render: (item) => (
-        <span>{(item?.outputKgs?.N1 ?? 0) + (item?.outputKgs.N2 ?? 0)}</span>
+        <span>
+          {Object.values(item?.outputKgs).reduce(
+            (acc, value) => parseInt(value, 10) + acc,
+            0
+          )}
+        </span>
       ),
     },
     { field: "driverName", header: "Driver_Name" },
@@ -115,7 +122,10 @@ export const DerivalyTable = () => {
             setSelectedTransportInfo((prev) => ({
               ...prev,
               cws: item?.cws,
-              quantity: 200,
+              quantity: Object.values(item?.outputKgs).reduce(
+                (acc, value) => parseInt(value, 10) + acc,
+                0
+              ),
               driver: item?.driverName,
             }));
           }}

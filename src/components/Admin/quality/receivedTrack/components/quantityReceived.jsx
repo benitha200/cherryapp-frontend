@@ -21,12 +21,13 @@ export const QuantityReceived = ({
                   </Col>
                   <Col xs="auto">
                     <p>
-                      <strong>Driver:</strong> {selectedTransportInfo?.quantity}
+                      <strong>Quantity:</strong>{" "}
+                      {selectedTransportInfo?.quantity}
                     </p>
                   </Col>
                   <Col xs="auto">
                     <p className="mb-1">
-                      <strong>Quantity:</strong> {selectedTransportInfo?.driver}
+                      <strong>Driver:</strong> {selectedTransportInfo?.driver}
                     </p>
                   </Col>
                 </Row>
@@ -40,7 +41,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("C1") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>C1</Form.Label>
+                          <Form.Label>C1 Received (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -62,7 +63,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("C2") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>C2</Form.Label>
+                          <Form.Label>C2 Received (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -84,7 +85,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("S86") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>S86</Form.Label>
+                          <Form.Label>S86 Received (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -105,7 +106,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("S87") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>S87</Form.Label>
+                          <Form.Label>S87 Received (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -126,7 +127,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("S88") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>S88</Form.Label>
+                          <Form.Label>S88 Received (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -143,6 +144,25 @@ export const QuantityReceived = ({
                         </Form.Group>
                       </Col>
                     )}
+
+                    <Col md={2}>
+                      <Form.Group>
+                        <Form.Label>LG Received (Kg)</Form.Label>
+                        <Form.Control
+                          type="number"
+                          placeholder="0"
+                          value={categories?.lg}
+                          defaultValue={categories?.lg ?? ""}
+                          onChange={(e) =>
+                            setInfo((prev) => ({
+                              ...prev,
+                              lg: e.target.value,
+                            }))
+                          }
+                          disabled={false}
+                        />
+                      </Form.Group>
+                    </Col>
                   </Row>
                 </Col>
               </Row>

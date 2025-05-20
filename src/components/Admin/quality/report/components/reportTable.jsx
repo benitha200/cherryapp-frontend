@@ -1,11 +1,11 @@
 import { useState } from "react";
-import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 import { columns } from "./reportColums";
 import { Pagination } from "../../../../../sharedCompoents/paginations";
 import { Card } from "react-bootstrap";
 import { GetReport } from "../action";
 import { Skeleton } from "./skeleton";
 import { Error } from "../../components/responses";
+import { ReprotTable } from "./table";
 
 export const QualityReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -23,7 +23,7 @@ export const QualityReportTable = () => {
     !isPending && data && (
       <div className="container-fluid">
         <Card className="mb-4">
-          <ReusableTable
+          <ReprotTable
             data={data?.data?.report ?? []}
             columns={columns}
             pageSizeOptions={[5, 10, 20]}
@@ -41,7 +41,7 @@ export const QualityReportTable = () => {
               itemsPerPage={10}
               onPageChange={setCurrentPage}
             />
-          </ReusableTable>
+          </ReprotTable>
         </Card>
       </div>
     )

@@ -16,7 +16,6 @@ export const columns = [
       <span>{(item?.outputKgs?.N1 ?? 0) + (item?.outputKgs?.N2 ?? 0)}</span>
     ),
   },
-  { field: "Cumulative", header: "Cumulative (Kg)" },
   { field: "driverPhone", header: "Date of analysis" },
   { field: "driverPhone", header: "MoistureContentlag(%)/Samples" },
   { field: "driverPhone", header: "Moisture Content CWS (%)/Delivery" },
