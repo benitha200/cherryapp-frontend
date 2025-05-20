@@ -194,7 +194,7 @@ const ShortSummary = () => {
         setAllBatches(batchData);
         calculateSummaryData(batchData);
       } else {
-        setError(res?.response?.data?.message ?? "Something went wrong.");
+        setError(res?.response?.data?.message ?? "Failed to fetch Samples.");
       }
     } catch (error) {
       console.error("Error fetching all batches:", error);
@@ -598,7 +598,10 @@ const ShortSummary = () => {
           </Row>
         </Card.Body>
 
-        <div className="table-responsive mx-4 mt-4">
+        <div
+          className="table-responsive mx-4 mt-4 "
+          style={{ maxHeight: "70vh" }}
+        >
           <table className=" table-hover">
             <thead>
               <tr>
