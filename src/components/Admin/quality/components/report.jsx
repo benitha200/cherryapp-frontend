@@ -503,7 +503,7 @@ const ShortSummary = () => {
       <Card className="mb-4">
         <Card.Body style={{ backgroundColor: processingTheme.neutral }}>
           <Row className=" g-3 mb-2">
-            <Col md={8}>
+            {/* <Col md={8}>
               <div className="col-md-2 col-sm-6">
                 {isWorkingStations && (
                   <button
@@ -520,7 +520,7 @@ const ShortSummary = () => {
                   </button>
                 )}
               </div>
-            </Col>
+            </Col> */}
           </Row>
           <Row className="g-3">
             <Col md={2}>
