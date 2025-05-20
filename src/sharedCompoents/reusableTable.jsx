@@ -1,6 +1,5 @@
 import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
 
-
 const processingTheme = {
   primary: "#008080",
   secondary: "#4FB3B3",
@@ -24,6 +23,8 @@ const ReusableTable = ({
   rowKeyField = "id",
   itemsPerPage = 5,
   onPageSizeChange,
+  searchQuery = null,
+  setSearchQuery = () => null,
 }) => {
   if (isLoading) {
     return (
@@ -43,7 +44,6 @@ const ReusableTable = ({
             {/* Items per page select on left */}
             <div style={{ width: "5rem" }}>
               <Form.Select
-
                 value={itemsPerPage}
                 onChange={(e) => {
                   onPageSizeChange(e.target.value);
@@ -67,15 +67,14 @@ const ReusableTable = ({
                 <Form.Control
                   type="text"
                   placeholder="Search..."
-                  // value={searchQuery}
-                  // onChange={(e) => setSearchQuery(e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </InputGroup>
             </div>
           </div>
         </Card.Body>
       </div>
-
 
       <div className="table-responsive">
         <table

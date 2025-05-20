@@ -14,7 +14,10 @@ export const DerivalyTable = () => {
   // State declarations
   const navigate = useNavigate();
   const [openModle, setOpenModle] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState({
+    trackId: null,
+    transferDate: null,
+  });
 
   // batches
   const [activatedBatches, setActivivatedBatches] = useState([]);
@@ -37,6 +40,7 @@ export const DerivalyTable = () => {
     quantity: null,
     driver: null,
   });
+  const [searchQuery, setSearchQuery] = useState(null);
 
   // logs
 
@@ -48,7 +52,7 @@ export const DerivalyTable = () => {
 
   const onUpdateSuccess = () => {
     handleopenModel();
-    setSelectedId(null);
+    setSelectedId({ trackId: null, transferDate: null });
     setActivivatedBatches([]);
     setActivatedBatchesData([]);
     setCategories({
@@ -76,10 +80,30 @@ export const DerivalyTable = () => {
       const res = data.slice(skip, skip + itemsPerPage);
       setAllTransportInfo(res);
     }
+    setSearchQuery("");
   }, [allDelivaries, selectedTransportInfo, currentPage, itemsPerPage]);
+  useEffect(() => {
+    setSearchQuery("");
+  }, [currentPage]);
 
-  useEffect(() => {}, [currentPage]);
-
+  useEffect(() => {
+    const data = (allDelivaries?.data?.trucks ?? [])
+      ?.filter(
+        (element) =>
+          element?.driverName
+            ?.toLowerCase()
+            .includes(searchQuery?.toLowerCase()) ||
+          element?.truckNumber
+            ?.toLowerCase()
+            .includes(searchQuery?.toLowerCase()) ||
+          element?.cws?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+          element?.driverPhone
+            ?.toLowerCase()
+            .includes(searchQuery?.toLowerCase())
+      )
+      ?.slice(0, itemsPerPage);
+    setAllTransportInfo((prev) => data);
+  }, [searchQuery]);
   const handleFormSubmission = () => {
     mutate({ categories, activatedBatchesData });
   };
@@ -118,7 +142,10 @@ export const DerivalyTable = () => {
           variant="success"
           onClick={() => {
             handleopenModel();
-            setSelectedId(item?.truckNumber ?? "");
+            setSelectedId({
+              trackId: item?.truckNumber ?? "",
+              transferDate: item?.transferDate ?? "",
+            });
             setSelectedTransportInfo((prev) => ({
               ...prev,
               cws: item?.cws,
@@ -166,6 +193,8 @@ export const DerivalyTable = () => {
           onPageSizeChange={setItemsPerPage}
           rowKeyField="id"
           itemsPerPage={itemsPerPage}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
         >
           <Pagination
             currentPage={currentPage}
