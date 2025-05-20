@@ -5,7 +5,7 @@ import { Card } from "react-bootstrap";
 import { GetReport } from "../action";
 import { Skeleton } from "./skeleton";
 import { Error } from "../../components/responses";
-import { ReprotTable } from "./table";
+import { ReprotTable } from "./reportRows";
 
 export const QualityReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);

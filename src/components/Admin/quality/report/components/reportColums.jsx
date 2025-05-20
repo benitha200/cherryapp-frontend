@@ -2,22 +2,14 @@ export const columns = [
   {
     field: "batchNumber",
     header: "Batch Number",
-    render: (item) => <span>{`${item?.batchNo ?? ""}`}</span>,
   },
-  {
-    field: "certificationsStatus",
-    header: "Certification status",
-    render: (item) => <span>{item?.cws?.name ?? "N/A"}</span>,
-  },
+
   {
     field: "Qauntity",
     header: "Parchment Qty(kg)",
-    render: (item) => (
-      <span>{(item?.outputKgs?.N1 ?? 0) + (item?.outputKgs?.N2 ?? 0)}</span>
-    ),
   },
   { field: "driverPhone", header: "Date of analysis" },
-  { field: "driverPhone", header: "MoistureContentlag(%)/Samples" },
+  { field: "driverPhone", header: "MoistureContent lab(%)/Samples" },
   { field: "driverPhone", header: "Moisture Content CWS (%)/Delivery" },
   { field: "driverPhone", header: "Variation M.C" },
   { field: "driverPhone", header: "16+" },
@@ -30,13 +22,14 @@ export const columns = [
   { field: "driverPhone", header: "Aver. 13/14/Delivery" },
   { field: "driverPhone", header: "Av.13/14 Samples" },
   { field: "driverPhone", header: "Variation 13/14" },
-  { field: "driverPhone", header: "B13" },
+  { field: "driverPhone", header: "B12" },
   { field: "driverPhone", header: "Defects (%)" },
   { field: "driverPhone", header: "Aver.LG/Delivery" },
   { field: "driverPhone", header: "AV.LG Samples" },
   { field: "driverPhone", header: "Variation LG" },
   { field: "driverPhone", header: "OT Delivery (%)" },
   { field: "driverPhone", header: "O.T/Samples" },
+  { field: "driverPhone", header: "Variation OT" },
   { field: "driverPhone", header: "Flovor/After taste" },
   { field: "driverPhone", header: "Acidity" },
   { field: "driverPhone", header: "Body" },
