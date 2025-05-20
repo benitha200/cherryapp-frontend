@@ -24,7 +24,7 @@ export const getDelivaryById = async (id) => {
   const loggedinuser = loggedInUser();
   try {
     const res = await axios.get(
-      `${API_URL}/quality-delivery/getBatches-by-truck/${id}?page=1&limit=10`,
+      `${API_URL}/quality-delivery/getBatches-by-truck/${id?.trackId}/${id?.transferDate}?page=1&limit=10`,
 
       {
         headers: {

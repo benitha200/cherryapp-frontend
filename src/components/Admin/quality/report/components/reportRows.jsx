@@ -259,15 +259,7 @@ export const ReprotTable = ({
                           ) +
                             Number(item?.sample?.batches[0]?.defect ?? 0)))}
                     </td>
-                    {/* accidity  */}
-                    <td></td>
-                    {/* body */}
-                    <td></td>
-                    {/* comments */}
-                    <td></td>
-                    {/* potato cups */}
-                    <td></td>
-                    <td></td>
+
                     {/* pp Score Delivery */}
                     <td>{item?.delivery?.batches[0]?.ppScore ?? 0}</td>
                     {/* pp score sample  */}

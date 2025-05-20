@@ -142,14 +142,14 @@ export const ProcessedBatches = ({
         {/* Filters Section */}
         <Card.Body style={{ backgroundColor: processingTheme.neutral }}>
           <Row className="g-3">
-            <Col md={2}>
+            {/* <Col md={2}>
               <InputGroup>
                 <Form.Control
                   type="text"
                   placeholder="Search across all fields..."
                 />
               </InputGroup>
-            </Col>
+            </Col> */}
           </Row>
         </Card.Body>
 
@@ -165,6 +165,7 @@ export const ProcessedBatches = ({
             <thead>
               <tr>
                 <th>Processing Type</th>
+                <th>Batch No</th>
                 <th>Select</th>
                 <th></th>
               </tr>
@@ -184,9 +185,15 @@ export const ProcessedBatches = ({
                         {element?.processing?.processingType ?? "N/a"}
                       </span>
                     </td>
+                    {/* sub batch no */}
+                    <td className="align-middle">
+                      <div style={{ width: "7rem", marginLeft: "0.7rem" }}>
+                        {element?.batchNo ?? ""}
+                      </div>
+                    </td>
                     {/* check box */}
                     <td className="align-middle">
-                      <div style={{ marginLeft: "1rem" }}>
+                      <div style={{ marginLeft: "0.3rem" }}>
                         <input
                           type="checkbox"
                           onChange={(e) => {
@@ -207,12 +214,7 @@ export const ProcessedBatches = ({
                         />
                       </div>
                     </td>
-                    {/* sub batch no */}
-                    <td className="align-middle">
-                      <div style={{ width: "10rem" }}>
-                        {element?.batchNo ?? ""}
-                      </div>
-                    </td>
+
                     <td>
                       <div>
                         <table className="table" style={{ marginLeft: "2rem" }}>

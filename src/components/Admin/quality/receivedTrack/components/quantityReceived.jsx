@@ -41,7 +41,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("C1") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>C1 Received (Kg)</Form.Label>
+                          <Form.Label>C1 Delivered (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -63,7 +63,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("C2") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>C2 Received (Kg)</Form.Label>
+                          <Form.Label>C2 Delivered (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -85,7 +85,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("S86") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>S86 Received (Kg)</Form.Label>
+                          <Form.Label>S86 Delivered (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -106,7 +106,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("S87") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>S87 Received (Kg)</Form.Label>
+                          <Form.Label>S87 Delivered (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -127,7 +127,7 @@ export const QuantityReceived = ({
                     {includeInValidKeys("S88") && (
                       <Col md={2}>
                         <Form.Group>
-                          <Form.Label>S88 Received (Kg)</Form.Label>
+                          <Form.Label>S88 Delivered (Kg)</Form.Label>
                           <Form.Control
                             type="number"
                             placeholder="0"
@@ -147,7 +147,7 @@ export const QuantityReceived = ({
 
                     <Col md={2}>
                       <Form.Group>
-                        <Form.Label>LG Received (Kg)</Form.Label>
+                        <Form.Label>LG Delivered (Kg)</Form.Label>
                         <Form.Control
                           type="number"
                           placeholder="0"

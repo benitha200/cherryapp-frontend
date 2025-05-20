@@ -105,6 +105,10 @@ export const updateQualityInformation = async (payload) => {
         [keys.key1]: element?.labMoisture["A0"] ?? "",
         [keys.key2]: element?.labMoisture["A1"] ?? "",
       },
+      cwsMoisture1: {
+        [keys.key1]: element?.cwsMoisture["A0"] ?? "",
+        [keys.key2]: element?.cwsMoisture["A1"] ?? "",
+      },
       screen: {
         [keys.key1]: {
           14: element["14+"]["A0"] ?? "",
