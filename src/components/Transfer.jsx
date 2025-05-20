@@ -11,8 +11,8 @@ const processingTheme = {
 };
 
 const GRADE_GROUPS = {
-  HIGH: ['A0', 'A1', 'N1', 'N2', 'H2'],
-  LOW: ['A2', 'A3', 'B1', 'B2'],
+  HIGH: ['A0', 'A1', 'N1', 'H2'],
+  LOW: ['A2', 'A3', 'B1', 'B2', 'N2'],
   BOTH: ['A0', 'A1', 'N1', 'N2', 'H2', 'A2', 'A3', 'B1', 'B2']
 };
 
