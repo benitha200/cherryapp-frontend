@@ -55,7 +55,7 @@ export const ReprotTable = ({
 
   function styleTotals() {
     return {
-      background: "#c5e0d8",
+      background: "#f0e5c5",
       fontSize: "0.9rem",
       fontWeight: "700",
       color: "#212529",
