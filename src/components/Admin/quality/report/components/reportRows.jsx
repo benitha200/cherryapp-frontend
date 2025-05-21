@@ -99,9 +99,12 @@ export const ReprotTable = ({
                       style={{
                         padding: "10px 15px",
                         borderBottom: `1px solid ${processingTheme.tableBorder}`,
+                        width: "10rem",
                       }}
                     >
-                      {elements?.id ?? ""}
+                      {`${cwsBatches?.batchNo ?? ""}-${
+                        elements?.gradeKey ?? ""
+                      }`}
                     </td>
                     {/* parchment qty(kg) */}
                     <td>
@@ -126,7 +129,7 @@ export const ReprotTable = ({
                       }
                     </td>
                     {/* variation m.c */}
-                    <td>
+                    <td style={styleValiations()}>
                       {Number(elements?.labMoisture ?? 0) -
                         Number(
                           cwsBatches?.delivery?.batches[subBatchIndex]
@@ -168,7 +171,7 @@ export const ReprotTable = ({
                         Number(elements?.screen["15"] ?? 0)}
                     </td>
                     {/* variation 15+ */}
-                    <td>
+                    <td style={styleValiations()}>
                       {Number(
                         cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
                           "16+"
@@ -217,7 +220,7 @@ export const ReprotTable = ({
                         Number(elements?.screen["13"] ?? 0)}
                     </td>
                     {/* variation 13/14 */}
-                    <td>
+                    <td style={styleValiations()}>
                       {Number(
                         cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
                           "14"
@@ -264,7 +267,7 @@ export const ReprotTable = ({
                         Number(elements?.defect ?? 0)}
                     </td>
                     {/* variation lg */}
-                    <td>
+                    <td style={styleValiations()}>
                       {Number(
                         cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
                           "B/12"
@@ -319,7 +322,7 @@ export const ReprotTable = ({
                         Number(elements?.defect ?? 0)}
                     </td>
                     {/* variation ot */}
-                    <td>
+                    <td style={styleValiations()}>
                       {Number(
                         cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
                           "16+"
@@ -369,7 +372,7 @@ export const ReprotTable = ({
                         ?.newCategory ?? ""}
                     </td>
                     {/* variation pp score */}
-                    <td>
+                    <td style={styleValiations()}>
                       {Number(
                         cwsBatches?.delivery?.batches[subBatchIndex]?.ppScore ??
                           0

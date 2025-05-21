@@ -1,44 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Card, Button, Modal, Placeholder, Form, Alert, InputGroup, Badge, Row, Col, Nav, Tab } from 'react-bootstrap';
-import API_URL from '../constants/Constants';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Card,
+  Button,
+  Modal,
+  Placeholder,
+  Form,
+  Alert,
+  InputGroup,
+  Badge,
+  Row,
+  Col,
+  Nav,
+  Tab,
+} from "react-bootstrap";
+import API_URL from "../constants/Constants";
+import toast from "react-hot-toast";
 
 const processingTheme = {
-  primary: '#008080',    // Sucafina teal
-  secondary: '#4FB3B3',  // Lighter teal
-  neutral: '#E6F3F3',    // Very light teal
-  tableHover: '#F8FAFA', // Ultra light teal for table hover
+  primary: "#008080", // Sucafina teal
+  secondary: "#4FB3B3", // Lighter teal
+  neutral: "#E6F3F3", // Very light teal
+  tableHover: "#F8FAFA", // Ultra light teal for table hover
 };
 
 const GRADE_GROUPS = {
-  HIGH: ['A0', 'A1', 'N1', 'N2', 'H2'],
-  LOW: ['A2', 'A3', 'B1', 'B2'],
-  BOTH: ['A0', 'A1', 'N1', 'N2', 'H2', 'A2', 'A3', 'B1', 'B2']
+  HIGH: ["A0", "A1", "N1", "N2", "H2"],
+  LOW: ["A2", "A3", "B1", "B2"],
+  BOTH: ["A0", "A1", "N1", "N2", "H2", "A2", "A3", "B1", "B2"],
 };
 
-const CUP_PROFILES = ['Select Cup Profile', 'S88', 'S87', 'S86', 'C1', 'C2'];
+const CUP_PROFILES = ["Select Cup Profile", "S88", "S87", "S86", "C1", "C2"];
 
 const Transfer = () => {
   const [groupedRecords, setGroupedRecords] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [selectedGradeItems, setSelectedGradeItems] = useState([]);
   const [totalSelectedKgs, setTotalSelectedKgs] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [batchesPerPage, setBatchesPerPage] = useState(30);
-  const userInfo = JSON.parse(localStorage.getItem('user'));
-  const [transferMode, setTransferMode] = useState('BOTH');
+  const userInfo = JSON.parse(localStorage.getItem("user"));
+  const [transferMode, setTransferMode] = useState("BOTH");
   const [gradeQualityDetails, setGradeQualityDetails] = useState({});
   const [transportDetails, setTransportDetails] = useState({
-    truckNumber: '',
-    driverName: '',
-    driverPhone: '',
-    notes: ''
+    truckNumber: "",
+    driverName: "",
+    driverPhone: "",
+    notes: "",
   });
   const [validated, setValidated] = useState(false);
-  const [lowGradeBags, setLowGradeBags] = useState('');
+  const [lowGradeBags, setLowGradeBags] = useState("");
   const [selectedLowGrade, setSelectedLowGrade] = useState(null);
   const [activeGradeTab, setActiveGradeTab] = useState(null);
   // New state for low grade batch grouping
@@ -49,14 +63,17 @@ const Transfer = () => {
   const flattenBatchRecords = () => {
     const individualRows = [];
 
-    Object.keys(groupedRecords).forEach(batchKey => {
+    Object.keys(groupedRecords).forEach((batchKey) => {
       const batchRecords = groupedRecords[batchKey] || [];
 
-      batchRecords.forEach(record => {
+      batchRecords.forEach((record) => {
         Object.entries(record.outputKgs || {}).forEach(([grade, kg]) => {
           const kgValue = parseFloat(kg) || 0;
 
-          if (kgValue > 0 && (!record.transferredGrades || !record.transferredGrades[grade])) {
+          if (
+            kgValue > 0 &&
+            (!record.transferredGrades || !record.transferredGrades[grade])
+          ) {
             const uniqueId = `${record.id}-${grade}`;
             const gradeKey = `${batchKey}-${grade}`;
 
@@ -72,7 +89,7 @@ const Transfer = () => {
               processingType: record.processingType,
               totalKgs: record.totalKgs,
               recordId: record.id,
-              record: record
+              record: record,
             });
           }
         });
@@ -81,7 +98,7 @@ const Transfer = () => {
 
     // Group identical batch & grade combinations
     const groupedItems = {};
-    individualRows.forEach(row => {
+    individualRows.forEach((row) => {
       const combinedKey = `${row.batchNo}-${row.grade}`;
 
       if (!groupedItems[combinedKey]) {
@@ -89,7 +106,7 @@ const Transfer = () => {
           ...row,
           combinedGradeKey: combinedKey,
           records: [row],
-          recordCount: 1
+          recordCount: 1,
         };
       } else {
         groupedItems[combinedKey].kgValue += row.kgValue;
@@ -99,7 +116,7 @@ const Transfer = () => {
     });
 
     // Sort by grade and date
-    const gradeOrder = ['A0', 'A1', 'A2', 'A3', 'B1', 'B2'];
+    const gradeOrder = ["A0", "A1", "A2", "A3", "B1", "B2"];
     return Object.values(groupedItems).sort((a, b) => {
       const gradeAIndex = gradeOrder.indexOf(a.grade);
       const gradeBIndex = gradeOrder.indexOf(b.grade);
@@ -116,12 +133,14 @@ const Transfer = () => {
 
   const extractDateFromBatch = (batchNo) => {
     const dateMatch = batchNo.match(/(\d{2})(\d{2})/);
-    return dateMatch ? { day: parseInt(dateMatch[1], 10), month: parseInt(dateMatch[2], 10) } : { day: 0, month: 0 };
+    return dateMatch
+      ? { day: parseInt(dateMatch[1], 10), month: parseInt(dateMatch[2], 10) }
+      : { day: 0, month: 0 };
   };
 
   const handleGradeItemSelection = (gradeKey, isSelected) => {
-    setSelectedGradeItems(prev =>
-      isSelected ? [...prev, gradeKey] : prev.filter(key => key !== gradeKey)
+    setSelectedGradeItems((prev) =>
+      isSelected ? [...prev, gradeKey] : prev.filter((key) => key !== gradeKey)
     );
   };
 
@@ -130,17 +149,21 @@ const Transfer = () => {
   };
 
   const handleSelectAllGradeItems = (isSelected) => {
-    setSelectedGradeItems(isSelected ? flattenBatchRecords().map(item => item.gradeKey) : []);
+    setSelectedGradeItems(
+      isSelected ? flattenBatchRecords().map((item) => item.gradeKey) : []
+    );
   };
 
   const getSelectedGradeItems = () => {
-    return flattenBatchRecords().filter(item => selectedGradeItems.includes(item.gradeKey));
+    return flattenBatchRecords().filter((item) =>
+      selectedGradeItems.includes(item.gradeKey)
+    );
   };
 
   // Calculate totals for each grade
   const getGradeTotals = () => {
     const totals = {};
-    getSelectedGradeItems().forEach(item => {
+    getSelectedGradeItems().forEach((item) => {
       totals[item.grade] = (totals[item.grade] || 0) + item.kgValue;
     });
     return totals;
@@ -148,7 +171,10 @@ const Transfer = () => {
 
   // Calculate total selected KGs
   useEffect(() => {
-    const total = getSelectedGradeItems().reduce((sum, item) => sum + item.kgValue, 0);
+    const total = getSelectedGradeItems().reduce(
+      (sum, item) => sum + item.kgValue,
+      0
+    );
     setTotalSelectedKgs(total);
 
     // Set active tab to first grade if there are selections
@@ -168,15 +194,17 @@ const Transfer = () => {
     }
 
     // Initialize low grade grouping state
-    const lowGrades = selectedGrades.filter(grade => GRADE_GROUPS.LOW.includes(grade));
+    const lowGrades = selectedGrades.filter((grade) =>
+      GRADE_GROUPS.LOW.includes(grade)
+    );
     const initialLowGradeGrouping = {};
 
     // For each low grade, group all items by default
-    lowGrades.forEach(grade => {
+    lowGrades.forEach((grade) => {
       initialLowGradeGrouping[grade] = {
         isGrouped: true,
-        numberOfBags: '',
-        items: getItemsGroupedByGradeAndBatch()[grade] || []
+        numberOfBags: "",
+        items: getItemsGroupedByGradeAndBatch()[grade] || [],
       };
     });
 
@@ -187,7 +215,7 @@ const Transfer = () => {
   const getItemsGroupedByGradeAndBatch = () => {
     const gradeGroups = {};
 
-    getSelectedGradeItems().forEach(item => {
+    getSelectedGradeItems().forEach((item) => {
       if (!gradeGroups[item.grade]) {
         gradeGroups[item.grade] = [];
       }
@@ -195,7 +223,7 @@ const Transfer = () => {
     });
 
     // Sort batches within each grade
-    Object.keys(gradeGroups).forEach(grade => {
+    Object.keys(gradeGroups).forEach((grade) => {
       gradeGroups[grade].sort((a, b) => {
         const dateA = extractDateFromBatch(a.batchNo);
         const dateB = extractDateFromBatch(b.batchNo);
@@ -210,22 +238,22 @@ const Transfer = () => {
 
   // Handle changes to the low grade grouping settings
   const handleLowGradeGroupingChange = (grade, field, value) => {
-    setLowGradeGrouping(prev => ({
+    setLowGradeGrouping((prev) => ({
       ...prev,
       [grade]: {
         ...prev[grade],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
 
     // If grouping is enabled, clear individual batch bag counts
-    if (field === 'isGrouped' && value === true) {
+    if (field === "isGrouped" && value === true) {
       const gradeItems = getItemsGroupedByGradeAndBatch()[grade] || [];
       const updatedGradeQualityDetails = { ...gradeQualityDetails };
 
       // Clear individual batch bag counts
-      gradeItems.forEach(item => {
-        item.records.forEach(record => {
+      gradeItems.forEach((item) => {
+        item.records.forEach((record) => {
           const batchGradeKey = `${record.recordId}-${grade}`;
           if (updatedGradeQualityDetails[batchGradeKey]) {
             delete updatedGradeQualityDetails[batchGradeKey];
@@ -239,190 +267,217 @@ const Transfer = () => {
 
   // Handle changes to combined low grade bags
   const handleCombinedBagsChange = (grade, value) => {
-    setCombinedLowGradeBags(prev => ({
+    setCombinedLowGradeBags((prev) => ({
       ...prev,
-      [grade]: value
+      [grade]: value,
     }));
   };
 
   const handleTransferConfirm = async (e) => {
     const form = e.currentTarget;
     e.preventDefault();
-  
+
     if (form.checkValidity() === false) {
       e.stopPropagation();
       setValidated(true);
       return;
     }
-  
+
     try {
       // Generate a unique transportGroupId first
       // const transportGroupResponse = await axios.post(`${API_URL}/transfer/generate-group-id`);
       // const transportGroupId = transportGroupResponse.data.transportGroupId;
-      const transportGroupId = `TG-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      
+      const transportGroupId = `TG-${Date.now()}-${Math.floor(
+        Math.random() * 1000
+      )}`;
+
       const transferPromises = [];
       const gradeTotals = getGradeTotals();
       const itemsByGradeAndBatch = getItemsGroupedByGradeAndBatch();
       const completedTransfers = [];
-  
+
       // Process all selected grades
-      Object.keys(itemsByGradeAndBatch).forEach(grade => {
+      Object.keys(itemsByGradeAndBatch).forEach((grade) => {
         const gradeItems = itemsByGradeAndBatch[grade];
         const isHighGrade = GRADE_GROUPS.HIGH.includes(grade);
-        const isGroupedLowGrade = !isHighGrade && lowGradeGrouping[grade]?.isGrouped;
-  
+        const isGroupedLowGrade =
+          !isHighGrade && lowGradeGrouping[grade]?.isGrouped;
+
         // For grouped low grades, create a single transfer with all batches
         if (isGroupedLowGrade) {
           const combinedGradeDetails = {};
           const combinedOutputKgs = {};
           const batchIds = [];
           let totalKgs = 0;
-  
+
           // Combine all batches for this grade
-          gradeItems.forEach(groupedItem => {
-            groupedItem.records.forEach(originalRecord => {
+          gradeItems.forEach((groupedItem) => {
+            groupedItem.records.forEach((originalRecord) => {
               batchIds.push(originalRecord.recordId);
               totalKgs += originalRecord.kgValue;
-              combinedOutputKgs[originalRecord.grade] = (combinedOutputKgs[originalRecord.grade] || 0) + originalRecord.kgValue;
+              combinedOutputKgs[originalRecord.grade] =
+                (combinedOutputKgs[originalRecord.grade] || 0) +
+                originalRecord.kgValue;
             });
           });
-  
+
           // Set the combined bag count
           combinedGradeDetails[grade] = {
-            numberOfBags: parseInt(combinedLowGradeBags[grade] || 0)
+            numberOfBags: parseInt(combinedLowGradeBags[grade] || 0),
           };
-  
+
           // Create a single transfer for all batches of this grade
           transferPromises.push(
-            axios.post(`${API_URL}/transfer`, {
-              baggingOffId: batchIds,  // Send all batch IDs as an array
-              batchNo: `${grade}-${new Date().toISOString().slice(0, 10)}`,  // Use a combined batch name with date
-              gradeGroup: 'LOW',
-              outputKgs: combinedOutputKgs,
-              gradeDetails: combinedGradeDetails,
-              isGroupedTransfer: true,  // Important flag for backend to process as grouped transfer
-              transportGroupId: transportGroupId, // Pass the consistent transportGroupId
-              truckNumber: transportDetails.truckNumber,
-              driverName: transportDetails.driverName,
-              driverPhone: transportDetails.driverPhone,
-              notes: transportDetails.notes
-            }).then(response => {
-              completedTransfers.push(response.data);
-              return response;
-            })
+            axios
+              .post(`${API_URL}/transfer`, {
+                baggingOffId: batchIds, // Send all batch IDs as an array
+                batchNo: `${grade}-${new Date().toISOString().slice(0, 10)}`, // Use a combined batch name with date
+                gradeGroup: "LOW",
+                outputKgs: combinedOutputKgs,
+                gradeDetails: combinedGradeDetails,
+                isGroupedTransfer: true, // Important flag for backend to process as grouped transfer
+                transportGroupId: transportGroupId, // Pass the consistent transportGroupId
+                truckNumber: transportDetails.truckNumber,
+                driverName: transportDetails.driverName,
+                driverPhone: transportDetails.driverPhone,
+                notes: transportDetails.notes,
+              })
+              .then((response) => {
+                completedTransfers.push(response.data);
+                return response;
+              })
           );
         } else {
           // Handle individual batch transfers
-          gradeItems.forEach(groupedItem => {
-            groupedItem.records.forEach(originalRecord => {
+          gradeItems.forEach((groupedItem) => {
+            groupedItem.records.forEach((originalRecord) => {
               const gradeDetails = {};
               const batchId = originalRecord.recordId;
               const batchGradeKey = `${batchId}-${grade}`;
-  
+
               gradeDetails[originalRecord.grade] = {
-                numberOfBags: parseInt(gradeQualityDetails[batchGradeKey]?.numberOfBags || 0),
-                ...(isHighGrade ? {
-                  cupProfile: gradeQualityDetails[batchGradeKey]?.cupProfile || CUP_PROFILES[0],
-                  moistureContent: parseFloat(gradeQualityDetails[batchGradeKey]?.moistureContent || 0)
-                } : {})
+                numberOfBags: parseInt(
+                  gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
+                ),
+                ...(isHighGrade
+                  ? {
+                      cupProfile:
+                        gradeQualityDetails[batchGradeKey]?.cupProfile ||
+                        CUP_PROFILES[0],
+                      moistureContent: parseFloat(
+                        gradeQualityDetails[batchGradeKey]?.moistureContent || 0
+                      ),
+                    }
+                  : {}),
               };
-  
+
               const outputKgs = {};
               outputKgs[originalRecord.grade] = originalRecord.kgValue;
-  
+
               transferPromises.push(
-                axios.post(`${API_URL}/transfer`, {
-                  baggingOffId: originalRecord.recordId,
-                  batchNo: originalRecord.batchKey,
-                  gradeGroup: isHighGrade ? 'HIGH' : 'LOW',
-                  outputKgs: outputKgs,
-                  gradeDetails: gradeDetails,
-                  isGroupedTransfer: false,
-                  transportGroupId: transportGroupId, // Pass the consistent transportGroupId
-                  truckNumber: transportDetails.truckNumber,
-                  driverName: transportDetails.driverName,
-                  driverPhone: transportDetails.driverPhone,
-                  notes: transportDetails.notes
-                }).then(response => {
-                  completedTransfers.push(response.data);
-                  return response;
-                })
+                axios
+                  .post(`${API_URL}/transfer`, {
+                    baggingOffId: originalRecord.recordId,
+                    batchNo: originalRecord.batchKey,
+                    gradeGroup: isHighGrade ? "HIGH" : "LOW",
+                    outputKgs: outputKgs,
+                    gradeDetails: gradeDetails,
+                    isGroupedTransfer: false,
+                    transportGroupId: transportGroupId, // Pass the consistent transportGroupId
+                    truckNumber: transportDetails.truckNumber,
+                    driverName: transportDetails.driverName,
+                    driverPhone: transportDetails.driverPhone,
+                    notes: transportDetails.notes,
+                  })
+                  .then((response) => {
+                    completedTransfers.push(response.data);
+                    return response;
+                  })
               );
             });
           });
         }
       });
-  
+
       // Wait for all transfers to complete
       await Promise.all(transferPromises);
-      
+
       // Refresh untransferred records
       await fetchUntransferredRecords();
       // Refresh transfer history to include the new transfers
-      await fetchTransferHistory();
-  
+      // await fetchTransferHistory();
+
       // Reset form and selections
       setSelectedGradeItems([]);
       setGradeQualityDetails({});
       setTransportDetails({
-        truckNumber: '',
-        driverName: '',
-        driverPhone: '',
-        notes: ''
+        truckNumber: "",
+        driverName: "",
+        driverPhone: "",
+        notes: "",
       });
-      setLowGradeBags('');
+      setLowGradeBags("");
       setSelectedLowGrade(null);
       setShowTransferModal(false);
       setValidated(false);
       setActiveGradeTab(null);
       setLowGradeGrouping({});
       setCombinedLowGradeBags({});
-  
+
       // Show success message with transport group ID for reference
-      alert(`Transfer completed successfully!\nTransport Group ID: ${transportGroupId}`);
+      toast.success(
+        `Transfer completed successfully!\nTransport Group ID: ${transportGroupId}`
+      );
     } catch (error) {
-      console.error('Transfer error:', error);
-      alert(`Failed to complete transfer: ${error.response?.data?.error || error.message}`);
+      console.error("Transfer error:", error);
+      toast.error(
+        `Failed to complete transfer: ${
+          error.response?.data?.error || error.message
+        }`
+      );
     }
-  }
+  };
 
   const handleQualityDetailsChange = (batchId, grade, field, value) => {
     const batchGradeKey = `${batchId}-${grade}`;
-    setGradeQualityDetails(prev => ({
+    setGradeQualityDetails((prev) => ({
       ...prev,
       [batchGradeKey]: {
         ...(prev[batchGradeKey] || {}),
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   const handleTransportDetailsChange = (e) => {
     const { name, value } = e.target;
-    setTransportDetails(prev => ({ ...prev, [name]: value }));
+    setTransportDetails((prev) => ({ ...prev, [name]: value }));
   };
 
   const fetchUntransferredRecords = async () => {
     try {
-      const response = await axios.get(`${API_URL}/bagging-off/cws/${userInfo.cwsId}`);
-      const transfersResponse = await axios.get(`${API_URL}/transfer/cws/${userInfo.cwsId}`);
+      const response = await axios.get(
+        `${API_URL}/bagging-off/cws/${userInfo.cwsId}`
+      );
+      const transfersResponse = await axios.get(
+        `${API_URL}/transfer/cws/${userInfo.cwsId}`
+      );
       const allTransfers = transfersResponse.data || [];
 
       const transfersByBaggingOff = {};
-      allTransfers.forEach(transfer => {
+      allTransfers.forEach((transfer) => {
         if (!transfersByBaggingOff[transfer.baggingOffId]) {
           transfersByBaggingOff[transfer.baggingOffId] = [];
         }
         transfersByBaggingOff[transfer.baggingOffId].push(transfer);
       });
 
-      const processedRecords = (response.data || []).map(record => {
+      const processedRecords = (response.data || []).map((record) => {
         const recordTransfers = transfersByBaggingOff[record.id] || [];
         const transferredGrades = {};
-        recordTransfers.forEach(transfer => {
+        recordTransfers.forEach((transfer) => {
           if (transfer.outputKgs) {
-            Object.keys(transfer.outputKgs).forEach(grade => {
+            Object.keys(transfer.outputKgs).forEach((grade) => {
               transferredGrades[grade] = true;
             });
           }
@@ -432,16 +487,22 @@ const Transfer = () => {
           ...record,
           transferredGrades,
           hasTransferredGrades: Object.keys(transferredGrades).length > 0,
-          hasUntransferredGrades: record.outputKgs && Object.keys(record.outputKgs).some(grade =>
-            !transferredGrades[grade] && parseFloat(record.outputKgs[grade] || 0) > 0
-          )
+          hasUntransferredGrades:
+            record.outputKgs &&
+            Object.keys(record.outputKgs).some(
+              (grade) =>
+                !transferredGrades[grade] &&
+                parseFloat(record.outputKgs[grade] || 0) > 0
+            ),
         };
       });
 
-      const untransferred = processedRecords.filter(record => record.hasUntransferredGrades);
+      const untransferred = processedRecords.filter(
+        (record) => record.hasUntransferredGrades
+      );
       const grouped = untransferred.reduce((acc, record) => {
         if (record.batchNo) {
-          const baseBatchNo = record.batchNo.replace(/[A-Za-z-]\d*$/, '');
+          const baseBatchNo = record.batchNo.replace(/[A-Za-z-]\d*$/, "");
           if (!acc[baseBatchNo]) {
             acc[baseBatchNo] = [];
           }
@@ -464,10 +525,12 @@ const Transfer = () => {
   }, []);
 
   const getPaginatedBatches = () => {
-    const filtered = flattenBatchRecords().filter(item =>
-      searchTerm ? item.displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.processingType.toLowerCase().includes(searchTerm.toLowerCase()) : true
+    const filtered = flattenBatchRecords().filter((item) =>
+      searchTerm
+        ? item.displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.processingType.toLowerCase().includes(searchTerm.toLowerCase())
+        : true
     );
 
     const indexOfLastBatch = currentPage * batchesPerPage;
@@ -499,8 +562,20 @@ const Transfer = () => {
 
               {/* Basic Stats Row */}
               <div className="d-flex flex-wrap gap-4 mb-2">
-                <div><strong>Batches:</strong> {new Set(getSelectedGradeItems().map(item => item.batchNo)).size}</div>
-                <div><strong>Grades:</strong> {new Set(getSelectedGradeItems().map(item => item.grade)).size}</div>
+                <div>
+                  <strong>Batches:</strong>{" "}
+                  {
+                    new Set(getSelectedGradeItems().map((item) => item.batchNo))
+                      .size
+                  }
+                </div>
+                <div>
+                  <strong>Grades:</strong>{" "}
+                  {
+                    new Set(getSelectedGradeItems().map((item) => item.grade))
+                      .size
+                  }
+                </div>
               </div>
 
               {/* Grade Breakdown */}
@@ -510,7 +585,14 @@ const Transfer = () => {
                   <div className="d-flex flex-wrap gap-3">
                     {Object.entries(getGradeTotals()).map(([grade, total]) => (
                       <div key={grade} className="d-flex align-items-center">
-                        <Badge bg={GRADE_GROUPS.HIGH.includes(grade) ? "success" : "info"} className="me-1">
+                        <Badge
+                          bg={
+                            GRADE_GROUPS.HIGH.includes(grade)
+                              ? "success"
+                              : "info"
+                          }
+                          className="me-1"
+                        >
                           {grade}
                         </Badge>
                         <span>{total.toFixed(2)} kg</span>
@@ -521,12 +603,18 @@ const Transfer = () => {
               )}
 
               {/* Highlighted Total KGs */}
-              <div className="p-2 rounded-3" style={{
-                backgroundColor: processingTheme.primaryLight || '#e6f2ff',
-                border: `1px solid ${processingTheme.primary}`,
-                display: 'inline-block'
-              }}>
-                <span className="fs-6 fw-bold" style={{ color: processingTheme.primary }}>
+              <div
+                className="p-2 rounded-3"
+                style={{
+                  backgroundColor: processingTheme.primaryLight || "#e6f2ff",
+                  border: `1px solid ${processingTheme.primary}`,
+                  display: "inline-block",
+                }}
+              >
+                <span
+                  className="fs-6 fw-bold"
+                  style={{ color: processingTheme.primary }}
+                >
                   Total Kgs: {totalSelectedKgs.toFixed(2)} kg
                 </span>
               </div>
@@ -536,16 +624,20 @@ const Transfer = () => {
             <div className="d-flex flex-column justify-content-between">
               <div className="mb-3">
                 <div className="mb-2">
-                  <strong>High Grades:</strong> {getSelectedGradeItems()
-                    .filter(item => GRADE_GROUPS.HIGH.includes(item.grade))
+                  <strong>High Grades:</strong>{" "}
+                  {getSelectedGradeItems()
+                    .filter((item) => GRADE_GROUPS.HIGH.includes(item.grade))
                     .reduce((sum, item) => sum + item.kgValue, 0)
-                    .toFixed(2)} kg
+                    .toFixed(2)}{" "}
+                  kg
                 </div>
                 <div>
-                  <strong>Low Grades:</strong> {getSelectedGradeItems()
-                    .filter(item => GRADE_GROUPS.LOW.includes(item.grade))
+                  <strong>Low Grades:</strong>{" "}
+                  {getSelectedGradeItems()
+                    .filter((item) => GRADE_GROUPS.LOW.includes(item.grade))
                     .reduce((sum, item) => sum + item.kgValue, 0)
-                    .toFixed(2)} kg
+                    .toFixed(2)}{" "}
+                  kg
                 </div>
               </div>
 
@@ -557,7 +649,7 @@ const Transfer = () => {
                 style={{
                   backgroundColor: processingTheme.primary,
                   borderColor: processingTheme.primary,
-                  alignSelf: 'flex-end'
+                  alignSelf: "flex-end",
                 }}
               >
                 Transport To HQ
@@ -567,14 +659,23 @@ const Transfer = () => {
         </Card.Body>
       </Card>
       {/* Transfer Modal with Tabbed Interface */}
-      <Modal show={showTransferModal} onHide={() => setShowTransferModal(false)} size="lg">
+      <Modal
+        show={showTransferModal}
+        onHide={() => setShowTransferModal(false)}
+        size="lg"
+      >
         <Form noValidate validated={validated} onSubmit={handleTransferConfirm}>
-          <Modal.Header closeButton style={{ backgroundColor: processingTheme.neutral }}>
+          <Modal.Header
+            closeButton
+            style={{ backgroundColor: processingTheme.neutral }}
+          >
             <Modal.Title>Transfer Coffee</Modal.Title>
           </Modal.Header>
-          <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+          <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto" }}>
             {getSelectedGradeItems().length === 0 ? (
-              <Alert variant="warning">No grade items selected for transfer</Alert>
+              <Alert variant="warning">
+                No grade items selected for transfer
+              </Alert>
             ) : (
               <>
                 <div className="table-responsive">
@@ -590,36 +691,62 @@ const Transfer = () => {
                     <tbody>
                       {getSelectedGradeItems()
                         .sort((a, b) => {
-                          const gradeOrder = ['A0', 'A1', 'A2', 'A3', 'B1', 'B2'];
+                          const gradeOrder = [
+                            "A0",
+                            "A1",
+                            "A2",
+                            "A3",
+                            "B1",
+                            "B2",
+                          ];
                           const gradeAIndex = gradeOrder.indexOf(a.grade);
                           const gradeBIndex = gradeOrder.indexOf(b.grade);
-                          if (gradeAIndex !== gradeBIndex) return gradeAIndex - gradeBIndex;
+                          if (gradeAIndex !== gradeBIndex)
+                            return gradeAIndex - gradeBIndex;
 
                           const dateA = extractDateFromBatch(a.batchNo);
                           const dateB = extractDateFromBatch(b.batchNo);
-                          if (dateA.month !== dateB.month) return dateA.month - dateB.month;
-                          if (dateA.day !== dateB.day) return dateA.day - dateB.day;
+                          if (dateA.month !== dateB.month)
+                            return dateA.month - dateB.month;
+                          if (dateA.day !== dateB.day)
+                            return dateA.day - dateB.day;
 
                           return a.batchNo.localeCompare(b.batchNo);
                         })
                         .map((item) => (
-                          <tr key={item.id}
+                          <tr
+                            key={item.id}
                             style={{
-                              backgroundColor: item.isHighGrade ? 'rgba(0, 128, 128, 0.05)' : 'transparent',
-                              borderLeft: item.isHighGrade ? `4px solid ${processingTheme.primary}` : 'none'
+                              backgroundColor: item.isHighGrade
+                                ? "rgba(0, 128, 128, 0.05)"
+                                : "transparent",
+                              borderLeft: item.isHighGrade
+                                ? `4px solid ${processingTheme.primary}`
+                                : "none",
                             }}
                           >
                             <td>
                               <div className="d-flex align-items-center">
                                 <div>
                                   <div className="fw-bold">
-                                    {item.displayId} {item.isHighGrade && <span style={{ color: processingTheme.primary }}>★</span>}
+                                    {item.displayId}{" "}
+                                    {item.isHighGrade && (
+                                      <span
+                                        style={{
+                                          color: processingTheme.primary,
+                                        }}
+                                      >
+                                        ★
+                                      </span>
+                                    )}
                                   </div>
                                   <Badge
                                     bg={item.isHighGrade ? "success" : "info"}
                                     className="me-1"
                                   >
-                                    {item.isHighGrade ? "High Grade" : "Low Grade"}
+                                    {item.isHighGrade
+                                      ? "High Grade"
+                                      : "Low Grade"}
                                   </Badge>
                                 </div>
                               </div>
@@ -630,7 +757,9 @@ const Transfer = () => {
                               <Button
                                 size="sm"
                                 variant="outline-danger"
-                                onClick={() => handleGradeItemSelection(item.gradeKey, false)}
+                                onClick={() =>
+                                  handleGradeItemSelection(item.gradeKey, false)
+                                }
                               >
                                 Remove
                               </Button>
@@ -643,186 +772,308 @@ const Transfer = () => {
 
                 {/* Quality Details - Tabbed interface */}
                 <Card className="mt-3">
-                  <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-                    <span className="h5" style={{ color: processingTheme.primary }}>Details</span>
+                  <Card.Header
+                    style={{ backgroundColor: processingTheme.neutral }}
+                  >
+                    <span
+                      className="h5"
+                      style={{ color: processingTheme.primary }}
+                    >
+                      Details
+                    </span>
                   </Card.Header>
                   <Card.Body>
-                    <Tab.Container activeKey={activeGradeTab} onSelect={(k) => setActiveGradeTab(k)}>
+                    <Tab.Container
+                      activeKey={activeGradeTab}
+                      onSelect={(k) => setActiveGradeTab(k)}
+                    >
                       <Nav variant="tabs" className="mb-3">
-                        {Object.keys(getItemsGroupedByGradeAndBatch()).map(grade => (
-                          <Nav.Item key={grade}>
-                            <Nav.Link eventKey={grade}>
-                              <Badge bg={GRADE_GROUPS.HIGH.includes(grade) ? "success" : "info"} className="me-2">
-                                {grade}
-                              </Badge>
-                              <span className="fw-bold">{getItemsGroupedByGradeAndBatch()[grade].reduce((sum, item) => sum + item.kgValue, 0).toFixed(2)} kg</span>
-                            </Nav.Link>
-                          </Nav.Item>
-                        ))}
+                        {Object.keys(getItemsGroupedByGradeAndBatch()).map(
+                          (grade) => (
+                            <Nav.Item key={grade}>
+                              <Nav.Link eventKey={grade}>
+                                <Badge
+                                  bg={
+                                    GRADE_GROUPS.HIGH.includes(grade)
+                                      ? "success"
+                                      : "info"
+                                  }
+                                  className="me-2"
+                                >
+                                  {grade}
+                                </Badge>
+                                <span className="fw-bold">
+                                  {getItemsGroupedByGradeAndBatch()
+                                    [grade].reduce(
+                                      (sum, item) => sum + item.kgValue,
+                                      0
+                                    )
+                                    .toFixed(2)}{" "}
+                                  kg
+                                </span>
+                              </Nav.Link>
+                            </Nav.Item>
+                          )
+                        )}
                       </Nav>
                       <Tab.Content>
-                        {Object.entries(getItemsGroupedByGradeAndBatch()).map(([grade, items]) => {
-                          const isLowGrade = GRADE_GROUPS.LOW.includes(grade);
-                          return (
-                            <Tab.Pane key={grade} eventKey={grade}>
-                              <div className="mb-3">
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                  <h5>
-                                    {grade} - {items.reduce((sum, item) => sum + item.kgValue, 0).toFixed(2)} kg
-                                  </h5>
+                        {Object.entries(getItemsGroupedByGradeAndBatch()).map(
+                          ([grade, items]) => {
+                            const isLowGrade = GRADE_GROUPS.LOW.includes(grade);
+                            return (
+                              <Tab.Pane key={grade} eventKey={grade}>
+                                <div className="mb-3">
+                                  <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h5>
+                                      {grade} -{" "}
+                                      {items
+                                        .reduce(
+                                          (sum, item) => sum + item.kgValue,
+                                          0
+                                        )
+                                        .toFixed(2)}{" "}
+                                      kg
+                                    </h5>
 
-                                  {/* Low Grade Grouping Toggle */}
-                                  {isLowGrade && (
-                                    <Form.Check
-                                      type="switch"
-                                      id={`combine-${grade}`}
-                                      // label="Combine batches in bag"
-                                      checked={lowGradeGrouping[grade]?.isGrouped || false}
-                                      onChange={(e) => handleLowGradeGroupingChange(grade, 'isGrouped', e.target.checked)}
-                                      className="mb-0"
-                                      hidden
-                                    />
-                                  )}
-                                </div>
+                                    {/* Low Grade Grouping Toggle */}
+                                    {isLowGrade && (
+                                      <Form.Check
+                                        type="switch"
+                                        id={`combine-${grade}`}
+                                        // label="Combine batches in bag"
+                                        checked={
+                                          lowGradeGrouping[grade]?.isGrouped ||
+                                          false
+                                        }
+                                        onChange={(e) =>
+                                          handleLowGradeGroupingChange(
+                                            grade,
+                                            "isGrouped",
+                                            e.target.checked
+                                          )
+                                        }
+                                        className="mb-0"
+                                        hidden
+                                      />
+                                    )}
+                                  </div>
 
-                                {/* Combined Low Grade Bags Input */}
-                                {isLowGrade && lowGradeGrouping[grade]?.isGrouped && (
-                                  <Card className="mb-4 border-info">
-                                    <Card.Header className="bg-info text-white">
-                                      Combined Bags for {grade}
-                                    </Card.Header>
-                                    <Card.Body>
-                                      <p className="mb-3">
-                                        All {items.length} batches of grade {grade} ({calculateGradeGroupTotal(grade).toFixed(2)} kg)
-                                        will be combined into a single bagging group.
-                                      </p>
+                                  {/* Combined Low Grade Bags Input */}
+                                  {isLowGrade &&
+                                    lowGradeGrouping[grade]?.isGrouped && (
+                                      <Card className="mb-4 border-info">
+                                        <Card.Header className="bg-info text-white">
+                                          Combined Bags for {grade}
+                                        </Card.Header>
+                                        <Card.Body>
+                                          <p className="mb-3">
+                                            All {items.length} batches of grade{" "}
+                                            {grade} (
+                                            {calculateGradeGroupTotal(
+                                              grade
+                                            ).toFixed(2)}{" "}
+                                            kg) will be combined into a single
+                                            bagging group.
+                                          </p>
 
-                                      {/* Contributing Batches List */}
-                                      <div className="mb-4">
-                                        <h6 className="mb-2">Contributing Batches:</h6>
-                                        <div className="table-responsive">
-                                          <table className="table table-sm table-bordered">
-                                            <thead>
-                                              <tr>
-                                                <th>Batch</th>
-                                                <th>Weight (kg)</th>
-                                                <th>Processing</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              {items.map(item => (
-                                                <tr key={item.id}>
-                                                  <td>{item.batchNo}</td>
-                                                  <td>{item.kgValue.toFixed(2)} kg</td>
-                                                  <td>{item.processingType}</td>
-                                                </tr>
-                                              ))}
-                                            </tbody>
-                                          </table>
-                                        </div>
-                                      </div>
+                                          {/* Contributing Batches List */}
+                                          <div className="mb-4">
+                                            <h6 className="mb-2">
+                                              Contributing Batches:
+                                            </h6>
+                                            <div className="table-responsive">
+                                              <table className="table table-sm table-bordered">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Batch</th>
+                                                    <th>Weight (kg)</th>
+                                                    <th>Processing</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  {items.map((item) => (
+                                                    <tr key={item.id}>
+                                                      <td>{item.batchNo}</td>
+                                                      <td>
+                                                        {item.kgValue.toFixed(
+                                                          2
+                                                        )}{" "}
+                                                        kg
+                                                      </td>
+                                                      <td>
+                                                        {item.processingType}
+                                                      </td>
+                                                    </tr>
+                                                  ))}
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          </div>
 
-                                      <Form.Group controlId={`combined-bags-${grade}`}>
-                                        <Form.Label>Total Number of Bags({grade})</Form.Label>
-                                        <Form.Control
-                                          type="number"
-                                          required
-                                          min="1"
-                                          value={combinedLowGradeBags[grade] || ''}
-                                          onChange={(e) => handleCombinedBagsChange(grade, e.target.value)}
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                          Please enter the number of bags
-                                        </Form.Control.Feedback>
-                                      </Form.Group>
-                                    </Card.Body>
-                                  </Card>
-                                )}
+                                          <Form.Group
+                                            controlId={`combined-bags-${grade}`}
+                                          >
+                                            <Form.Label>
+                                              Total Number of Bags({grade})
+                                            </Form.Label>
+                                            <Form.Control
+                                              type="number"
+                                              required
+                                              min="1"
+                                              value={
+                                                combinedLowGradeBags[grade] ||
+                                                ""
+                                              }
+                                              onChange={(e) =>
+                                                handleCombinedBagsChange(
+                                                  grade,
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                            <Form.Control.Feedback type="invalid">
+                                              Please enter the number of bags
+                                            </Form.Control.Feedback>
+                                          </Form.Group>
+                                        </Card.Body>
+                                      </Card>
+                                    )}
 
-                                {/* Individual Batch Quality Details */}
-                                {(!isLowGrade || !lowGradeGrouping[grade]?.isGrouped) && items.map(item => (
-                                  <div key={item.id} className="mb-4">
-                                    <h6 className="border-bottom pb-2">
-                                      Batch: {item.batchNo} - {item.kgValue.toFixed(2)} kg
-                                    </h6>
+                                  {/* Individual Batch Quality Details */}
+                                  {(!isLowGrade ||
+                                    !lowGradeGrouping[grade]?.isGrouped) &&
+                                    items.map((item) => (
+                                      <div key={item.id} className="mb-4">
+                                        <h6 className="border-bottom pb-2">
+                                          Batch: {item.batchNo} -{" "}
+                                          {item.kgValue.toFixed(2)} kg
+                                        </h6>
 
-                                    <Row>
-                                      <Col md={6}>
-                                        <Form.Group className="mb-3" controlId={`bags-${item.id}`}>
-                                          <Form.Label>Number of Bags</Form.Label>
-                                          <Form.Control
-                                            type="number"
-                                            min="1"
-                                            required
-                                            value={gradeQualityDetails[`${item.recordId}-${grade}`]?.numberOfBags || ''}
-                                            onChange={(e) => handleQualityDetailsChange(
-                                              item.recordId,
-                                              grade,
-                                              'numberOfBags',
-                                              e.target.value
-                                            )}
-                                          />
-                                          <Form.Control.Feedback type="invalid">
-                                            Please enter the number of bags
-                                          </Form.Control.Feedback>
-                                        </Form.Group>
-                                      </Col>
-
-                                      {isLowGrade ? null : (
-                                        <>
+                                        <Row>
                                           <Col md={6}>
-                                            <Form.Group className="mb-3" controlId={`moisture-${item.id}`}>
-                                              <Form.Label>Moisture Content (%)</Form.Label>
+                                            <Form.Group
+                                              className="mb-3"
+                                              controlId={`bags-${item.id}`}
+                                            >
+                                              <Form.Label>
+                                                Number of Bags
+                                              </Form.Label>
                                               <Form.Control
                                                 type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="20"
+                                                min="1"
                                                 required
-                                                value={gradeQualityDetails[`${item.recordId}-${grade}`]?.moistureContent || ''}
-                                                onChange={(e) => handleQualityDetailsChange(
-                                                  item.recordId,
-                                                  grade,
-                                                  'moistureContent',
-                                                  e.target.value
-                                                )}
+                                                value={
+                                                  gradeQualityDetails[
+                                                    `${item.recordId}-${grade}`
+                                                  ]?.numberOfBags || ""
+                                                }
+                                                onChange={(e) =>
+                                                  handleQualityDetailsChange(
+                                                    item.recordId,
+                                                    grade,
+                                                    "numberOfBags",
+                                                    e.target.value
+                                                  )
+                                                }
                                               />
                                               <Form.Control.Feedback type="invalid">
-                                                Please enter a valid moisture content (0-20%)
+                                                Please enter the number of bags
                                               </Form.Control.Feedback>
                                             </Form.Group>
                                           </Col>
-                                          <Col md={6}>
-                                            <Form.Group className="mb-3" controlId={`profile-${item.id}`}>
-                                              <Form.Label>Cup Profile</Form.Label>
-                                              <Form.Select
-                                                required
-                                                value={gradeQualityDetails[`${item.recordId}-${grade}`]?.cupProfile || CUP_PROFILES[0]}
-                                                onChange={(e) => handleQualityDetailsChange(
-                                                  item.recordId,
-                                                  grade,
-                                                  'cupProfile',
-                                                  e.target.value
-                                                )}
-                                              >
-                                                {CUP_PROFILES.map(profile => (
-                                                  <option key={profile} value={profile}>{profile}</option>
-                                                ))}
-                                              </Form.Select>
-                                              <Form.Control.Feedback type="invalid">
-                                                Please select a cup profile
-                                              </Form.Control.Feedback>
-                                            </Form.Group>
-                                          </Col>
-                                        </>
-                                      )}
-                                    </Row>
-                                  </div>
-                                ))}
-                              </div>
-                            </Tab.Pane>
-                          );
-                        })}
+
+                                          {isLowGrade ? null : (
+                                            <>
+                                              <Col md={6}>
+                                                <Form.Group
+                                                  className="mb-3"
+                                                  controlId={`moisture-${item.id}`}
+                                                >
+                                                  <Form.Label>
+                                                    Moisture Content (%)
+                                                  </Form.Label>
+                                                  <Form.Control
+                                                    type="number"
+                                                    step="0.1"
+                                                    min="0"
+                                                    max="20"
+                                                    required
+                                                    value={
+                                                      gradeQualityDetails[
+                                                        `${item.recordId}-${grade}`
+                                                      ]?.moistureContent || ""
+                                                    }
+                                                    onChange={(e) =>
+                                                      handleQualityDetailsChange(
+                                                        item.recordId,
+                                                        grade,
+                                                        "moistureContent",
+                                                        e.target.value
+                                                      )
+                                                    }
+                                                  />
+                                                  <Form.Control.Feedback type="invalid">
+                                                    Please enter a valid
+                                                    moisture content (0-20%)
+                                                  </Form.Control.Feedback>
+                                                </Form.Group>
+                                              </Col>
+                                              <Col md={6}>
+                                                <Form.Group
+                                                  className="mb-3"
+                                                  controlId={`profile-${item.id}`}
+                                                >
+                                                  <Form.Label>
+                                                    Cup Profile
+                                                  </Form.Label>
+                                                  <Form.Select
+                                                    required
+                                                    value={
+                                                      gradeQualityDetails[
+                                                        `${item.recordId}-${grade}`
+                                                      ]?.cupProfile ||
+                                                      CUP_PROFILES[0]
+                                                    }
+                                                    onChange={(e) =>
+                                                      handleQualityDetailsChange(
+                                                        item.recordId,
+                                                        grade,
+                                                        "cupProfile",
+                                                        e.target.value
+                                                      )
+                                                    }
+                                                  >
+                                                    {CUP_PROFILES.map(
+                                                      (profile) => (
+                                                        <option
+                                                          key={profile}
+                                                          value={
+                                                            profile !=
+                                                            "Select Cup Profile"
+                                                              ? profile
+                                                              : ""
+                                                          }
+                                                        >
+                                                          {profile}
+                                                        </option>
+                                                      )
+                                                    )}
+                                                  </Form.Select>
+                                                  <Form.Control.Feedback type="invalid">
+                                                    Please select a cup profile
+                                                  </Form.Control.Feedback>
+                                                </Form.Group>
+                                              </Col>
+                                            </>
+                                          )}
+                                        </Row>
+                                      </div>
+                                    ))}
+                                </div>
+                              </Tab.Pane>
+                            );
+                          }
+                        )}
                       </Tab.Content>
                     </Tab.Container>
                   </Card.Body>
@@ -830,8 +1081,15 @@ const Transfer = () => {
 
                 {/* Transport Details */}
                 <Card className="mt-3">
-                  <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-                    <span className="h5" style={{ color: processingTheme.primary }}>Transport Details</span>
+                  <Card.Header
+                    style={{ backgroundColor: processingTheme.neutral }}
+                  >
+                    <span
+                      className="h5"
+                      style={{ color: processingTheme.primary }}
+                    >
+                      Transport Details
+                    </span>
                   </Card.Header>
                   <Card.Body>
                     <Row>
@@ -899,7 +1157,10 @@ const Transfer = () => {
             )}
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowTransferModal(false)}>
+            <Button
+              variant="secondary"
+              onClick={() => setShowTransferModal(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -907,7 +1168,7 @@ const Transfer = () => {
               variant="sucafina"
               style={{
                 backgroundColor: processingTheme.primary,
-                borderColor: processingTheme.primary
+                borderColor: processingTheme.primary,
               }}
               disabled={getSelectedGradeItems().length === 0}
             >
@@ -921,7 +1182,10 @@ const Transfer = () => {
       <Card>
         <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-            <span className="h5 mb-2 mb-md-0" style={{ color: processingTheme.primary }}>
+            <span
+              className="h5 mb-2 mb-md-0"
+              style={{ color: processingTheme.primary }}
+            >
               Untransferred Batches
             </span>
             <div className="d-flex align-items-center gap-3">
@@ -934,7 +1198,7 @@ const Transfer = () => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
                   }}
-                  style={{ width: '200px' }}
+                  style={{ width: "200px" }}
                 />
               </Form.Group>
               <div>
@@ -943,12 +1207,17 @@ const Transfer = () => {
                   id="selectAll"
                   label="Select All"
                   // className='m-4'
-                  checked={selectedGradeItems.length === flattenBatchRecords().length && flattenBatchRecords().length > 0}
+                  checked={
+                    selectedGradeItems.length ===
+                      flattenBatchRecords().length &&
+                    flattenBatchRecords().length > 0
+                  }
                   onChange={(e) => handleSelectAllGradeItems(e.target.checked)}
                 />
               </div>
               <Badge bg="primary">
-                {selectedGradeItems.length} of {flattenBatchRecords().length} selected
+                {selectedGradeItems.length} of {flattenBatchRecords().length}{" "}
+                selected
               </Badge>
             </div>
           </div>
@@ -974,8 +1243,14 @@ const Transfer = () => {
                           id="selectAll"
                           aria-label="Select All"
                           title="Select All"
-                          checked={selectedGradeItems.length === flattenBatchRecords().length && flattenBatchRecords().length > 0}
-                          onChange={(e) => handleSelectAllGradeItems(e.target.checked)}
+                          checked={
+                            selectedGradeItems.length ===
+                              flattenBatchRecords().length &&
+                            flattenBatchRecords().length > 0
+                          }
+                          onChange={(e) =>
+                            handleSelectAllGradeItems(e.target.checked)
+                          }
                           className="compact-checkbox"
                         />
                       </th>
@@ -993,9 +1268,11 @@ const Transfer = () => {
                           backgroundColor: isGradeItemSelected(item.gradeKey)
                             ? `${processingTheme.neutral}`
                             : item.isHighGrade
-                              ? 'rgba(0, 128, 128, 0.05)'
-                              : 'transparent',
-                          borderLeft: item.isHighGrade ? `4px solid ${processingTheme.primary}` : 'none'
+                            ? "rgba(0, 128, 128, 0.05)"
+                            : "transparent",
+                          borderLeft: item.isHighGrade
+                            ? `4px solid ${processingTheme.primary}`
+                            : "none",
                         }}
                       >
                         <td className="checkbox-column">
@@ -1004,7 +1281,12 @@ const Transfer = () => {
                             id={`check-${item.id}`}
                             aria-label={`Select batch ${item.displayId}`}
                             checked={isGradeItemSelected(item.gradeKey)}
-                            onChange={(e) => handleGradeItemSelection(item.gradeKey, e.target.checked)}
+                            onChange={(e) =>
+                              handleGradeItemSelection(
+                                item.gradeKey,
+                                e.target.checked
+                              )
+                            }
                             className="compact-checkbox"
                           />
                         </td>
@@ -1012,7 +1294,14 @@ const Transfer = () => {
                           <div className="d-flex align-items-center">
                             <div>
                               <div className="fw-bold">
-                                {item.displayId} {item.isHighGrade && <span style={{ color: processingTheme.primary }}>★</span>}
+                                {item.displayId}{" "}
+                                {item.isHighGrade && (
+                                  <span
+                                    style={{ color: processingTheme.primary }}
+                                  >
+                                    ★
+                                  </span>
+                                )}
                               </div>
                               <Badge
                                 bg={item.isHighGrade ? "success" : "info"}
@@ -1028,10 +1317,21 @@ const Transfer = () => {
                         <td>
                           <Button
                             size="sm"
-                            variant={isGradeItemSelected(item.gradeKey) ? "outline-danger" : "outline-primary"}
-                            onClick={() => handleGradeItemSelection(item.gradeKey, !isGradeItemSelected(item.gradeKey))}
+                            variant={
+                              isGradeItemSelected(item.gradeKey)
+                                ? "outline-danger"
+                                : "outline-primary"
+                            }
+                            onClick={() =>
+                              handleGradeItemSelection(
+                                item.gradeKey,
+                                !isGradeItemSelected(item.gradeKey)
+                              )
+                            }
                           >
-                            {isGradeItemSelected(item.gradeKey) ? "Deselect" : "Select"}
+                            {isGradeItemSelected(item.gradeKey)
+                              ? "Deselect"
+                              : "Select"}
                           </Button>
                         </td>
                       </tr>
@@ -1049,7 +1349,7 @@ const Transfer = () => {
                       setBatchesPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    style={{ width: '100px' }}
+                    style={{ width: "100px" }}
                   >
                     <option value="10">10</option>
                     <option value="30">30</option>
@@ -1058,7 +1358,11 @@ const Transfer = () => {
                   </Form.Select>
                 </div>
                 <ul className="pagination mb-0">
-                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => paginate(currentPage - 1)}
@@ -1067,8 +1371,17 @@ const Transfer = () => {
                       Previous
                     </button>
                   </li>
-                  {Array.from({ length: Math.ceil(flattenBatchRecords().length / batchesPerPage) }).map((_, index) => (
-                    <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                  {Array.from({
+                    length: Math.ceil(
+                      flattenBatchRecords().length / batchesPerPage
+                    ),
+                  }).map((_, index) => (
+                    <li
+                      key={index}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
+                    >
                       <button
                         className="page-link"
                         onClick={() => paginate(index + 1)}
@@ -1077,11 +1390,21 @@ const Transfer = () => {
                       </button>
                     </li>
                   ))}
-                  <li className={`page-item ${currentPage === Math.ceil(flattenBatchRecords().length / batchesPerPage) ? 'disabled' : ''}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage ===
+                      Math.ceil(flattenBatchRecords().length / batchesPerPage)
+                        ? "disabled"
+                        : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => paginate(currentPage + 1)}
-                      disabled={currentPage === Math.ceil(flattenBatchRecords().length / batchesPerPage)}
+                      disabled={
+                        currentPage ===
+                        Math.ceil(flattenBatchRecords().length / batchesPerPage)
+                      }
                     >
                       Next
                     </button>
