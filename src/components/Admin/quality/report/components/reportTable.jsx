@@ -23,25 +23,21 @@ export const QualityReportTable = () => {
     !isPending && data && (
       <div className="container-fluid">
         <Card className="mb-4">
-          <ReprotTable
-            data={data?.data?.report ?? []}
-            columns={columns}
-            pageSizeOptions={[5, 10, 20]}
-            initialPageSize={5}
-            isLoading={false}
-            onPageSizeChange={setItemsPerPage}
-            rowKeyField="batchNo"
-            itemsPerPage={itemsPerPage}
-            emptyStateMessage={"There is no data"}
-          >
-            <Pagination
-              currentPage={currentPage}
-              totalPages={3}
-              totalItems={30}
-              itemsPerPage={10}
-              onPageChange={setCurrentPage}
-            />
-          </ReprotTable>
+          {(data?.data?.report ?? []).map((element) => (
+            <div style={{ marginBottom: "4rem" }}>
+              <ReprotTable
+                data={element ?? []}
+                columns={columns}
+                pageSizeOptions={[5, 10, 20]}
+                initialPageSize={5}
+                isLoading={false}
+                onPageSizeChange={setItemsPerPage}
+                rowKeyField="batchNo"
+                itemsPerPage={itemsPerPage}
+                emptyStateMessage={"There is no data"}
+              ></ReprotTable>
+            </div>
+          ))}
         </Card>
       </div>
     )
