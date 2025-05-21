@@ -123,7 +123,7 @@ export const ReprotTable = ({
                   style={{
                     padding: "10px 15px",
                     borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                    width: "10rem",
+                    width: "6rem",
                   }}
                 >
                   {`${cwsBatches?.batchNo ?? ""}-${elements?.gradeKey ?? ""}`}
