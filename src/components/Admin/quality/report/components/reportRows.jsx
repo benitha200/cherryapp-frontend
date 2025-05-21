@@ -34,42 +34,28 @@ export const ReprotTable = ({
     );
   }
 
+  function styleValiations() {
+    return {
+      width: "4rem",
+      background: "linear-gradient(135deg, #c9bbd7 0%, #c9bbd9 100%)",
+      fontSize: "0.9rem",
+      fontWeight: "700",
+      color: "#212529",
+      padding: "0.75rem",
+      textAlign: "center",
+      border: "1px solid #e9ecef",
+      boxShadow: "inset 0 0 0 1px rgba(255, 255, 255, 0.25)",
+      position: "relative",
+      borderRadius: "4px",
+    };
+  }
+
   return (
     <div>
       <div className="">
         <Card.Body>
-          <div className="d-flex justify-content-between align-items-center">
-            {/* Items per page select on left */}
-            <div style={{ width: "5rem" }}>
-              <Form.Select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  onPageSizeChange(e.target.value);
-                }}
-                disabled={isLoading}
-              >
-                {[5, 10, 20].map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </Form.Select>
-            </div>
-
-            {/* Search box on right */}
-            <div style={{ width: "250px" }}>
-              <InputGroup>
-                <InputGroup.Text>
-                  <i className="bi bi-search"></i>
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="Search..."
-                  // value={searchQuery}
-                  // onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </InputGroup>
-            </div>
+          <div>
+            <h6>Station Name: {data?.cws?.name ?? ""}</h6>
           </div>
         </Card.Body>
       </div>
@@ -104,176 +90,295 @@ export const ReprotTable = ({
             </tr>
           </thead>
           <tbody>
-            {!data || data.length === 0 ? (
-              <tr>
-                <td colSpan={`${columns?.length ?? 4}`}>
-                  <div className="text-center fw-bold fs-5 p-3 border border-warning rounded bg-light text-dark">
-                    {emptyStateMessage}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              data.map((item, rowIndex) => (
+            {data.batches.map((cwsBatches, rowIndex) =>
+              cwsBatches?.sample?.batches.map((elements, subBatchIndex) => (
                 <>
-                  {/* first row */}
                   <tr key={rowIndex}>
-                    {/* batch no */}
+                    {/* batch number */}
                     <td
                       style={{
                         padding: "10px 15px",
                         borderBottom: `1px solid ${processingTheme.tableBorder}`,
                       }}
                     >
-                      {`${item?.batchNo} ${
-                        item?.sample?.batches[0]?.gradeKey ?? ""
-                      }`}
+                      {elements?.id ?? ""}
                     </td>
-                    {/* parchment qt */}
-                    <td
-                      style={{
-                        padding: "10px 15px",
-                        borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                      }}
-                    >
-                      {`${
-                        item?.sample?.outputKgs[
-                          item?.sample?.batches[0]?.gradeKey ?? ""
-                        ]
-                      }`}
+                    {/* parchment qty(kg) */}
+                    <td>
+                      {cwsBatches?.sample?.outputKgs[
+                        elements?.gradeKey ?? ""
+                      ] ?? ""}
                     </td>
                     {/* date of analysis */}
-                    <td>{formatDate(item?.delivery?.batches[0]?.createdAt)}</td>
-                    {/* moisture content lag(%) sample */}
-                    <td>{item?.sample?.batches[0]?.labMoisture}</td>
-                    {/* moisture content lag(%) delivery */}
-                    <td>{item?.sample?.batches[0]?.cwsMoisture}</td>
-                    {/* variation M.c */}
                     <td>
-                      {(item?.sample?.batches[0]?.labMoisture ?? 0) -
-                        (item?.sample?.batches[0]?.cwsMoisture ?? 0)}
+                      {formatDate(
+                        cwsBatches?.delivery?.batches[subBatchIndex]
+                          ?.createdAt ?? new Date()
+                      )}
                     </td>
-                    {/* 16+ */}
-                    <td>{item?.delivery?.batches[0]?.screen["16+"] ?? 0}</td>
-                    {/* + 15 */}
-                    <td>{item?.delivery?.batches[0]?.screen["15"] ?? 0}</td>
-                    {/* av 15+ Delivary */}
+                    {/* mc lab(%)/samples */}
+                    <td>{elements?.labMoisture}</td>
+                    {/* mc cws (%)/ delivery */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.screen["16+"] ?? 0) +
-                        Number(item?.delivery?.batches[0]?.screen["15"] ?? 0)}
+                      {
+                        cwsBatches?.delivery?.batches[subBatchIndex]
+                          ?.labMoisture
+                      }
                     </td>
-                    {/* av .15+ samples */}
+                    {/* variation m.c */}
                     <td>
-                      {Number(item?.sample?.batches[0]?.screen["16+"] ?? 0) +
-                        Number(item?.sample?.batches[0]?.screen["15"] ?? 0)}
+                      {Number(elements?.labMoisture ?? 0) -
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]
+                            ?.labMoisture ?? 0
+                        )}
+                    </td>
+                    {/* 16 */}
+                    <td>
+                      {
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "16+"
+                        ]
+                      }
+                    </td>
+                    {/* 15 */}
+                    <td>
+                      {
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "15"
+                        ]
+                      }
+                    </td>
+                    {/* av.15+/delivery */}
+                    <td>
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "16+"
+                        ]
+                      ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "15"
+                          ]
+                        )}
+                    </td>
+                    {/* av.15+ samples */}
+                    <td>
+                      {Number(elements?.screen["16+"] ?? 0) +
+                        Number(elements?.screen["15"] ?? 0)}
                     </td>
                     {/* variation 15+ */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.screen["16+"] ?? 0) +
-                        Number(item?.delivery?.batches[0]?.screen["15"] ?? 0) -
-                        (Number(item?.sample?.batches[0]?.screen["16+"] ?? 0) +
-                          Number(item?.sample?.batches[0]?.screen["15"] ?? 0))}
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "16+"
+                        ]
+                      ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "15"
+                          ]
+                        ) -
+                        (Number(elements?.screen["16+"] ?? 0) +
+                          Number(elements?.screen["15"] ?? 0))}
                     </td>
                     {/* 14 */}
-                    <td>{item?.delivery?.batches[0]?.screen["14"] ?? 0}</td>
+                    <td>
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "14"
+                        ]
+                      )}
+                    </td>
                     {/* 13 */}
-                    <td>{item?.delivery?.batches[0]?.screen["13"] ?? 0}</td>
-                    {/* av 13/14/delivery */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.screen["14"] ?? 0) +
-                        Number(item?.delivery?.batches[0]?.screen["13"] ?? 0)}
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "13"
+                        ]
+                      )}
                     </td>
-                    {/* av 13/14/sample */}
+                    {/* av.13/14/delivery */}
                     <td>
-                      {Number(item?.sample?.batches[0]?.screen["14"] ?? 0) +
-                        Number(item?.sample?.batches[0]?.screen["13"] ?? 0)}
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "14"
+                        ] ?? 0
+                      ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "13"
+                          ] ?? 0
+                        )}
                     </td>
-                    {/* variation 15+ */}
+                    {/* av13/14/samples */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.screen["14"] ?? 0) +
-                        Number(item?.delivery?.batches[0]?.screen["13"] ?? 0) -
-                        (Number(item?.sample?.batches[0]?.screen["14"] ?? 0) +
-                          Number(item?.sample?.batches[0]?.screen["13"] ?? 0))}
+                      {Number(elements?.screen["14"] ?? 0) +
+                        Number(elements?.screen["13"] ?? 0)}
                     </td>
-                    <td>{item?.delivery?.batches[0]?.screen["B/12"] ?? 0}</td>
-                    {/* deffect  */}
-                    <td>{item?.delivery?.batches[0]?.defect ?? 0}</td>
-                    {/* av.lg delivery */}
+                    {/* variation 13/14 */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.screen["B/12"] ?? 0) +
-                        Number(item?.delivery?.batches[0]?.defect ?? 0)}
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "14"
+                        ] ?? 0
+                      ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "13"
+                          ] ?? 0
+                        ) -
+                        (Number(elements?.screen["14"] ?? 0) +
+                          Number(elements?.screen["13"] ?? 0))}
+                    </td>
+                    {/* b12 */}
+                    <td>
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "B/12"
+                        ] ?? 0
+                      )}
+                    </td>
+                    {/* defects (%) */}
+                    <td>
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.defect ??
+                          0
+                      )}
+                    </td>
+                    {/* avlg/delivery */}
+                    <td>
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "B/12"
+                        ] ?? 0
+                      ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]
+                            ?.defect ?? 0
+                        )}
                     </td>
                     {/* av.lg samples */}
                     <td>
-                      {Number(item?.sample?.batches[0]?.screen["B/12"] ?? 0) +
-                        Number(item?.sample?.batches[0]?.defect ?? 0)}
+                      {Number(elements?.screen["B/12"] ?? 0) +
+                        Number(elements?.defect ?? 0)}
                     </td>
                     {/* variation lg */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.screen["B/12"] ?? 0) +
-                        Number(item?.delivery?.batches[0]?.defect ?? 0) -
-                        (Number(item?.sample?.batches[0]?.screen["B/12"] ?? 0) +
-                          Number(item?.sample?.batches[0]?.defect ?? 0))}
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "B/12"
+                        ] ?? 0
+                      ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]
+                            ?.defect ?? 0
+                        ) -
+                        (Number(elements?.screen["B/12"] ?? 0) +
+                          Number(elements?.defect ?? 0))}
                     </td>
-                    {/* ot Delivery */}
+                    {/* ot delivery (%) */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.screen["16+"] ?? 0) +
-                        Number(item?.delivery?.batches[0]?.screen["15"] ?? 0) +
-                        (Number(item?.delivery?.batches[0]?.screen["14"] ?? 0) +
-                          Number(
-                            item?.delivery?.batches[0]?.screen["13"] ?? 0
-                          )) +
-                        (Number(
-                          item?.delivery?.batches[0]?.screen["B/12"] ?? 0
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "16+"
+                        ]
+                      ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "15"
+                          ]
                         ) +
-                          Number(item?.delivery?.batches[0]?.defect ?? 0))}
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "14"
+                          ] ?? 0
+                        ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "13"
+                          ] ?? 0
+                        ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "B/12"
+                          ] ?? 0
+                        ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]
+                            ?.defect ?? 0
+                        )}
                     </td>
-                    {/* ot Sample */}
+                    {/*  ot sample */}
                     <td>
-                      {Number(item?.sample?.batches[0]?.screen["16+"] ?? 0) +
-                        Number(item?.sample?.batches[0]?.screen["15"] ?? 0) +
-                        (Number(item?.sample?.batches[0]?.screen["14"] ?? 0) +
-                          Number(item?.sample?.batches[0]?.screen["13"] ?? 0)) +
-                        (Number(item?.sample?.batches[0]?.screen["B/12"] ?? 0) +
-                          Number(item?.sample?.batches[0]?.defect ?? 0))}
+                      {Number(elements?.screen["16+"] ?? 0) +
+                        Number(elements?.screen["15"] ?? 0) +
+                        Number(elements?.screen["14"] ?? 0) +
+                        Number(elements?.screen["13"] ?? 0) +
+                        Number(elements?.screen["B/12"] ?? 0) +
+                        Number(elements?.defect ?? 0)}
                     </td>
                     {/* variation ot */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.screen["16+"] ?? 0) +
-                        Number(item?.delivery?.batches[0]?.screen["15"] ?? 0) +
-                        (Number(item?.delivery?.batches[0]?.screen["14"] ?? 0) +
-                          Number(
-                            item?.delivery?.batches[0]?.screen["13"] ?? 0
-                          )) +
-                        (Number(
-                          item?.delivery?.batches[0]?.screen["B/12"] ?? 0
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                          "16+"
+                        ]
+                      ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "15"
+                          ]
                         ) +
-                          Number(item?.delivery?.batches[0]?.defect ?? 0)) -
-                        (Number(item?.sample?.batches[0]?.screen["16+"] ?? 0) +
-                          Number(item?.sample?.batches[0]?.screen["15"] ?? 0) +
-                          (Number(item?.sample?.batches[0]?.screen["14"] ?? 0) +
-                            Number(
-                              item?.sample?.batches[0]?.screen["13"] ?? 0
-                            )) +
-                          (Number(
-                            item?.sample?.batches[0]?.screen["B/12"] ?? 0
-                          ) +
-                            Number(item?.sample?.batches[0]?.defect ?? 0)))}
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "14"
+                          ] ?? 0
+                        ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "13"
+                          ] ?? 0
+                        ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
+                            "B/12"
+                          ] ?? 0
+                        ) +
+                        Number(
+                          cwsBatches?.delivery?.batches[subBatchIndex]
+                            ?.defect ?? 0
+                        ) -
+                        (Number(elements?.screen["16+"] ?? 0) +
+                          Number(elements?.screen["15"] ?? 0) +
+                          Number(elements?.screen["14"] ?? 0) +
+                          Number(elements?.screen["13"] ?? 0) +
+                          Number(elements?.screen["B/12"] ?? 0) +
+                          Number(elements?.defect ?? 0))}
                     </td>
-
-                    {/* pp Score Delivery */}
-                    <td>{item?.delivery?.batches[0]?.ppScore ?? 0}</td>
-                    {/* pp score sample  */}
-                    <td>{item?.sample?.batches[0]?.ppScore ?? 0}</td>
+                    {/* pp score /delivery */}
+                    <td>
+                      {cwsBatches?.delivery?.batches[subBatchIndex]?.ppScore ??
+                        0}
+                    </td>
+                    {/* pp score/samples */}
+                    <td>{elements?.ppScore ?? 0}</td>
                     {/* category */}
-                    <td>{item?.sample?.batches[0]?.newCategory ?? "-"}</td>
-                    {/* pp score variation  */}
                     <td>
-                      {Number(item?.delivery?.batches[0]?.ppScore ?? 0) -
-                        Number(item?.sample?.batches[0]?.ppScore ?? 0)}
+                      {cwsBatches?.delivery?.batches[subBatchIndex]
+                        ?.newCategory ?? ""}
                     </td>
-                    {/* Sample storage  */}
+                    {/* variation pp score */}
                     <td>
-                      {item?.sample?.batches[0]?.sampleStorage?.name ?? "-"}
+                      {Number(
+                        cwsBatches?.delivery?.batches[subBatchIndex]?.ppScore ??
+                          0
+                      ) - Number(elements?.ppScore ?? 0)}
+                    </td>
+                    {/* sample storage  */}
+                    <td>
+                      {cwsBatches?.delivery?.batches[subBatchIndex]
+                        ?.sampleStorage?.name ?? ""}
                     </td>
                   </tr>
                 </>
