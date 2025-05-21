@@ -1089,7 +1089,10 @@ const ShortSummary = () => {
                                         </Form.Select>
                                       </div>
                                     )}
-                                    {!isAdmin && element?.category}
+                                    {!isAdmin &&
+                                      (index % 2 == 0
+                                        ? element?.sampleStorage_0?.name ?? ""
+                                        : element?.sampleStorage_1?.name ?? "")}
                                   </td>
                                   {/**sample storage */}
                                   <td className="align-middle">
