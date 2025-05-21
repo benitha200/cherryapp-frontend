@@ -85,7 +85,7 @@ export const ReprotTable = ({
       <tr onClick={() => handleOpenstation(data?.cws?.name ?? "")}>
         <td style={styleTotals()}>{data?.cws?.name ?? ""}</td>
         <td style={styleTotals()}>{data?.cws?.AccTotaloutputKgs ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.name ?? ""}</td>
+        <td style={styleTotals()}>{""}</td>
         <td style={styleTotals()}>{data?.cws?.totMoistureCws ?? ""}</td>
         <td style={styleTotals()}>{data?.cws?.totMoistureLab ?? ""}</td>
         <td style={styleTotals()}>{data?.cws?.totVmc ?? ""}</td>
