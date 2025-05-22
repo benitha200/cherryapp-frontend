@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
 import { SubTableHeading } from "./subTableHeading";
 import { SubBatchTable } from "./subBatchTable";
-import { GetDelivaryById } from "../actions";
+import { GetDelivaryById, GetSampleStorage } from "../actions";
 import { DelivarySkeleton } from "./dskeleton";
 import { Error } from "../../components/responses";
 
@@ -58,6 +58,8 @@ export const ProcessedBatches = ({
   // get track
   const { getByIdError, getByIdPending, delivary } =
     GetDelivaryById(selectedTrackPlat);
+  const { sampleStoragedata, sampleStorageError, sampleStoragePeding } =
+    GetSampleStorage();
 
   useEffect(() => {
     setCategories((prev) => ({
@@ -223,15 +225,17 @@ export const ProcessedBatches = ({
                           </thead>
                           <tbody>
                             {element?.mainbatch?.map(
-                              (subElement, subElementIndex) => (
-                                <SubBatchTable
-                                  subelement={subElement}
-                                  index={subElementIndex}
-                                  isChecked={isChecked}
-                                  batchNo={element?.batchNo}
-                                  handleInputChange={handleInputChange}
-                                />
-                              )
+                              (subElement, subElementIndex) =>
+                                !sampleStoragePeding && (
+                                  <SubBatchTable
+                                    subelement={subElement}
+                                    index={subElementIndex}
+                                    isChecked={isChecked}
+                                    batchNo={element?.batchNo}
+                                    handleInputChange={handleInputChange}
+                                    sampleStorages={sampleStoragedata}
+                                  />
+                                )
                             )}
                           </tbody>
                         </table>
