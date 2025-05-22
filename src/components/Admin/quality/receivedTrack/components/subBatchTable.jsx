@@ -1,9 +1,12 @@
+import { Form } from "react-bootstrap";
+
 export const SubBatchTable = ({
   subelement,
   index,
   isChecked,
   batchNo,
   handleInputChange,
+  sampleStorages = [],
 }) => {
   return (
     <>
@@ -161,8 +164,29 @@ export const SubBatchTable = ({
 
         {/* storage */}
         <td className="align-middle">
-          <div style={{ width: "7rem" }}>
+          {/* <div style={{ width: "7rem" }}>
             {subelement?.sampleStorage?.name ?? "N/A"}
+          </div> */}
+          <div>
+            <Form.Select
+              style={{ width: "7rem" }}
+              disabled={!isChecked(batchNo)}
+              onChange={(e) =>
+                handleInputChange(
+                  batchNo,
+                  "storage",
+                  index % 2 == 0 ? "A0" : "A1",
+                  e.target.value
+                )
+              }
+              defaultValue={subelement?.sampleStorage?.id ?? "N/A"}
+            >
+              {sampleStorages?.map((type) => (
+                <option key={type?.name} value={type?.id}>
+                  {type?.name}
+                </option>
+              ))}
+            </Form.Select>
           </div>
         </td>
 
