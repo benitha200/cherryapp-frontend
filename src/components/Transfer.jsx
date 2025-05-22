@@ -154,6 +154,19 @@ const Transfer = () => {
     );
   };
 
+  const handleSelectFirstPageGradeItems = (isSelected) => {
+    setSelectedGradeItems(
+      isSelected
+        ? flattenBatchRecords()
+            .slice(
+              (currentPage - 1 ?? 0) * batchesPerPage,
+              (batchesPerPage ?? 10) * currentPage ?? 1
+            )
+            .map((item) => item.gradeKey)
+        : []
+    );
+  };
+
   const getSelectedGradeItems = () => {
     return flattenBatchRecords().filter((item) =>
       selectedGradeItems.includes(item.gradeKey)
@@ -1245,11 +1258,13 @@ const Transfer = () => {
                           title="Select All"
                           checked={
                             selectedGradeItems.length ===
-                              flattenBatchRecords().length &&
-                            flattenBatchRecords().length > 0
+                              flattenBatchRecords().slice(
+                                (currentPage - 1) * (batchesPerPage ?? 1),
+                                (batchesPerPage ?? 1) * currentPage ?? 1
+                              ).length && flattenBatchRecords().length > 0
                           }
                           onChange={(e) =>
-                            handleSelectAllGradeItems(e.target.checked)
+                            handleSelectFirstPageGradeItems(e.target.checked)
                           }
                           className="compact-checkbox"
                         />
