@@ -5,6 +5,7 @@ import {
   getDelivaryById,
   updateDelivaryById,
 } from "../../../../apis/delivaryCapping";
+import { sampleStorage } from "../../../../apis/sampleStorage";
 import toast from "react-hot-toast";
 
 export const GetAllDelivaries = (page, size) => {
@@ -49,4 +50,16 @@ export const UpdateDelivary = (id, onupdateSuccess) => {
     },
   });
   return { updatingError, isUpdating, mutate };
+};
+
+export const GetSampleStorage = () => {
+  const {
+    isPending: sampleStoragePeding,
+    error: sampleStorageError,
+    data: sampleStoragedata,
+  } = useQuery({
+    queryKey: ["SampleStorage"],
+    queryFn: async () => await sampleStorage(),
+  });
+  return { sampleStoragePeding, sampleStorageError, sampleStoragedata };
 };

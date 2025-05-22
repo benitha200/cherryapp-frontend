@@ -32,7 +32,7 @@ export const QualityReportTable = () => {
   ) : (
     !isPending && data && (
       <div className=" table-responsive">
-        <Card className="mb-4">
+        <Card className="">
           <table
             className="table"
             style={{
@@ -62,19 +62,29 @@ export const QualityReportTable = () => {
               </tr>
             </thead>
             <tbody>
-              {(data?.data?.report ?? []).map((element) => (
-                <ReprotTable
-                  data={element ?? []}
-                  columns={columns}
-                  pageSizeOptions={[5, 10, 20]}
-                  initialPageSize={5}
-                  isLoading={false}
-                  onPageSizeChange={setItemsPerPage}
-                  rowKeyField="batchNo"
-                  itemsPerPage={itemsPerPage}
-                  emptyStateMessage={"There is no data"}
-                />
-              ))}
+              {data?.data?.report?.length == 0 ? (
+                <tr>
+                  <td colSpan={columns?.length}>
+                    <div className="text-center fw-bold fs-5 p-3 border border-warning rounded bg-light text-dark">
+                      {"No data available"}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                (data?.data?.report ?? []).map((element) => (
+                  <ReprotTable
+                    data={element ?? []}
+                    columns={columns}
+                    pageSizeOptions={[5, 10, 20]}
+                    initialPageSize={5}
+                    isLoading={false}
+                    onPageSizeChange={setItemsPerPage}
+                    rowKeyField="batchNo"
+                    itemsPerPage={itemsPerPage}
+                    emptyStateMessage={"There is no data"}
+                  />
+                ))
+              )}
             </tbody>
           </table>
         </Card>

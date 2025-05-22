@@ -1,4 +1,4 @@
-export const DelivaryHeading = () => {
+export const ReportsHeading = ({ children }) => {
   const processingTheme = {
     primary: "#008080", // Sucafina teal
     secondary: "#4FB3B3", // Lighter teal
@@ -8,7 +8,7 @@ export const DelivaryHeading = () => {
   };
   return (
     <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
-      <h2 className="mb-3 mb-md-0">Delivery</h2>
+      <h2 className="mb-3 mb-md-0">{children}</h2>
     </div>
   );
 };

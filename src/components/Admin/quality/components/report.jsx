@@ -263,6 +263,13 @@ const ShortSummary = () => {
     }));
   };
 
+  const findKeys = (processingType) =>
+    processingType === "NATURAL"
+      ? { key1: "N1", key2: "N2" }
+      : processingType === "HONEY"
+      ? { key1: "H1", key2: "H2" }
+      : { key1: "A0", key2: "A1" };
+
   const filteredBatches = (batches) => {
     return batches.filter((batch) => {
       const searchTerm = filters.search.toLowerCase();
@@ -806,7 +813,19 @@ const ShortSummary = () => {
                                   <td className="align-middle">
                                     <div style={{ width: "10rem" }}>
                                       {`${batch?.batchNo}-${
-                                        index == 0 ? "(A0)" : "(A1)"
+                                        index == 0
+                                          ? `(${
+                                              findKeys(
+                                                batch?.processing
+                                                  ?.processingType
+                                              )?.key1
+                                            })`
+                                          : `(${
+                                              findKeys(
+                                                batch?.processing
+                                                  ?.processingType
+                                              )?.key2
+                                            })`
                                       }`}
                                     </div>
                                   </td>
