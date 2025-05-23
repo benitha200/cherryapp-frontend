@@ -86,11 +86,11 @@ const Sidebar = () => {
       icon: "file-earmark-text",
       text: "Out Turns Report",
     },
-    {
-      path: "quality-report",
-      icon: "file-earmark-text",
-      text: "Quality Report",
-    },
+    // {
+    //   path: "quality-report",
+    //   icon: "file-earmark-text",
+    //   text: "Quality Report",
+    // },
   ];
 
   // Settings menu items for admin
@@ -130,7 +130,6 @@ const Sidebar = () => {
       { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
       { path: "/transport", icon: "truck", text: "Transport" },
       { path: "/stock", icon: "house", text: "Stock" },
-     
     ];
   } else {
     menuItems = [
@@ -222,7 +221,7 @@ const Sidebar = () => {
           {menuItems.map(renderNavLink)}
 
           {/* Quality Dropdown - Show for ADMIN, SUPER_ADMIN, SUPERVISOR, OPERATIONS, FINANCE, MD */}
-          {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
+          {/* {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
             // user.role === "MD"
             <div>
               <button
@@ -254,9 +253,9 @@ const Sidebar = () => {
                 </div>
               )}
             </div>
-          )}
+          )} */}
 
-          {user.role === "CWS_MANAGER" && (
+          {/* {user.role === "CWS_MANAGER" && (
             <div>
               <button
                 className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
@@ -285,7 +284,7 @@ const Sidebar = () => {
                 </div>
               )}
             </div>
-          )}
+          )} */}
 
           {/* Reports Dropdown - Show for ADMIN, SUPER_ADMIN, SUPERVISOR, OPERATIONS, FINANCE, MD */}
           {(user.role === "ADMIN" ||
