@@ -48,11 +48,11 @@ export const QualityReportTable = () => {
                   <th
                     key={index}
                     style={{
-                      backgroundColor: processingTheme.tableHeader,
-                      color: processingTheme.primary,
+                      // backgroundColor: processingTheme.tableHeader,
+                      // color: processingTheme.primary,
                       padding: "10px 15px",
-                      fontWeight: 600,
-                      borderBottom: `2px solid ${processingTheme.primary}`,
+                      fontWeight: 400,
+                      borderBottom: `1px solid`,
                       whiteSpace: "nowrap",
                     }}
                   >
