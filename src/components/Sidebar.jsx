@@ -15,6 +15,7 @@ const Sidebar = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
   const [qualityOpen, setQualityOpen] = useState(false);
+  const [containerOpen, setContainerOpen] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -343,7 +344,12 @@ const Sidebar = () => {
                 ></i>
               </button>
               {settingsOpen && (
-                <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    marginLeft: "2rem",
+                  }}
+                >
                   {settingsItems.map(renderNavLink)}
                 </div>
               )}
