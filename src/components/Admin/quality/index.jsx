@@ -1,13 +1,9 @@
-// general report
-// left panner report
-// right pannel fields
-
-import { Header } from "./components/Heading";
+import { ReportsHeading } from "../../../sharedCompoents/heading";
 import ShortSummary from "./components/report";
 
 const Quality = () => (
   <>
-    <Header />
+    <ReportsHeading>Samples</ReportsHeading>
     <ShortSummary />
   </>
 );

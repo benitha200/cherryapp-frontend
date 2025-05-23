@@ -41,8 +41,9 @@ import Quality from "./components/Admin/quality/index.jsx";
 import { SampleForm } from "./components/Admin/quality/sample/index.jsx";
 import OfflineModal from "./sharedCompoents/networkError.jsx";
 import NotFoundPage from "./sharedCompoents/404/404.jsx";
-import Delivery from "./components/Admin/quality/delivaly/index.jsx";
-import DelivarySummary from "./components/Admin/quality/components/report1.jsx";
+import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
+import { Toaster } from "react-hot-toast";
+import QualityReport from "./components/Admin/quality/report/index.jsx";
 import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
 
 const AppContent = () => {
@@ -156,7 +157,7 @@ const AppContent = () => {
                 path="/quality-delivery"
                 element={
                   <PrivateRoute>
-                    <Quality />
+                    <DeliveryTracks />
                   </PrivateRoute>
                 }
               />
@@ -168,6 +169,16 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
+
+              <Route
+                path="/quality-report"
+                element={
+                  <PrivateRoute>
+                    <QualityReport />
+                  </PrivateRoute>
+                }
+              />
+
               <Route
                 path="/transport"
                 element={
@@ -210,7 +221,6 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
 
               {/* sender */}
               <Route
@@ -331,13 +341,30 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-              <Route path="/quality-delivery" element={<DelivarySummary />} />
+              {/* <Route path="/delivery-track" element={<DeliveryTracks />} /> */}
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </div>
         </div>
       </div>
+      <Toaster
+        position="top-center"
+        gutter={12}
+        containerStyle={{ margin: "8px" }}
+        toastOptions={{
+          success: {
+            duration: 3000,
+          },
+          error: {
+            duration: 5000,
+          },
+          style: {
+            fontSize: "16px",
+            padding: "16px 24px",
+          },
+        }}
+      />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
