@@ -44,6 +44,7 @@ import NotFoundPage from "./sharedCompoents/404/404.jsx";
 import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
 import { Toaster } from "react-hot-toast";
 import QualityReport from "./components/Admin/quality/report/index.jsx";
+import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -208,6 +209,15 @@ const AppContent = () => {
                 element={
                   <PrivateRoute>
                     <ProcessingList />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/stock"
+                element={
+                  <PrivateRoute>
+                    <StockManagement />
                   </PrivateRoute>
                 }
               />
