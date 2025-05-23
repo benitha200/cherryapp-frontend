@@ -194,7 +194,7 @@ const ShortSummary = () => {
         setAllBatches(batchData);
         calculateSummaryData(batchData);
       } else {
-        setError(res?.response?.data?.message ?? "Something went wrong.");
+        setError(res?.response?.data?.message ?? "Failed to fetch Samples.");
       }
     } catch (error) {
       console.error("Error fetching all batches:", error);
@@ -262,6 +262,13 @@ const ShortSummary = () => {
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
+
+  const findKeys = (processingType) =>
+    processingType === "NATURAL"
+      ? { key1: "N1", key2: "N2" }
+      : processingType === "HONEY"
+      ? { key1: "H1", key2: "H2" }
+      : { key1: "A0", key2: "A1" };
 
   const filteredBatches = (batches) => {
     return batches.filter((batch) => {
@@ -365,6 +372,7 @@ const ShortSummary = () => {
           id: batchId,
           processingType,
           labMoisture: { A0: "", A1: "" },
+          cwsMoisture: { A0: "", A1: "" },
           "16+": { A0: "", A1: "" },
           "15+": { A0: "", A1: "" },
           "14+": { A0: "", A1: "" },
@@ -503,7 +511,7 @@ const ShortSummary = () => {
       <Card className="mb-4">
         <Card.Body style={{ backgroundColor: processingTheme.neutral }}>
           <Row className=" g-3 mb-2">
-            <Col md={8}>
+            {/* <Col md={8}>
               <div className="col-md-2 col-sm-6">
                 {isWorkingStations && (
                   <button
@@ -520,7 +528,7 @@ const ShortSummary = () => {
                   </button>
                 )}
               </div>
-            </Col>
+            </Col> */}
           </Row>
           <Row className="g-3">
             <Col md={2}>
@@ -597,7 +605,10 @@ const ShortSummary = () => {
           </Row>
         </Card.Body>
 
-        <div className="table-responsive mx-4 mt-4">
+        <div
+          className="table-responsive mx-4 mt-4 "
+          style={{ maxHeight: "70vh" }}
+        >
           <table className=" table-hover">
             <thead>
               <tr>
@@ -802,12 +813,50 @@ const ShortSummary = () => {
                                   <td className="align-middle">
                                     <div style={{ width: "10rem" }}>
                                       {`${batch?.batchNo}-${
-                                        index == 0 ? "(A0)" : "(A1)"
+                                        index == 0
+                                          ? `(${
+                                              findKeys(
+                                                batch?.processing
+                                                  ?.processingType
+                                              )?.key1
+                                            })`
+                                          : `(${
+                                              findKeys(
+                                                batch?.processing
+                                                  ?.processingType
+                                              )?.key2
+                                            })`
                                       }`}
                                     </div>
                                   </td>
+
+                                  {/* Station moisture */}
                                   <td className="align-middle">
-                                    {element?.cwsMoisture1 ?? 0}
+                                    {isAdmin && (
+                                      <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={
+                                          loading ||
+                                          !isInActivatedBatches(batch?.batchNo)
+                                        }
+                                        style={{ width: "7rem" }}
+                                        defaultValue={
+                                          element?.cwsMoisture1 ?? 0
+                                        }
+                                        required
+                                        value={batch?.cwsMoisture1}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            batch?.batchNo,
+                                            "cwsMoisture",
+                                            index / 2 == 0 ? "A0" : "A1",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {!isAdmin && element?.cwsMoisture1}
                                   </td>
                                   {/* lab moisture */}
                                   <td className="align-middle">
@@ -1059,7 +1108,10 @@ const ShortSummary = () => {
                                         </Form.Select>
                                       </div>
                                     )}
-                                    {!isAdmin && element?.category}
+                                    {!isAdmin &&
+                                      (index % 2 == 0
+                                        ? element?.sampleStorage_0?.name ?? ""
+                                        : element?.sampleStorage_1?.name ?? "")}
                                   </td>
                                   {/**sample storage */}
                                   <td className="align-middle">
