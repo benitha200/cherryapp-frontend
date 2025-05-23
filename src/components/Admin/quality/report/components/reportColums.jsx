@@ -1,5 +1,9 @@
 export const columns = [
   {
+    field: "#",
+    header: "#",
+  },
+  {
     field: "batchNumber",
     header: "Batch Number",
   },
