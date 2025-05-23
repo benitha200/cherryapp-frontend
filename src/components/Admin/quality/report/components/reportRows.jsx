@@ -108,10 +108,10 @@ export const ReprotTable = ({
           <div style={{ display: "flex" }}>{data?.cws?.name ?? ""}</div>
         </td>
         <td style={styleTotals()}>{data?.cws?.AccTotaloutputKgs ?? ""}</td>
-        <td style={styleTotals()}>{""}</td>
+        {/* <td style={styleTotals()}>{""}</td>
         <td style={styleTotals()}>{data?.cws?.totMoistureCws ?? ""}</td>
         <td style={styleTotals()}>{data?.cws?.totMoistureLab ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totVmc ?? ""}</td>
+        <td style={styleTotals()}>{data?.cws?.totVmc ?? ""}</td> */}
         <td style={styleTotals()}>{data?.cws?.tot16plus ?? ""}</td>
         <td style={styleTotals()}>{data?.cws?.tot15 ?? ""}</td>
         <td style={styleTotals()}>{data?.cws?.totAvg15PlusDelivery ?? ""}</td>
@@ -164,26 +164,26 @@ export const ReprotTable = ({
                       ""}
                   </td>
                   {/* date of analysis */}
-                  <td>
+                  {/* <td>
                     {formatDate(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.createdAt ??
                         new Date()
                     )}
-                  </td>
+                  </td> */}
                   {/* mc lab(%)/samples */}
-                  <td>{elements?.labMoisture}</td>
+                  {/* <td>{elements?.labMoisture}</td> */}
                   {/* mc cws (%)/ delivery */}
-                  <td>
+                  {/* <td>
                     {cwsBatches?.delivery?.batches[subBatchIndex]?.cwsMoisture}
-                  </td>
+                  </td> */}
                   {/* variation m.c */}
-                  <td style={styleValiations()}>
+                  {/* <td style={styleValiations()}>
                     {Number(elements?.labMoisture ?? 0) -
                       Number(
                         cwsBatches?.delivery?.batches[subBatchIndex]
                           ?.cwsMoisture ?? 0
                       )}
-                  </td>
+                  </td> */}
                   {/* 16 */}
                   <td>
                     {
