@@ -1,4 +1,4 @@
-import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
+import { Form, Row, Col, Card, InputGroup, Button } from "react-bootstrap";
 import { formatDate } from "./../../../../../utils/formatDate";
 import { useState } from "react";
 const processingTheme = {
@@ -55,7 +55,7 @@ export const ReprotTable = ({
 
   function styleTotals() {
     return {
-      background: "#c5e0d8",
+      background: "#",
       fontSize: "0.9rem",
       fontWeight: "700",
       color: "#212529",
@@ -83,7 +83,27 @@ export const ReprotTable = ({
     <>
       {/* TOTALS  */}
       <tr onClick={() => handleOpenstation(data?.cws?.name ?? "")}>
-        <td style={styleTotals()}>{data?.cws?.name ?? ""}</td>
+        <td style={styleTotals()}>
+          <Button
+            size="sm"
+            variant="outline-secondary"
+            className="p-0 px-1 me-2"
+            style={{
+              width: "24px",
+              height: "24px",
+              borderColor: "#4FB3B3",
+            }}
+          >
+            <i
+              className="bi bi-chevron-down"
+              style={{
+                transform: true ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.2s",
+              }}
+            ></i>
+          </Button>
+          {data?.cws?.name ?? ""}
+        </td>
         <td style={styleTotals()}>{data?.cws?.AccTotaloutputKgs ?? ""}</td>
         <td style={styleTotals()}>{""}</td>
         <td style={styleTotals()}>{data?.cws?.totMoistureCws ?? ""}</td>
@@ -137,7 +157,7 @@ export const ReprotTable = ({
                 <td>
                   {formatDate(
                     cwsBatches?.delivery?.batches[subBatchIndex]?.createdAt ??
-                    new Date()
+                      new Date()
                   )}
                 </td>
                 {/* mc lab(%)/samples */}
@@ -203,12 +223,12 @@ export const ReprotTable = ({
                 <td>
                   {Number(
                     cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                    "14"
+                      "14"
                     ] ?? 0
                   ) +
                     Number(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                      "13"
+                        "13"
                       ] ?? 0
                     )}
                 </td>
@@ -221,12 +241,12 @@ export const ReprotTable = ({
                 <td style={styleValiations()}>
                   {Number(
                     cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                    "14"
+                      "14"
                     ] ?? 0
                   ) +
                     Number(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                      "13"
+                        "13"
                       ] ?? 0
                     ) -
                     (Number(elements?.screen["14"] ?? 0) +
@@ -236,7 +256,7 @@ export const ReprotTable = ({
                 <td>
                   {Number(
                     cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                    "B/12"
+                      "B/12"
                     ] ?? 0
                   )}
                 </td>
@@ -250,7 +270,7 @@ export const ReprotTable = ({
                 <td>
                   {Number(
                     cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                    "B/12"
+                      "B/12"
                     ] ?? 0
                   ) +
                     Number(
@@ -266,7 +286,7 @@ export const ReprotTable = ({
                 <td style={styleValiations()}>
                   {Number(
                     cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                    "B/12"
+                      "B/12"
                     ] ?? 0
                   ) +
                     Number(
@@ -285,17 +305,17 @@ export const ReprotTable = ({
                     ) +
                     Number(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                      "14"
+                        "14"
                       ] ?? 0
                     ) +
                     Number(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                      "13"
+                        "13"
                       ] ?? 0
                     ) +
                     Number(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                      "B/12"
+                        "B/12"
                       ] ?? 0
                     ) +
                     Number(
@@ -321,17 +341,17 @@ export const ReprotTable = ({
                     ) +
                     Number(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                      "14"
+                        "14"
                       ] ?? 0
                     ) +
                     Number(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                      "13"
+                        "13"
                       ] ?? 0
                     ) +
                     Number(
                       cwsBatches?.delivery?.batches[subBatchIndex]?.screen[
-                      "B/12"
+                        "B/12"
                       ] ?? 0
                     ) +
                     Number(

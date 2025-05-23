@@ -8,7 +8,9 @@ export const ReportsHeading = ({ children }) => {
   };
   return (
     <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
-      <h2 className="mb-3 mb-md-0">{children}</h2>
+      <h2 className="mb-3 mb-md-0" style={{ marginLeft: "1rem" }}>
+        {children}
+      </h2>
     </div>
   );
 };

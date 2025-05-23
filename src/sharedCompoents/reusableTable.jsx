@@ -41,6 +41,21 @@ const ReusableTable = ({
       <div className="">
         <Card.Body>
           <div className="d-flex justify-content-between align-items-center">
+            {/* Search box on right */}
+            <div style={{ width: "250px" }}>
+              <InputGroup>
+                <InputGroup.Text>
+                  <i className="bi bi-search"></i>
+                </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </InputGroup>
+            </div>
+
             {/* Items per page select on left */}
             <div style={{ width: "5rem" }}>
               <Form.Select
@@ -56,21 +71,6 @@ const ReusableTable = ({
                   </option>
                 ))}
               </Form.Select>
-            </div>
-
-            {/* Search box on right */}
-            <div style={{ width: "250px" }}>
-              <InputGroup>
-                <InputGroup.Text>
-                  <i className="bi bi-search"></i>
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </InputGroup>
             </div>
           </div>
         </Card.Body>
