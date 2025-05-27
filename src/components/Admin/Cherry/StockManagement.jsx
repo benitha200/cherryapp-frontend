@@ -16,6 +16,8 @@ import {
 } from "recharts";
 import API_URL from "../../../constants/Constants";
 import StockDashboardSkeleton from "./StockDashboardSkeleton";
+import { FindAllStockInformation } from "./actions";
+import { data } from "react-router-dom";
 
 const theme = {
   primary: "#008080", // Sucafina teal
@@ -70,6 +72,8 @@ const StockManagement = () => {
   const allGrades = ["A0", "A1", "A2", "A3", "H1", "N1", "N2"];
   const mainGrades = ["A0", "A1", "H1", "N1"];
 
+  const { isError, isPending, stocksData } = FindAllStockInformation();
+
   // Colors for different grades
   const gradeColors = {
     A0: "#27AE60", // Green
@@ -81,7 +85,7 @@ const StockManagement = () => {
     N2: "#34495E", // Dark Gray
     other: "#E67E22", // Orange
   };
-
+  console.log(selectedCWS, "::::::::");
   const pieColors = [
     "#008080",
     "#4FB3B3",
@@ -494,7 +498,7 @@ const StockManagement = () => {
             className="form-select"
             style={{ borderColor: theme.secondary }}
           >
-            {cwsList.map((cws) => (
+            {cwsList?.map((cws) => (
               <option key={cws} value={cws}>
                 {cws}
               </option>
@@ -504,40 +508,114 @@ const StockManagement = () => {
       </div>
 
       {/* Summary Cards - First Row */}
-      <div className="row g-4 mb-4">
-        <div className="col-12 col-md-6">
-          <DashboardCard
-            title="Total Cherry Purchased (kg)"
-            value={stockData.totalCherry.toLocaleString()}
-            iconClass="bi-basket-fill"
-          />
-        </div>
-
-        <div className="col-12 col-md-6">
-          <DashboardCard
-            title={
-              selectedCWS === "All"
-                ? "Total Parchment output (kg)"
-                : `${selectedCWS} Parchment Output (kg)`
-            }
-            value={filteredData.totalParchment.toLocaleString()}
-            iconClass="bi-box-seam"
-          />
-        </div>
-      </div>
+      {selectedCWS == "All"
+        ? !isPending &&
+          stocksData && (
+            <div className="row g-4 mb-4">
+              <div className="col-12 col-md-6">
+                <DashboardCard
+                  title="Total Cherry Purchased (kg)"
+                  value={stocksData?.data?.totals?.totCherryPurchase?.toString()}
+                  iconClass="bi-basket-fill"
+                />
+              </div>
+              <div className="col-12 col-md-6">
+                <DashboardCard
+                  title={
+                    selectedCWS === "All"
+                      ? "Total Parchment output (kg)"
+                      : `${selectedCWS} Parchment Output (kg)`
+                  }
+                  value={stocksData?.data?.totals?.totalParchmentOutput?.toLocaleString()}
+                  iconClass="bi-box-seam"
+                />
+              </div>
+              <div className="col-12 col-md-6">
+                <DashboardCard
+                  title={
+                    selectedCWS === "All"
+                      ? "Total Transported (kg)"
+                      : `${selectedCWS} Parchment Output (kg)`
+                  }
+                  value={stocksData?.data?.totals?.totalTransportedKgs?.toLocaleString()}
+                  iconClass="bi-bus-front"
+                />
+              </div>{" "}
+              <div className="col-12 col-md-6">
+                <DashboardCard
+                  title={
+                    selectedCWS === "All"
+                      ? "Total Purchment in store (kg)"
+                      : `${selectedCWS} Parchment Output (kg)`
+                  }
+                  value={stocksData?.data?.totals?.parchmentInstore?.toLocaleString()}
+                  iconClass="bi-shop"
+                />
+              </div>
+            </div>
+          )
+        : !isPending &&
+          stocksData &&
+          stocksData?.data?.byCws
+            ?.filter((cws) => cws?.cwsName == selectedCWS)
+            .map((element) => (
+              <div className="row g-4 mb-4">
+                <div className="col-12 col-md-6">
+                  <DashboardCard
+                    title="Total Cherry Purchased (kg)"
+                    value={element?.cherryPurchase?.toString()}
+                    iconClass="bi-basket-fill"
+                  />
+                </div>
+                <div className="col-12 col-md-6">
+                  <DashboardCard
+                    title={
+                      selectedCWS === "All"
+                        ? "Total Parchment output (kg)"
+                        : `${selectedCWS} Parchment Output (kg)`
+                    }
+                    value={element?.parchmentOutput?.toLocaleString()}
+                    iconClass="bi-box-seam"
+                  />
+                </div>
+                <div className="col-12 col-md-6">
+                  <DashboardCard
+                    title={
+                      selectedCWS === "All"
+                        ? "Total Transported (kg)"
+                        : `${selectedCWS} Parchment Output (kg)`
+                    }
+                    value={element?.transportedKgs?.toLocaleString()}
+                    iconClass="bi-bus-front"
+                  />
+                </div>{" "}
+                <div className="col-12 col-md-6">
+                  <DashboardCard
+                    title={
+                      selectedCWS === "All"
+                        ? "Total Purchment in store (kg)"
+                        : `${selectedCWS} Parchment Output (kg)`
+                    }
+                    value={element?.parchmentInstore?.toLocaleString()}
+                    iconClass="bi-shop"
+                  />
+                </div>
+              </div>
+            ))}
 
       {/* Summary Cards - Grade Totals */}
-      <div className="row g-4 mb-4">
-        {/* {mainGrades.map((grade) => (
-          <div key={grade} className="col-6 col-md-3">
-            <DashboardCard
-              title={`${grade} Grade Total (kg)`}
-              value={filteredData.gradeTotals[grade].toLocaleString()}
-              iconClass="bi-tag-fill"
-            />
-          </div>
-        ))} */}
-      </div>
+      {/* <div className="row g-4 mb-4">
+        {stocksData &&
+          stocksData?.data?.byCws?.map((cws, index) => (
+            <div key={cws?.cwsId ?? index} className="col-6 col-md-3">
+              <DashboardCard
+                title={`${cws?.cwsName} Grade Total (kg)`}
+                value={cws?.cherryPurchase ?? 0}
+                iconClass="bi-tag-fill"
+              />
+            </div>
+          ))}
+      </div> */}
 
       {/* CWS Distribution for Specific Grade */}
       {/* <div className="row g-4 mb-4">
