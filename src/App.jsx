@@ -121,30 +121,65 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
+
+              {/* GUARANTE ADMINS ONLY  */}
               <Route
-                path="/purchases"
+                path="/"
                 element={
-                  <PrivateRoute>
-                    <PurchaseList />
-                  </PrivateRoute>
+                  <RequireAuth allowedRoles={["ADMIN", "SUPER_ADMIN"]} />
                 }
-              />
+              >
+                <Route path="/purchases-all" element={<PurchaseListAll />} />
+                <Route
+                  path="/cherry-purchase-report"
+                  element={<CherryPurchaseReportDetailed />}
+                />
+
+                <Route
+                  path="/bagging-off-report"
+                  element={<BaggingOffReport />}
+                />
+                <Route path="/quality-report" element={<QualityReport />} />
+                <Route path="/cws" element={<CwsList />} />
+                <Route
+                  path="/site-collections"
+                  element={<SiteCollectionList />}
+                />
+                <Route
+                  path="/wet-transfer-cws-mapping"
+                  element={<WetTransferCwsMapping />}
+                />
+                <Route path="/pricing" element={<PricingManagement />} />
+                <Route path="/users" element={<Users />} />
+                <Route
+                  path="/purchase-by-station"
+                  element={<PurchaseByStation />}
+                />
+                <Route path="/processing-all" element={<ProcessingListAll />} />
+                <Route path="/stock" element={<StockManagement />} />
+                <Route
+                  path="/wet-transfer-admin"
+                  element={<WetTransferAdmin />}
+                />
+                <Route path="/transport" element={<Transport />} />
+                <Route path="/quality-delivery" element={<DeliveryTracks />} />
+              </Route>
+
+              {/* GUARANTEE CWS MANAGER ONLY */}
               <Route
-                path="/purchases-all"
-                element={
-                  <PrivateRoute>
-                    <PurchaseListAll />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/processing-all"
-                element={
-                  <PrivateRoute>
-                    <ProcessingListAll />
-                  </PrivateRoute>
-                }
-              />
+                path="/"
+                element={<RequireAuth allowedRoles={["CWS_MANAGER"]} />}
+              >
+                <Route path="/purchases" element={<PurchaseList />} />
+                <Route path="/processing" element={<ProcessingList />} />
+                <Route path="/transfer" element={<Transfer />} />
+                <Route
+                  path="/wet-transfer-receiver"
+                  element={<WetTransferReceiver />}
+                />
+              </Route>
+
+              {/* GUARANTE CWS MANAGER AND ADMIN */}
               <Route
                 path="/"
                 element={
@@ -162,72 +197,8 @@ const AppContent = () => {
               </Route>
 
               <Route
-                path="/quality-delivery"
-                element={
-                  <PrivateRoute>
-                    <DeliveryTracks />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/quality-all/form"
-                element={
-                  <PrivateRoute>
-                    <SampleForm />
-                  </PrivateRoute>
-                }
-              />
-
-              <Route
-                path="/quality-report"
-                element={
-                  <PrivateRoute>
-                    <QualityReport />
-                  </PrivateRoute>
-                }
-              />
-
-              <Route
-                path="/transport"
-                element={
-                  <PrivateRoute>
-                    <Transport />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/wet-transfer-admin"
-                element={
-                  <PrivateRoute>
-                    <WetTransferAdmin />
-                  </PrivateRoute>
-                }
-              />
-              <Route
                 path="/purchases/date/:date"
                 element={<DailyPurchaseDetails />}
-              />
-              <Route
-                path="/purchase-by-station"
-                element={<PurchaseByStation />}
-              />
-
-              <Route
-                path="/processing"
-                element={
-                  <PrivateRoute>
-                    <ProcessingList />
-                  </PrivateRoute>
-                }
-              />
-
-              <Route
-                path="/stock"
-                element={
-                  <PrivateRoute>
-                    <StockManagement />
-                  </PrivateRoute>
-                }
               />
 
               {/* sender */}
@@ -236,15 +207,6 @@ const AppContent = () => {
                 element={
                   <PrivateRoute>
                     <WetTransfer />
-                  </PrivateRoute>
-                }
-              />
-              {/* wet transfer receiver */}
-              <Route
-                path="/wet-transfer-receiver"
-                element={
-                  <PrivateRoute>
-                    <WetTransferReceiver />
                   </PrivateRoute>
                 }
               />
@@ -260,15 +222,6 @@ const AppContent = () => {
               />
 
               <Route
-                path="/transfer"
-                element={
-                  <PrivateRoute>
-                    <Transfer />
-                  </PrivateRoute>
-                }
-              />
-
-              <Route
                 path="/site-collections/new"
                 element={
                   <PrivateRoute>
@@ -276,38 +229,7 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/site-collections"
-                element={
-                  <PrivateRoute>
-                    <SiteCollectionList />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/users"
-                element={
-                  <PrivateRoute>
-                    <Users />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/pricing"
-                element={
-                  <PrivateRoute>
-                    <PricingManagement />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/cws"
-                element={
-                  <PrivateRoute>
-                    <CwsList />
-                  </PrivateRoute>
-                }
-              />
+
               <Route
                 path="/cws/new"
                 element={
@@ -316,23 +238,7 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/wet-transfer-cws-mapping"
-                element={
-                  <PrivateRoute>
-                    <WetTransferCwsMapping />
-                  </PrivateRoute>
-                }
-              />
 
-              <Route
-                path="/cherry-purchase-report"
-                element={
-                  <PrivateRoute>
-                    <CherryPurchaseReportDetailed />
-                  </PrivateRoute>
-                }
-              />
               <Route
                 path="/bagg-off-list"
                 element={
@@ -341,14 +247,7 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/bagging-off-report"
-                element={
-                  <PrivateRoute>
-                    <BaggingOffReport />
-                  </PrivateRoute>
-                }
-              />
+
               {/* <Route path="/delivery-track" element={<DeliveryTracks />} /> */}
 
               <Route path="*" element={<NotFoundPage />} />
@@ -362,7 +261,7 @@ const AppContent = () => {
         containerStyle={{ margin: "8px" }}
         toastOptions={{
           success: {
-            duration: 3000,
+            duration: 5000,
           },
           error: {
             duration: 5000,
