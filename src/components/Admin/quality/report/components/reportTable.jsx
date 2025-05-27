@@ -31,10 +31,15 @@ export const QualityReportTable = () => {
     <Skeleton />
   ) : (
     !isPending && data && (
-      <div className=" table-responsive">
-        <Card className="">
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h4 className="mb-0">Station Quality report</h4>
+          </div>
+        </div>
+        <div className="table-responsive">
           <table
-            className="table"
+            className="table table-hover"
             style={{
               borderCollapse: "separate",
               borderSpacing: 0,
@@ -48,11 +53,11 @@ export const QualityReportTable = () => {
                   <th
                     key={index}
                     style={{
-                      backgroundColor: processingTheme.tableHeader,
-                      color: processingTheme.primary,
+                      // backgroundColor: processingTheme.tableHeader,
+                      // color: processingTheme.primary,
                       padding: "10px 15px",
-                      fontWeight: 600,
-                      borderBottom: `2px solid ${processingTheme.primary}`,
+                      // fontWeight: 400,
+                      // borderBottom: `1px solid`,
                       whiteSpace: "nowrap",
                     }}
                   >
@@ -87,7 +92,7 @@ export const QualityReportTable = () => {
               )}
             </tbody>
           </table>
-        </Card>
+        </div>
       </div>
     )
   );

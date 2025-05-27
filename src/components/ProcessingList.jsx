@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -1114,6 +1113,16 @@ const ProcessingBatchModal = ({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  function containsAnyOption(options) {
+    const str = savedBaggingOffs
+      .map((element) => element?.hgtransported)
+      ?.flat(1)
+      ?.join();
+    const pattern = options.map((opt) => `\\b${opt}\\b`).join("|");
+    const regex = new RegExp(pattern);
+    return regex.test(str);
+  }
+
   const calculateTotalsByProcessingType = () => {
     const totals = {
       HONEY: { H1: 0 },
@@ -1836,46 +1845,50 @@ const ProcessingBatchModal = ({
                           </>
                         ) : (
                           <>
-                            <Col md={3} className="mb-2">
-                              <Form.Control
-                                type="number"
-                                placeholder="A0 KGs"
-                                value={fullyWashedOutputKgs.A0}
-                                onChange={(e) =>
-                                  handleFullyWashedOutputChange(
-                                    "A0",
-                                    e.target.value
-                                  )
-                                }
-                                required
-                                style={{
-                                  borderColor: processingTheme.secondary,
-                                  ":focus": {
-                                    borderColor: processingTheme.primary,
-                                  },
-                                }}
-                              />
-                            </Col>
-                            <Col md={3} className="mb-2">
-                              <Form.Control
-                                type="number"
-                                placeholder="A1 KGs"
-                                value={fullyWashedOutputKgs.A1}
-                                onChange={(e) =>
-                                  handleFullyWashedOutputChange(
-                                    "A1",
-                                    e.target.value
-                                  )
-                                }
-                                required
-                                style={{
-                                  borderColor: processingTheme.secondary,
-                                  ":focus": {
-                                    borderColor: processingTheme.primary,
-                                  },
-                                }}
-                              />
-                            </Col>
+                            {!containsAnyOption(["A0"]) && (
+                              <Col md={3} className="mb-2">
+                                <Form.Control
+                                  type="number"
+                                  placeholder="A0 KGs"
+                                  value={fullyWashedOutputKgs.A0}
+                                  onChange={(e) =>
+                                    handleFullyWashedOutputChange(
+                                      "A0",
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                  style={{
+                                    borderColor: processingTheme.secondary,
+                                    ":focus": {
+                                      borderColor: processingTheme.primary,
+                                    },
+                                  }}
+                                />
+                              </Col>
+                            )}
+                            {!containsAnyOption(["A1"]) && (
+                              <Col md={3} className="mb-2">
+                                <Form.Control
+                                  type="number"
+                                  placeholder="A1 KGs"
+                                  value={fullyWashedOutputKgs.A1}
+                                  onChange={(e) =>
+                                    handleFullyWashedOutputChange(
+                                      "A1",
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                  style={{
+                                    borderColor: processingTheme.secondary,
+                                    ":focus": {
+                                      borderColor: processingTheme.primary,
+                                    },
+                                  }}
+                                />
+                              </Col>
+                            )}
                             <Col md={3} className="mb-2">
                               <Form.Control
                                 type="number"
@@ -1934,26 +1947,28 @@ const ProcessingBatchModal = ({
                     Honey Processing Output (e.g., 120, 120.5)
                   </Form.Label>
                   <Row>
-                    <Col md={12}>
-                      <Form.Control
-                        type="number"
-                        step="0.5"
-                        placeholder="H1 KGs"
-                        value={honeyOutputKgs.H1}
-                        onChange={(e) =>
-                          handleHoneyOutputChange(e.target.value)
-                        }
-                        required
-                        style={{
-                          borderColor: processingTheme.secondary,
-                          ":focus": { borderColor: processingTheme.primary },
-                        }}
-                        isInvalid={
-                          honeyOutputKgs.H1 !== "" &&
-                          !isValidKgValue(honeyOutputKgs.H1)
-                        }
-                      />
-                    </Col>
+                    {!containsAnyOption(["H1"]) && (
+                      <Col md={12}>
+                        <Form.Control
+                          type="number"
+                          step="0.5"
+                          placeholder="H1 KGs"
+                          value={honeyOutputKgs.H1}
+                          onChange={(e) =>
+                            handleHoneyOutputChange(e.target.value)
+                          }
+                          required
+                          style={{
+                            borderColor: processingTheme.secondary,
+                            ":focus": { borderColor: processingTheme.primary },
+                          }}
+                          isInvalid={
+                            honeyOutputKgs.H1 !== "" &&
+                            !isValidKgValue(honeyOutputKgs.H1)
+                          }
+                        />
+                      </Col>
+                    )}
                   </Row>
                 </div>
 
@@ -2059,21 +2074,25 @@ const ProcessingBatchModal = ({
                     </>
                   ) : (
                     <>
-                      <Col md={6}>
-                        <Form.Control
-                          type="number"
-                          placeholder="N1 KGs"
-                          value={naturalOutputKgs.N1}
-                          onChange={(e) =>
-                            handleNaturalOutputChange("N1", e.target.value)
-                          }
-                          required
-                          style={{
-                            borderColor: processingTheme.secondary,
-                            ":focus": { borderColor: processingTheme.primary },
-                          }}
-                        />
-                      </Col>
+                      {!containsAnyOption(["N1"]) && (
+                        <Col md={6}>
+                          <Form.Control
+                            type="number"
+                            placeholder="N1 KGs"
+                            value={naturalOutputKgs.N1}
+                            onChange={(e) =>
+                              handleNaturalOutputChange("N1", e.target.value)
+                            }
+                            required
+                            style={{
+                              borderColor: processingTheme.secondary,
+                              ":focus": {
+                                borderColor: processingTheme.primary,
+                              },
+                            }}
+                          />
+                        </Col>
+                      )}
                       <Col md={6}>
                         <Form.Control
                           type="number"

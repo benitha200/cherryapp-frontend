@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import API_URL from "../../constants/Constants";
+import { Button } from "react-bootstrap";
 
 const theme = {
   primary: "#008080",
@@ -49,6 +50,7 @@ const PurchaseByStation = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [cwsList, setCwsList] = useState([]);
   const [selectedCws, setSelectedCws] = useState("");
+  const [selectedCWSList, steSelectedCWSList] = useState([]);
   const [filteredPurchases, setFilteredPurchases] = useState([]);
   const [totals, setTotals] = useState({
     totalKgs: 0,
@@ -70,6 +72,7 @@ const PurchaseByStation = () => {
 
   const handleCwsSelect = (cwsId) => {
     setSelectedCws(cwsId);
+    steSelectedCWSList((prev) => [...new Set([...prev, cwsId])]);
     setIsDropdownOpen(false);
     setSearchTerm("");
   };
@@ -183,13 +186,18 @@ const PurchaseByStation = () => {
   }, [selectedDate, cwsList]);
 
   // Modify your updateFilteredPurchases function to update the station count
+
   const updateFilteredPurchases = (purchases, cwsId) => {
-    const filtered = cwsId
-      ? purchases.filter((p) => {
-          const cws = cwsList.find((cws) => cws.id.toString() === cwsId);
-          return cws ? p.cwsName === cws.name : false;
-        })
-      : purchases;
+    const selection = cwsList.filter((cws) =>
+      selectedCWSList.includes(cws?.id?.toString())
+    );
+    const listNames = selection.map((element) => element?.name);
+    const filtered =
+      selectedCWSList.length > 0
+        ? purchases.filter((p) => {
+            return listNames.includes(p?.cwsName);
+          })
+        : purchases;
 
     setFilteredPurchases(filtered);
 
@@ -222,7 +230,7 @@ const PurchaseByStation = () => {
 
   useEffect(() => {
     updateFilteredPurchases(purchases, selectedCws);
-  }, [selectedCws, purchases]);
+  }, [selectedCws, purchases, selectedCWSList]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -262,27 +270,86 @@ const PurchaseByStation = () => {
           </div>
 
           <div className="col-12 col-md-6 col-lg-8">
-            <label className="form-label" style={{ color: theme.primary }}>
-              Filter by CWS
-            </label>
             <div className="position-relative">
-              <button
-                className="form-select d-flex justify-content-between align-items-center"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                type="button"
-                aria-expanded={isDropdownOpen}
-                style={{
-                  borderColor: theme.primary,
-                  color: theme.primary,
-                  backgroundColor: isDropdownOpen ? theme.neutral : "white",
-                  width: "100%",
-                }}
+              <div
+                className=" d-flex g-5 justify-content-end"
+                style={{ gap: "1rem" }}
               >
-                {selectedCws
-                  ? cwsList.find((cws) => cws.id.toString() === selectedCws)
-                      ?.name
-                  : "All CWS"}
-              </button>
+                {selectedCWSList?.length > 0 && (
+                  <div
+                    className=" d-flex justify-content-start align-items-center"
+                    style={{
+                      borderColor: theme.primary,
+                      color: theme.primary,
+                      backgroundColor: "white",
+                      gap: "1rem",
+                      width: "50vw",
+                      overflowX: "scroll",
+                      padding: ".5rem",
+                      borderRadius: "0.5rem",
+                    }}
+                  >
+                    {cwsList
+                      .filter((cws) =>
+                        selectedCWSList.includes(cws?.id?.toString())
+                      )
+                      .map((cws) => (
+                        <div
+                          style={{
+                            backgroundColor: "#f9fafb",
+                            border: "1px solid #d1d5db",
+                            borderRadius: "0.5rem",
+                            padding: "0.3rem 0.6rem",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                            fontFamily: "sans-serif",
+                            fontSize: "0.9rem",
+                            color: "#111827",
+                          }}
+                        >
+                          <span style={{ color: "#0284c7" }}>
+                            {cws?.name ?? ""}
+                          </span>
+                          <span
+                            onClick={() =>
+                              steSelectedCWSList((prev) =>
+                                prev.filter((id) => id != cws?.id?.toString())
+                              )
+                            }
+                            style={{
+                              cursor: "pointer",
+                              color: "#ef4444",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            ×
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                <Button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  aria-expanded={isDropdownOpen}
+                  size="sm"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    height: "2.5rem",
+                    margin: "1rem 0 .5rem 0",
+                    backgroundColor: theme?.primary,
+                  }}
+                >
+                  Stations
+                  <span style={{ fontSize: "0.8rem" }}>
+                    <i className={`bi bi-chevron-down`}></i>
+                  </span>
+                </Button>
+              </div>
 
               <div
                 className={`dropdown-menu w-100 ${
@@ -309,7 +376,10 @@ const PurchaseByStation = () => {
                 <div className="dropdown-divider"></div>
                 <button
                   className={`dropdown-item ${!selectedCws ? "active" : ""}`}
-                  onClick={() => handleCwsSelect("")}
+                  onClick={() => {
+                    handleCwsSelect("");
+                    steSelectedCWSList([]);
+                  }}
                   style={{
                     backgroundColor: !selectedCws
                       ? theme.primary
@@ -418,7 +488,11 @@ const PurchaseByStation = () => {
           >
             <div className="card-body">
               <h6 className="card-subtitle mb-2">Total Stations</h6>
-              <h4 className="card-title mb-0">{stationCount}</h4>
+              <h4 className="card-title mb-0">
+                {selectedCWSList.length > 0
+                  ? selectedCWSList?.length
+                  : stationCount}
+              </h4>
             </div>
           </div>
         </div>
