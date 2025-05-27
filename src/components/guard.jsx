@@ -15,12 +15,12 @@ const RequireAuth = ({ allowedRoles }) => {
     return <LoadingPage />;
   }
   if (error) {
+    localStorage.clear();
     return <Navigate to={"/login"} state={{ from: location }} replace />;
   }
 
   if (!allowedRoles?.includes(data?.role)) {
-    toast.error("Access denied. Please log in again to continue.");
-    return <Navigate to={"/login"} state={{ from: location }} replace />;
+    return <Navigate to={"/"} state={{ from: location }} replace />;
   }
 
   return <Outlet />;
