@@ -1947,26 +1947,28 @@ const ProcessingBatchModal = ({
                     Honey Processing Output (e.g., 120, 120.5)
                   </Form.Label>
                   <Row>
-                    <Col md={12}>
-                      <Form.Control
-                        type="number"
-                        step="0.5"
-                        placeholder="H1 KGs"
-                        value={honeyOutputKgs.H1}
-                        onChange={(e) =>
-                          handleHoneyOutputChange(e.target.value)
-                        }
-                        required
-                        style={{
-                          borderColor: processingTheme.secondary,
-                          ":focus": { borderColor: processingTheme.primary },
-                        }}
-                        isInvalid={
-                          honeyOutputKgs.H1 !== "" &&
-                          !isValidKgValue(honeyOutputKgs.H1)
-                        }
-                      />
-                    </Col>
+                    {!containsAnyOption(["H1"]) && (
+                      <Col md={12}>
+                        <Form.Control
+                          type="number"
+                          step="0.5"
+                          placeholder="H1 KGs"
+                          value={honeyOutputKgs.H1}
+                          onChange={(e) =>
+                            handleHoneyOutputChange(e.target.value)
+                          }
+                          required
+                          style={{
+                            borderColor: processingTheme.secondary,
+                            ":focus": { borderColor: processingTheme.primary },
+                          }}
+                          isInvalid={
+                            honeyOutputKgs.H1 !== "" &&
+                            !isValidKgValue(honeyOutputKgs.H1)
+                          }
+                        />
+                      </Col>
+                    )}
                   </Row>
                 </div>
 
@@ -2072,21 +2074,25 @@ const ProcessingBatchModal = ({
                     </>
                   ) : (
                     <>
-                      <Col md={6}>
-                        <Form.Control
-                          type="number"
-                          placeholder="N1 KGs"
-                          value={naturalOutputKgs.N1}
-                          onChange={(e) =>
-                            handleNaturalOutputChange("N1", e.target.value)
-                          }
-                          required
-                          style={{
-                            borderColor: processingTheme.secondary,
-                            ":focus": { borderColor: processingTheme.primary },
-                          }}
-                        />
-                      </Col>
+                      {!containsAnyOption(["N1"]) && (
+                        <Col md={6}>
+                          <Form.Control
+                            type="number"
+                            placeholder="N1 KGs"
+                            value={naturalOutputKgs.N1}
+                            onChange={(e) =>
+                              handleNaturalOutputChange("N1", e.target.value)
+                            }
+                            required
+                            style={{
+                              borderColor: processingTheme.secondary,
+                              ":focus": {
+                                borderColor: processingTheme.primary,
+                              },
+                            }}
+                          />
+                        </Col>
+                      )}
                       <Col md={6}>
                         <Form.Control
                           type="number"
