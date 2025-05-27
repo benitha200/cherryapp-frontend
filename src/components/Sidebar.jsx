@@ -12,10 +12,8 @@ const theme = {
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
-  const [qualityOpen, setQualityOpen] = useState(false);
-  const [containerOpen, setContainerOpen] = useState(null);
+  const [openMenu, setOpenMenu] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -38,7 +36,7 @@ const Sidebar = () => {
       location.pathname === "/cherry-purchase-report" ||
       location.pathname === "/bagging-off-report"
     ) {
-      setReportsOpen(true);
+      setOpenMenu("Reports");
     }
   }, [location.pathname]);
 
@@ -51,7 +49,7 @@ const Sidebar = () => {
       location.pathname === "quality-delivery" ||
       location.pathname === "delivery-track"
     ) {
-      setQualityOpen(true);
+      setOpenMenu("Quality");
     }
   }, [location.pathname]);
 
@@ -231,17 +229,21 @@ const Sidebar = () => {
                   backgroundColor: "transparent",
                   cursor: "pointer",
                 }}
-                onClick={() => setQualityOpen(!qualityOpen)}
+                onClick={() =>
+                  openMenu === "Quality"
+                    ? setOpenMenu("")
+                    : setOpenMenu("Quality")
+                }
               >
                 <i className="bi bi-bookmark-check-fill me-3"></i>
                 Quality
                 <i
                   className={`bi bi-chevron-${
-                    qualityOpen ? "down" : "right"
+                    openMenu == "Quality" ? "down" : "right"
                   } ms-auto`}
                 ></i>
               </button>
-              {qualityOpen && (
+              {openMenu == "Quality" && (
                 <div
                   style={{
                     backgroundColor: "transparent",
@@ -264,17 +266,21 @@ const Sidebar = () => {
                   backgroundColor: "transparent",
                   cursor: "pointer",
                 }}
-                onClick={() => setQualityOpen(!qualityOpen)}
+                onClick={() =>
+                  openMenu === "Quality"
+                    ? setOpenMenu("")
+                    : setOpenMenu("Quality")
+                }
               >
                 <i className="bi bi-bookmark-check-fill me-3"></i>
                 Quality
                 <i
                   className={`bi bi-chevron-${
-                    qualityOpen ? "down" : "right"
+                    openMenu == "Quality" ? "down" : "right"
                   } ms-auto`}
                 ></i>
               </button>
-              {qualityOpen && (
+              {openMenu == "Quality" && (
                 <div
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -301,17 +307,21 @@ const Sidebar = () => {
                   backgroundColor: "transparent",
                   cursor: "pointer",
                 }}
-                onClick={() => setReportsOpen(!reportsOpen)}
+                onClick={() =>
+                  openMenu !== "Reports"
+                    ? setOpenMenu("Reports")
+                    : setOpenMenu("")
+                }
               >
                 <i className="bi bi-pie-chart me-3"></i>
                 Reports
                 <i
                   className={`bi bi-chevron-${
-                    reportsOpen ? "down" : "right"
+                    openMenu === "Reports" ? "down" : "right"
                   } ms-auto`}
                 ></i>
               </button>
-              {reportsOpen && (
+              {openMenu === "Reports" && (
                 <div
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -333,17 +343,21 @@ const Sidebar = () => {
                   backgroundColor: "transparent",
                   cursor: "pointer",
                 }}
-                onClick={() => setSettingsOpen(!settingsOpen)}
+                onClick={() =>
+                  openMenu !== "Settings"
+                    ? setOpenMenu("Settings")
+                    : setOpenMenu("")
+                }
               >
                 <i className="bi bi-gear me-3"></i>
                 Settings
                 <i
                   className={`bi bi-chevron-${
-                    settingsOpen ? "down" : "right"
+                    openMenu == "Settings" ? "down" : "right"
                   } ms-auto`}
                 ></i>
               </button>
-              {settingsOpen && (
+              {openMenu == "Settings" && (
                 <div
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.05)",

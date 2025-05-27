@@ -45,6 +45,7 @@ import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
 import { Toaster } from "react-hot-toast";
 import QualityReport from "./components/Admin/quality/report/index.jsx";
 import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
+import RequireAuth from "./components/guard.jsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -145,13 +146,20 @@ const AppContent = () => {
                 }
               />
               <Route
-                path="/quality-all"
+                path="/"
                 element={
-                  <PrivateRoute>
-                    <Quality />
-                  </PrivateRoute>
+                  <RequireAuth allowedRoles={["CWS_MANAGER", "ADMIN"]} />
                 }
-              />
+              >
+                <Route
+                  path="/quality-all"
+                  element={
+                    <PrivateRoute>
+                      <Quality />
+                    </PrivateRoute>
+                  }
+                />
+              </Route>
 
               <Route
                 path="/quality-delivery"
