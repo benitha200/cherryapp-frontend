@@ -130,15 +130,7 @@ const AppContent = () => {
                 }
               >
                 <Route path="/purchases-all" element={<PurchaseListAll />} />
-                <Route
-                  path="/cherry-purchase-report"
-                  element={<CherryPurchaseReportDetailed />}
-                />
 
-                <Route
-                  path="/bagging-off-report"
-                  element={<BaggingOffReport />}
-                />
                 <Route path="/quality-report" element={<QualityReport />} />
                 <Route path="/cws" element={<CwsList />} />
                 <Route
@@ -151,50 +143,79 @@ const AppContent = () => {
                 />
                 <Route path="/pricing" element={<PricingManagement />} />
                 <Route path="/users" element={<Users />} />
-                <Route
-                  path="/purchase-by-station"
-                  element={<PurchaseByStation />}
-                />
+
                 <Route path="/processing-all" element={<ProcessingListAll />} />
-                <Route path="/stock" element={<StockManagement />} />
-                <Route
-                  path="/wet-transfer-admin"
-                  element={<WetTransferAdmin />}
-                />
-                <Route path="/transport" element={<Transport />} />
+
                 <Route path="/quality-delivery" element={<DeliveryTracks />} />
               </Route>
 
               {/* GUARANTEE CWS MANAGER ONLY */}
-              {/* <Route
+              <Route
                 path="/"
                 element={<RequireAuth allowedRoles={["CWS_MANAGER"]} />}
-              > */}
-              <Route path="/purchases" element={<PurchaseList />} />
-              <Route path="/processing" element={<ProcessingList />} />
-              <Route path="/transfer" element={<Transfer />} />
-              <Route
-                path="/wet-transfer-receiver"
-                element={<WetTransferReceiver />}
-              />
-              {/* </Route> */}
+              >
+                <Route path="/purchases" element={<PurchaseList />} />
+                <Route path="/processing" element={<ProcessingList />} />
+                <Route path="/transfer" element={<Transfer />} />
+                <Route
+                  path="/wet-transfer-receiver"
+                  element={<WetTransferReceiver />}
+                />
+              </Route>
 
               {/* GUARANTE CWS MANAGER AND ADMIN */}
-              {/* <Route
+              <Route
                 path="/"
                 element={
                   <RequireAuth allowedRoles={["CWS_MANAGER", "ADMIN"]} />
                 }
-              > */}
+              >
+                <Route
+                  path="/quality-all"
+                  element={
+                    <PrivateRoute>
+                      <Quality />
+                    </PrivateRoute>
+                  }
+                />
+              </Route>
+              {/* AUTHENTICATE SUPERVISOR , MD , FINACNE AND OPERATION */}
               <Route
-                path="/quality-all"
+                path="/"
                 element={
-                  <PrivateRoute>
-                    <Quality />
-                  </PrivateRoute>
+                  <RequireAuth
+                    allowedRoles={[
+                      "SUPERVISOR",
+                      "MD",
+                      "FINANCE",
+                      "OPERATIONS",
+                      "ADMIN",
+                      "SUPER_ADMIN",
+                    ]}
+                  />
                 }
-              />
-              {/* </Route> */}
+              >
+                <Route
+                  path="/purchase-by-station"
+                  element={<PurchaseByStation />}
+                />
+
+                <Route
+                  path="/wet-transfer-admin"
+                  element={<WetTransferAdmin />}
+                />
+
+                <Route path="/transport" element={<Transport />} />
+                <Route path="/stock" element={<StockManagement />} />
+                <Route
+                  path="/cherry-purchase-report"
+                  element={<CherryPurchaseReportDetailed />}
+                />
+                <Route
+                  path="/bagging-off-report"
+                  element={<BaggingOffReport />}
+                />
+              </Route>
 
               <Route
                 path="/purchases/date/:date"
