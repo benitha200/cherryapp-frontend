@@ -18,6 +18,7 @@ import API_URL from "../../../constants/Constants";
 import StockDashboardSkeleton from "./StockDashboardSkeleton";
 import { FindAllStockInformation } from "./actions";
 import { data } from "react-router-dom";
+import { formatNumberWithCommas } from "../../../utils/formatNumberWithComma";
 
 const theme = {
   primary: "#008080", // Sucafina teal
@@ -67,7 +68,7 @@ const StockManagement = () => {
   const [selectedGrade, setSelectedGrade] = useState("A0");
   const [cwsGradeDistribution, setCwsGradeDistribution] = useState([]);
   const [detailedTableData, setDetailedTableData] = useState([]);
-
+  console.log("d:::::::::::", detailedTableData);
   // Define all grades to track
   const allGrades = ["A0", "A1", "A2", "A3", "H1", "N1", "N2"];
   const mainGrades = ["A0", "A1", "H1", "N1"];
@@ -515,7 +516,9 @@ const StockManagement = () => {
               <div className="col-12 col-md-6">
                 <DashboardCard
                   title="Total Cherry Purchased (kg)"
-                  value={stocksData?.data?.totals?.totCherryPurchase?.toString()}
+                  value={formatNumberWithCommas(
+                    stocksData?.data?.totals?.totCherryPurchase ?? 0
+                  )}
                   iconClass="bi-basket-fill"
                 />
               </div>
@@ -526,7 +529,9 @@ const StockManagement = () => {
                       ? "Total Parchment output (kg)"
                       : `${selectedCWS} Parchment Output (kg)`
                   }
-                  value={stocksData?.data?.totals?.totalParchmentOutput?.toLocaleString()}
+                  value={formatNumberWithCommas(
+                    stocksData?.data?.totals?.totalParchmentOutput ?? 0
+                  )}
                   iconClass="bi-box-seam"
                 />
               </div>
@@ -537,7 +542,9 @@ const StockManagement = () => {
                       ? "Total Transported (kg)"
                       : `${selectedCWS} Parchment Output (kg)`
                   }
-                  value={stocksData?.data?.totals?.totalTransportedKgs?.toLocaleString()}
+                  value={formatNumberWithCommas(
+                    stocksData?.data?.totals?.totalTransportedKgs ?? 0
+                  )}
                   iconClass="bi-bus-front"
                 />
               </div>{" "}
@@ -548,7 +555,9 @@ const StockManagement = () => {
                       ? "Total Purchment in store (kg)"
                       : `${selectedCWS} Parchment Output (kg)`
                   }
-                  value={stocksData?.data?.totals?.parchmentInstore?.toLocaleString()}
+                  value={formatNumberWithCommas(
+                    stocksData?.data?.totals?.parchmentInstore ?? 0
+                  )}
                   iconClass="bi-shop"
                 />
               </div>
@@ -563,7 +572,7 @@ const StockManagement = () => {
                 <div className="col-12 col-md-6">
                   <DashboardCard
                     title="Total Cherry Purchased (kg)"
-                    value={element?.cherryPurchase?.toString()}
+                    value={formatNumberWithCommas(element?.cherryPurchase ?? 0)}
                     iconClass="bi-basket-fill"
                   />
                 </div>
@@ -572,9 +581,11 @@ const StockManagement = () => {
                     title={
                       selectedCWS === "All"
                         ? "Total Parchment output (kg)"
-                        : `${selectedCWS} Parchment Output (kg)`
+                        : `${selectedCWS} Total Parchment output (kg)`
                     }
-                    value={element?.parchmentOutput?.toLocaleString()}
+                    value={formatNumberWithCommas(
+                      element?.parchmentOutput ?? 0
+                    )}
                     iconClass="bi-box-seam"
                   />
                 </div>
@@ -583,9 +594,9 @@ const StockManagement = () => {
                     title={
                       selectedCWS === "All"
                         ? "Total Transported (kg)"
-                        : `${selectedCWS} Parchment Output (kg)`
+                        : `${selectedCWS} Total Transported (kg)`
                     }
-                    value={element?.transportedKgs?.toLocaleString()}
+                    value={formatNumberWithCommas(element?.transportedKgs)}
                     iconClass="bi-bus-front"
                   />
                 </div>{" "}
@@ -594,9 +605,9 @@ const StockManagement = () => {
                     title={
                       selectedCWS === "All"
                         ? "Total Purchment in store (kg)"
-                        : `${selectedCWS} Parchment Output (kg)`
+                        : `${selectedCWS} Total Purchment in store (kg)`
                     }
-                    value={element?.parchmentInstore?.toLocaleString()}
+                    value={formatNumberWithCommas(element?.parchmentInstore)}
                     iconClass="bi-shop"
                   />
                 </div>
@@ -747,7 +758,12 @@ const StockManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {detailedTableData.map((station, index) => (
+                    {(selectedCWS !== "All"
+                      ? detailedTableData.filter(
+                          (station) => station?.cws == selectedCWS
+                        )
+                      : detailedTableData
+                    ).map((station, index) => (
                       <tr key={index}>
                         <td className="fw-medium">{station.cws}</td>
                         {allGrades.map((grade) => (
@@ -762,25 +778,27 @@ const StockManagement = () => {
                         </td>
                       </tr>
                     ))}
-                    <tr className="table-light fw-bold">
-                      <td>Total</td>
-                      {allGrades.map((grade) => {
-                        const gradeTotal = detailedTableData.reduce(
-                          (sum, station) => sum + (station[grade] || 0),
-                          0
-                        );
-                        return (
-                          <td key={grade} className="text-end">
-                            {gradeTotal.toLocaleString()}
-                          </td>
-                        );
-                      })}
-                      <td className="text-end">
-                        {detailedTableData
-                          .reduce((sum, station) => sum + station.total, 0)
-                          .toLocaleString()}
-                      </td>
-                    </tr>
+                    {selectedCWS == "All" && (
+                      <tr className="table-light fw-bold">
+                        <td>Total</td>
+                        {allGrades.map((grade) => {
+                          const gradeTotal = detailedTableData.reduce(
+                            (sum, station) => sum + (station[grade] || 0),
+                            0
+                          );
+                          return (
+                            <td key={grade} className="text-end">
+                              {gradeTotal.toLocaleString()}
+                            </td>
+                          );
+                        })}
+                        <td className="text-end">
+                          {detailedTableData
+                            .reduce((sum, station) => sum + station.total, 0)
+                            .toLocaleString()}
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
