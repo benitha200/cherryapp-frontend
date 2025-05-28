@@ -508,7 +508,7 @@ const StockManagement = () => {
       </div>
 
       {/* Summary Cards - First Row */}
-      {selectedCWS == "All"
+      {selectedCWS
         ? !isPending &&
           stocksData && (
             <div className="row g-4 mb-4">
@@ -535,7 +535,7 @@ const StockManagement = () => {
                   title={
                     selectedCWS === "All"
                       ? "Total Transported (kg)"
-                      : `${selectedCWS} Parchment Output (kg)`
+                      : `${selectedCWS} Transported (kg)`
                   }
                   value={stocksData?.data?.totals?.totalTransportedKgs?.toLocaleString()}
                   iconClass="bi-bus-front"
@@ -546,7 +546,7 @@ const StockManagement = () => {
                   title={
                     selectedCWS === "All"
                       ? "Total Purchment in store (kg)"
-                      : `${selectedCWS} Parchment Output (kg)`
+                      : `${selectedCWS} Purchment in store (kg)`
                   }
                   value={stocksData?.data?.totals?.parchmentInstore?.toLocaleString()}
                   iconClass="bi-shop"
@@ -583,7 +583,7 @@ const StockManagement = () => {
                     title={
                       selectedCWS === "All"
                         ? "Total Transported (kg)"
-                        : `${selectedCWS} Parchment Output (kg)`
+                        : `${selectedCWS} Transported (kg)`
                     }
                     value={element?.transportedKgs?.toLocaleString()}
                     iconClass="bi-bus-front"
@@ -594,7 +594,7 @@ const StockManagement = () => {
                     title={
                       selectedCWS === "All"
                         ? "Total Purchment in store (kg)"
-                        : `${selectedCWS} Parchment Output (kg)`
+                        : `${selectedCWS} Purchment in store (kg)`
                     }
                     value={element?.parchmentInstore?.toLocaleString()}
                     iconClass="bi-shop"
