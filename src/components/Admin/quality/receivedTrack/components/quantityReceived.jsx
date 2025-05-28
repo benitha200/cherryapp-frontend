@@ -152,12 +152,12 @@ export const QuantityReceived = ({
                           <Form.Control
                             type="number"
                             placeholder="0"
-                            value={categories?.a2}
-                            defaultValue={categories?.a2 ?? ""}
+                            value={categories?.A2}
+                            defaultValue={categories?.A2 ?? ""}
                             onChange={(e) =>
                               setInfo((prev) => ({
                                 ...prev,
-                                a2: e.target.value,
+                                A2: e.target.value,
                               }))
                             }
                             disabled={false}
@@ -172,12 +172,12 @@ export const QuantityReceived = ({
                           <Form.Control
                             type="number"
                             placeholder="0"
-                            value={categories?.a3}
-                            defaultValue={categories?.a3 ?? ""}
+                            value={categories?.A3}
+                            defaultValue={categories?.A3 ?? ""}
                             onChange={(e) =>
                               setInfo((prev) => ({
                                 ...prev,
-                                a3: e.target.value,
+                                A3: e.target.value,
                               }))
                             }
                             disabled={false}
@@ -192,12 +192,12 @@ export const QuantityReceived = ({
                           <Form.Control
                             type="number"
                             placeholder="0"
-                            value={categories?.b1}
-                            defaultValue={categories?.b1 ?? ""}
+                            value={categories?.B1}
+                            defaultValue={categories?.B1 ?? ""}
                             onChange={(e) =>
                               setInfo((prev) => ({
                                 ...prev,
-                                b1: e.target.value,
+                                B1: e.target.value,
                               }))
                             }
                             disabled={false}
@@ -212,12 +212,12 @@ export const QuantityReceived = ({
                           <Form.Control
                             type="number"
                             placeholder="0"
-                            value={categories?.b2}
-                            defaultValue={categories?.b2 ?? ""}
+                            value={categories?.B2}
+                            defaultValue={categories?.B2 ?? ""}
                             onChange={(e) =>
                               setInfo((prev) => ({
                                 ...prev,
-                                b2: e.target.value,
+                                B2: e.target.value,
                               }))
                             }
                             disabled={false}

@@ -130,6 +130,15 @@ const Sidebar = () => {
       { path: "/transport", icon: "truck", text: "Transport" },
       { path: "/stock", icon: "house", text: "Stock" },
     ];
+  } else if (user.role === "QUALITY") {
+    menuItems = [
+      ...menuItems,
+      {
+        path: "quality-report",
+        icon: "file-earmark-text",
+        text: "Quality Report",
+      },
+    ];
   } else {
     menuItems = [
       ...menuItems,
@@ -301,8 +310,7 @@ const Sidebar = () => {
             user.role === "SUPERVISOR" ||
             user.role === "OPERATIONS" ||
             user.role === "FINANCE" ||
-            user.role === "MD" ||
-            user.role === "QUALITY") && (
+            user.role === "MD") && (
             <div>
               <button
                 className="d-flex align-items-center px-4 py-2 w-100 border-0 text-white"
