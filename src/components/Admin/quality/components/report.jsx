@@ -118,7 +118,8 @@ const LoadingSkeleton = () => {
 
 const ShortSummary = () => {
   const loggedinUser = loggedInUser();
-  const isAdmin = loggedinUser?.role == "ADMIN";
+  const isAdmin =
+    loggedinUser?.role == "ADMIN" || loggedinUser?.role == "QUALITY";
   const isWorkingStations = loggedinUser?.role === "CWS_MANAGER";
   const theme = {
     primary: "#008080", // Sucafina teal
