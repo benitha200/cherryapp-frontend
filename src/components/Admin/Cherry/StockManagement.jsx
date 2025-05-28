@@ -509,7 +509,7 @@ const StockManagement = () => {
       </div>
 
       {/* Summary Cards - First Row */}
-      {selectedCWS
+      {selectedCWS == "All"
         ? !isPending &&
           stocksData && (
             <div className="row g-4 mb-4">
