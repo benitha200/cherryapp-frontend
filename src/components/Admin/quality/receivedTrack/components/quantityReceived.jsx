@@ -145,24 +145,86 @@ export const QuantityReceived = ({
                       </Col>
                     )}
 
-                    <Col md={2}>
-                      <Form.Group>
-                        <Form.Label>LG Delivered (Kg)</Form.Label>
-                        <Form.Control
-                          type="number"
-                          placeholder="0"
-                          value={categories?.lg}
-                          defaultValue={categories?.lg ?? ""}
-                          onChange={(e) =>
-                            setInfo((prev) => ({
-                              ...prev,
-                              lg: e.target.value,
-                            }))
-                          }
-                          disabled={false}
-                        />
-                      </Form.Group>
-                    </Col>
+                    {includeInValidKeys("A2") && (
+                      <Col md={2}>
+                        <Form.Group>
+                          <Form.Label>A2 Delivered (Kg)</Form.Label>
+                          <Form.Control
+                            type="number"
+                            placeholder="0"
+                            value={categories?.a2}
+                            defaultValue={categories?.a2 ?? ""}
+                            onChange={(e) =>
+                              setInfo((prev) => ({
+                                ...prev,
+                                a2: e.target.value,
+                              }))
+                            }
+                            disabled={false}
+                          />
+                        </Form.Group>
+                      </Col>
+                    )}
+                    {includeInValidKeys("A3") && (
+                      <Col md={2}>
+                        <Form.Group>
+                          <Form.Label>A3 Delivered (Kg)</Form.Label>
+                          <Form.Control
+                            type="number"
+                            placeholder="0"
+                            value={categories?.a3}
+                            defaultValue={categories?.a3 ?? ""}
+                            onChange={(e) =>
+                              setInfo((prev) => ({
+                                ...prev,
+                                a3: e.target.value,
+                              }))
+                            }
+                            disabled={false}
+                          />
+                        </Form.Group>
+                      </Col>
+                    )}
+                    {includeInValidKeys("B1") && (
+                      <Col md={2}>
+                        <Form.Group>
+                          <Form.Label>B1 Delivered (Kg)</Form.Label>
+                          <Form.Control
+                            type="number"
+                            placeholder="0"
+                            value={categories?.b1}
+                            defaultValue={categories?.b1 ?? ""}
+                            onChange={(e) =>
+                              setInfo((prev) => ({
+                                ...prev,
+                                b1: e.target.value,
+                              }))
+                            }
+                            disabled={false}
+                          />
+                        </Form.Group>
+                      </Col>
+                    )}
+                    {includeInValidKeys("B2") && (
+                      <Col md={2}>
+                        <Form.Group>
+                          <Form.Label>B2 Delivered (Kg)</Form.Label>
+                          <Form.Control
+                            type="number"
+                            placeholder="0"
+                            value={categories?.b2}
+                            defaultValue={categories?.b2 ?? ""}
+                            onChange={(e) =>
+                              setInfo((prev) => ({
+                                ...prev,
+                                b2: e.target.value,
+                              }))
+                            }
+                            disabled={false}
+                          />
+                        </Form.Group>
+                      </Col>
+                    )}
                   </Row>
                 </Col>
               </Row>

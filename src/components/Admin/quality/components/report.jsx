@@ -772,7 +772,7 @@ const ShortSummary = () => {
                                   backgroundColor: isAdmin ? theme?.green : "",
                                 }}
                               >
-                                Deffect
+                                Defect
                               </td>
                               <td
                                 style={{

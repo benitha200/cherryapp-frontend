@@ -29,6 +29,10 @@ export const DerivalyTable = () => {
     s87: null,
     s88: null,
     lg: null,
+    a2: null,
+    a3: null,
+    b1: null,
+    b2: null,
     relatedCategories: [],
   });
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -62,6 +66,10 @@ export const DerivalyTable = () => {
       s87: null,
       s88: null,
       lg: null,
+      a2: null,
+      a3: null,
+      b1: null,
+      b2: null,
       relatedCategories: [],
     });
   };
