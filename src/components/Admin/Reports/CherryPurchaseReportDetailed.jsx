@@ -138,6 +138,8 @@ const CherryPurchaseReportDetailed = () => {
     // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+    console.lo
+
     const downloadTableAsExcel = () => {
         if (purchases.length === 0) return;
 
@@ -183,10 +185,10 @@ const CherryPurchaseReportDetailed = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            ${purchases.map((purchase,index) => `
+                            ${purchases.map((purchase, index) => `
                                 <tr>
-                                    <td>${index+1}</td>
-                                    <td>${new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+                                    <td>${index + 1}</td>
+                                    <td>${purchase.purchaseDate}</td>
                                     <td>${purchase.cws.name}</td>
                                     <td>${purchase.batchNo}</td>
                                     <td>${purchase.deliveryType.replace('_', ' ')}</td>
@@ -206,8 +208,7 @@ const CherryPurchaseReportDetailed = () => {
             minute: '2-digit',
             second: '2-digit',
             hour12: true
-        })}
-                                    </td>
+        })} </td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -251,7 +252,12 @@ const CherryPurchaseReportDetailed = () => {
 
         // Convert data to CSV format
         const csvData = purchases.map(purchase => [
-            new Date(purchase.purchaseDate).toLocaleDateString(),
+            // new Date(purchase.purchaseDate).toLocaleString('en-US', {
+            //     year: 'numeric',
+            //     month: 'short',
+            //     day: 'numeric',
+            // }),
+            purchase.purchaseDate,
             purchase.cws.name,
             purchase.batchNo,
             purchase.deliveryType.replace('_', ' '),
@@ -423,7 +429,7 @@ const CherryPurchaseReportDetailed = () => {
                         <table className="table table-hover">
                             <thead>
                                 <tr style={{ backgroundColor: theme.neutral }}>
-                                    <th>#</th>  
+                                    <th>#</th>
                                     <th>Purchase Date</th>
                                     <th>CWS Name</th>
                                     <th>Batch No</th>
@@ -448,10 +454,10 @@ const CherryPurchaseReportDetailed = () => {
                                         <td colSpan="8" className="text-center text-danger">{error}</td>
                                     </tr>
                                 ) : currentItems.length > 0 ? (
-                                    currentItems.map((purchase,index) => (
+                                    currentItems.map((purchase, index) => (
                                         <tr key={purchase.id}>
-                                            <td>{index+1}</td>
-                                            <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+                                            <td>{index + 1}</td>
+                                            <td>{purchase.purchaseDate}</td>
                                             <td>{purchase.cws.name}</td>
                                             <td>{purchase.batchNo}</td>
                                             <td>{purchase.deliveryType.replace('_', ' ')}</td>

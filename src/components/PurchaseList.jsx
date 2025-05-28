@@ -83,14 +83,14 @@ const PurchaseList = () => {
   // const yesterdayString = (timezoneOffset = 'Africa/Cairo') => {
   //   // Create a new Date object with the specified timezone offset
   //   const targetDate = new Date(new Date().toLocaleString('en-US', { timeZone: timezoneOffset }));
-    
+
   //   // Subtract one day
   //   targetDate.setDate(targetDate.getDate() - 1);
-    
+
   //   // Format the date as YYYY-MM-DD
   //   return targetDate.toISOString().split('T')[0];
   // };
-  
+
 
   const [newPurchase, setNewPurchase] = useState({
     cwsId: userInfo.cwsId,
@@ -1008,60 +1008,60 @@ const PurchaseList = () => {
   const getYesterdayPurchases = () => {
 
     if (cwsInfo?.havespeciality) {
-    const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
+      const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
 
-    return purchases.filter(purchase => {
-      const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
-      const batchBase = purchase.batchNo.slice(0, -1);
+      return purchases.filter(purchase => {
+        const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+        const batchBase = purchase.batchNo.slice(0, -1);
 
-      const hasFirstVariant = processingEntries.some(entry => entry.batchNo === `${batchBase}-1`);
-      const hasSecondVariant = processingEntries.some(entry => entry.batchNo === `${batchBase}-2`);
+        const hasFirstVariant = processingEntries.some(entry => entry.batchNo === `${batchBase}-1`);
+        const hasSecondVariant = processingEntries.some(entry => entry.batchNo === `${batchBase}-2`);
 
-      const hasBothVariants = hasFirstVariant && hasSecondVariant;
-
-
-      const trimmedEntries = processingEntries.map(entry => ({
-        ...entry,
-        batchNo: entry.batchNo.trim()
-      }));
+        const hasBothVariants = hasFirstVariant && hasSecondVariant;
 
 
+        const trimmedEntries = processingEntries.map(entry => ({
+          ...entry,
+          batchNo: entry.batchNo.trim()
+        }));
 
-      // Hide if both variants are in processing
-      if (hasBothVariants) {
-        return false;
-      }
-      const shouldInclude = purchaseDate === yesterdayString &&
-        !processingBatchNumbers.includes(purchase.batchNo.slice(0, -1));
 
-      console.log("Should include this purchase?", shouldInclude);
-      return shouldInclude;
 
-    });
+        // Hide if both variants are in processing
+        if (hasBothVariants) {
+          return false;
+        }
+        const shouldInclude = purchaseDate === yesterdayString &&
+          !processingBatchNumbers.includes(purchase.batchNo.slice(0, -1));
+
+        console.log("Should include this purchase?", shouldInclude);
+        return shouldInclude;
+
+      });
+    }
+    else {
+      const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
+
+      return purchases.filter(purchase => {
+        const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
+        const batchBase = purchase.batchNo.slice(0, -1);
+
+        // Hide if the batch base has both -1 and -2 variants in processing
+        if (processingEntries.some(entry =>
+          entry.batchNo === `${batchBase}-1` &&
+          processingEntries.some(e => e.batchNo === `${batchBase}-2`)
+        )) {
+          return false;
+        }
+
+        return purchaseDate === yesterdayString &&
+          !isGradeProcessing(purchase.grade, yesterdayString) &&
+          !processingBatchNumbers.includes(purchase.batchNo);
+      });
+    }
+
+
   }
-  else {
-    const processingBatchNumbers = processingEntries.map(entry => entry.batchNo);
-
-    return purchases.filter(purchase => {
-      const purchaseDate = new Date(purchase.purchaseDate).toISOString().split('T')[0];
-      const batchBase = purchase.batchNo.slice(0, -1);
-
-      // Hide if the batch base has both -1 and -2 variants in processing
-      if (processingEntries.some(entry =>
-        entry.batchNo === `${batchBase}-1` &&
-        processingEntries.some(e => e.batchNo === `${batchBase}-2`)
-      )) {
-        return false;
-      }
-
-      return purchaseDate === yesterdayString &&
-        !isGradeProcessing(purchase.grade, yesterdayString) &&
-        !processingBatchNumbers.includes(purchase.batchNo);
-    });
-}
-
-
-}
 
   // Updated validation function to check against total KGs across all batches
   const validateBatchKgsMatch = (batch) => {
@@ -1293,7 +1293,7 @@ const PurchaseList = () => {
                   if (editingInline === purchase.id) {
                     return (
                       <tr key={purchase.id}>
-                        <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+                        <td>{purchase.purchaseDate}</td>
                         <td>
                           {purchase.deliveryType === 'SITE_COLLECTION' ? (
                             <select
@@ -1371,7 +1371,7 @@ const PurchaseList = () => {
                   // Regular row display
                   return (
                     <tr key={purchase.id}>
-                      <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+                      <td>{purchase.purchaseDate}</td>
                       <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
                       <td>
                         <span className="badge" style={{
@@ -1518,7 +1518,7 @@ const PurchaseList = () => {
   //                 if (editingInline === purchase.id) {
   //                   return (
   //                     <tr key={purchase.id}>
-  //                       <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+  //                       <td>{purchase.purchaseDate}</td>
   //                       <td>
   //                         {purchase.deliveryType === 'SITE_COLLECTION' ? (
   //                           <select
@@ -1596,7 +1596,7 @@ const PurchaseList = () => {
   //                 // Regular row display
   //                 return (
   //                   <tr key={purchase.id}>
-  //                     <td>{new Date(purchase.purchaseDate).toLocaleDateString()}</td>
+  //                     <td>{purchase.purchaseDate}</td>
   //                     <td>{purchase.siteCollection?.name || (purchase.deliveryType === 'SUPPLIER' ? 'Supplier' : 'Direct')}</td>
   //                     <td>
   //                       <span className="badge" style={{
