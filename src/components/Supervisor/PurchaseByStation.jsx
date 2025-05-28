@@ -47,7 +47,10 @@ const PurchaseByStation = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(100);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState({
+    startDate: null,
+    endDate: null,
+  });
   const [cwsList, setCwsList] = useState([]);
   const [selectedCws, setSelectedCws] = useState("");
   const [selectedCWSList, steSelectedCWSList] = useState([]);
@@ -100,15 +103,32 @@ const PurchaseByStation = () => {
         let endpoint;
         let processedData;
 
-        if (selectedDate) {
+        if (selectedDate?.startDate) {
           // Fix: Format date correctly to avoid timezone issues
           // Use the date's year, month, and day directly to create the proper YYYY-MM-DD format
-          const year = selectedDate.getFullYear();
-          const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
-          const day = String(selectedDate.getDate()).padStart(2, "0");
-          const formattedDate = `${year}-${month}-${day}`;
+          const year = selectedDate.startDate.getFullYear();
+          const month = String(selectedDate.startDate.getMonth() + 1).padStart(
+            2,
+            "0"
+          );
+          const day = String(selectedDate.startDate.getDate()).padStart(2, "0");
+          const startDate = `${year}-${month}-${day}`;
+          selectedDate.endDate = selectedDate?.endDate
+            ? selectedDate.endDate
+            : new Date();
 
-          endpoint = `${API_URL}/purchases/date/${formattedDate}`;
+          // end date
+          const yearEnd = selectedDate.endDate.getFullYear();
+          const monthEnd = String(selectedDate.endDate.getMonth() + 1).padStart(
+            2,
+            "0"
+          );
+          const dayEnd = String(selectedDate.endDate.getDate()).padStart(
+            2,
+            "0"
+          );
+          const endDate = `${yearEnd}-${monthEnd}-${dayEnd}`;
+          endpoint = `${API_URL}/purchases/date/${startDate}/${endDate}`;
           const response = await axios.get(endpoint, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -247,29 +267,58 @@ const PurchaseByStation = () => {
           <h2 className="mb-3 mb-md-0">Purchases By Station</h2>
         </div>
 
-        <div className="row g-3">
-          <div className="col-12 col-md-6 col-lg-4">
-            <label className="form-label" style={{ color: theme.primary }}>
-              Select Date (Optional)
-            </label>
-            <DatePicker
-              selected={selectedDate}
-              onChange={(date) => setSelectedDate(date)}
-              className="form-control w-100"
-              dateFormat="yyyy-MM-dd"
-              isClearable
-              placeholderText="All Time"
-              style={{
-                borderColor: theme.primary,
-                "&:focus": {
-                  borderColor: theme.secondary,
-                  boxShadow: `0 0 0 0.2rem ${theme.neutral}`,
-                },
-              }}
-            />
+        <div className="d-flex flex-sm-wrap" style={{ gap: "2rem" }}>
+          <div className=" d-flex" style={{ gap: "1rem" }}>
+            <div>
+              <label className="form-label" style={{ color: theme.primary }}>
+                Start Date (Optional)
+              </label>
+              <DatePicker
+                selected={selectedDate?.startDate}
+                onChange={(date) =>
+                  setSelectedDate((prev) => ({ ...prev, startDate: date }))
+                }
+                className="form-control w-100"
+                dateFormat="yyyy-MM-dd"
+                isClearable
+                placeholderText="Start Date"
+                maxDate={new Date()}
+                style={{
+                  borderColor: theme.primary,
+                  "&:focus": {
+                    borderColor: theme.secondary,
+                    boxShadow: `0 0 0 0.2rem ${theme.neutral}`,
+                  },
+                }}
+              />
+            </div>
+            <div>
+              <label className="form-label" style={{ color: theme.primary }}>
+                End Date (Optional)
+              </label>
+              <DatePicker
+                selected={selectedDate.endDate}
+                onChange={(date) =>
+                  setSelectedDate((prev) => ({ ...prev, endDate: date }))
+                }
+                className="form-control w-100"
+                dateFormat="yyyy-MM-dd"
+                isClearable
+                placeholderText="End Date"
+                minDate={selectedDate.startDate ?? new Date()}
+                maxDate={new Date()}
+                style={{
+                  borderColor: theme.primary,
+                  "&:focus": {
+                    borderColor: theme.secondary,
+                    boxShadow: `0 0 0 0.2rem ${theme.neutral}`,
+                  },
+                }}
+              />
+            </div>
           </div>
 
-          <div className="col-12 col-md-6 col-lg-8">
+          <div className="col-12 col-md-5 col-lg-7 mt-3">
             <div className="position-relative">
               <div
                 className=" d-flex g-5 justify-content-end"
