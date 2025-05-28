@@ -540,7 +540,7 @@ const StockManagement = () => {
                   title={
                     selectedCWS === "All"
                       ? "Total Transported (kg)"
-                      : `${selectedCWS} Parchment Output (kg)`
+                      : `${selectedCWS} Transported (kg)`
                   }
                   value={formatNumberWithCommas(
                     stocksData?.data?.totals?.totalTransportedKgs ?? 0
@@ -553,7 +553,7 @@ const StockManagement = () => {
                   title={
                     selectedCWS === "All"
                       ? "Total Purchment in store (kg)"
-                      : `${selectedCWS} Parchment Output (kg)`
+                      : `${selectedCWS} Purchment in store (kg)`
                   }
                   value={formatNumberWithCommas(
                     stocksData?.data?.totals?.parchmentInstore ?? 0
@@ -594,7 +594,7 @@ const StockManagement = () => {
                     title={
                       selectedCWS === "All"
                         ? "Total Transported (kg)"
-                        : `${selectedCWS} Total Transported (kg)`
+                        : `${selectedCWS} Transported (kg)`
                     }
                     value={formatNumberWithCommas(element?.transportedKgs)}
                     iconClass="bi-bus-front"
@@ -605,7 +605,7 @@ const StockManagement = () => {
                     title={
                       selectedCWS === "All"
                         ? "Total Purchment in store (kg)"
-                        : `${selectedCWS} Total Purchment in store (kg)`
+                        : `${selectedCWS} Purchment in store (kg)`
                     }
                     value={formatNumberWithCommas(element?.parchmentInstore)}
                     iconClass="bi-shop"
