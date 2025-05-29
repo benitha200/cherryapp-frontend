@@ -196,7 +196,7 @@ export const SubBatchTable = ({
         </td>
 
         <td className="align-middle">{subelement?.category}</td>
-        <td className="align-middle">{subelement?.newCategory ?? "-"}</td>
+        {/* <td className="align-middle">{subelement?.newCategory ?? "-"}</td> */}
       </tr>
     </>
   );
