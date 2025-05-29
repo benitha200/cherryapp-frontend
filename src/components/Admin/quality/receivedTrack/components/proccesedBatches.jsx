@@ -128,9 +128,13 @@ export const ProcessedBatches = ({
         }
       />
     );
-  const relatedCategories = [];
+  let relatedCategories = [];
   if (delivary) {
     delivary?.data?.batches?.map((batch) => {
+      batch?.lowGrades?.map((lowgrade) => {
+        let res = Object.keys(lowgrade?.outputKgs);
+        relatedCategories = [...relatedCategories, ...res];
+      });
       batch?.mainbatch?.map((subBatch) => {
         relatedCategories.push(subBatch?.category);
       });

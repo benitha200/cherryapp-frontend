@@ -11,6 +11,11 @@ export const SubBatchTable = ({
   return (
     <>
       <tr>
+        <td>
+          <div style={{ width: "9rem", marginLeft: "0.7rem" }}>
+            {`${batchNo}(${subelement?.gradeKey})`}
+          </div>
+        </td>
         {/* total kgs */}
         <td className="align-middle">
           {Object.values(subelement?.transfer?.outputKgs ?? {}).reduce(
@@ -191,7 +196,7 @@ export const SubBatchTable = ({
         </td>
 
         <td className="align-middle">{subelement?.category}</td>
-        <td className="align-middle">{subelement?.newCategory ?? "-"}</td>
+        {/* <td className="align-middle">{subelement?.newCategory ?? "-"}</td> */}
       </tr>
     </>
   );

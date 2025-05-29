@@ -121,12 +121,13 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
               {/* GUARANTE ADMINS ONLY  */}
               <Route
                 path="/"
                 element={
-                  <RequireAuth allowedRoles={["ADMIN", "SUPER_ADMIN"]} />
+                  <RequireAuth
+                    allowedRoles={["ADMIN", "SUPER_ADMIN", "QUALITY"]}
+                  />
                 }
               >
                 <Route path="/purchases-all" element={<PurchaseListAll />} />
@@ -148,7 +149,6 @@ const AppContent = () => {
 
                 <Route path="/quality-delivery" element={<DeliveryTracks />} />
               </Route>
-
               {/* GUARANTEE CWS MANAGER ONLY */}
               <Route
                 path="/"
@@ -162,12 +162,19 @@ const AppContent = () => {
                   element={<WetTransferReceiver />}
                 />
               </Route>
-
               {/* GUARANTE CWS MANAGER AND ADMIN */}
               <Route
                 path="/"
                 element={
-                  <RequireAuth allowedRoles={["CWS_MANAGER", "ADMIN"]} />
+                  <RequireAuth
+                    allowedRoles={[
+                      "CWS_MANAGER",
+                      "ADMIN",
+                      "SUPER_ADMIN",
+                      ,
+                      "QUALITY",
+                    ]}
+                  />
                 }
               >
                 <Route
@@ -215,13 +222,28 @@ const AppContent = () => {
                   path="/bagging-off-report"
                   element={<BaggingOffReport />}
                 />
+                <Route path="/quality-report" element={<QualityReport />} />
               </Route>
-
+              {/* GUARANTEE GROUPE OF CWS MANAGAGER ADMIN QUALITY AND SUPPER ADMIN */}
+              <Route
+                path="/"
+                element={
+                  <RequireAuth
+                    allowedRoles={[
+                      "QUALITY",
+                      "CWS_MANAGER",
+                      "ADMIN",
+                      "SUPER_ADMIN",
+                    ]}
+                  />
+                }
+              >
+                <Route path="/quality-report" element={<QualityReport />} />
+              </Route>
               <Route
                 path="/purchases/date/:date"
                 element={<DailyPurchaseDetails />}
               />
-
               {/* sender */}
               <Route
                 path="/wet-transfer"
@@ -231,7 +253,6 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
               {/* wet transfer sender and receiver */}
               <Route
                 path="/wet-transfer-both"
@@ -241,7 +262,6 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
               <Route
                 path="/site-collections/new"
                 element={
@@ -250,7 +270,6 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
               <Route
                 path="/cws/new"
                 element={
@@ -259,7 +278,6 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
               <Route
                 path="/bagg-off-list"
                 element={
@@ -268,9 +286,7 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
               {/* <Route path="/delivery-track" element={<DeliveryTracks />} /> */}
-
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </div>

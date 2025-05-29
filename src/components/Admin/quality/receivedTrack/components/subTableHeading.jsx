@@ -9,7 +9,8 @@ const theme = {
 };
 export const SubTableHeading = () => (
   <tr>
-    <td style={{ width: "10rem" }}>Kgs</td>
+    <td style={{ width: "10rem" }}>BatchNo</td>
+    <td style={{ width: "10rem" }}>Kg</td>
     <td style={{ width: "10rem" }}>Station Moisture</td>
     <td style={{ width: "10rem" }}>Lab Moisture</td>
     <td
@@ -58,7 +59,7 @@ export const SubTableHeading = () => (
         backgroundColor: theme.green,
       }}
     >
-      Deffect
+      Defect
     </td>
     <td
       style={{
@@ -84,13 +85,13 @@ export const SubTableHeading = () => (
     >
       Sample Category
     </td>
-    <td
+    {/* <td
       style={{
         width: "10rem",
         backgroundColor: theme.green,
       }}
     >
       Delivery Category
-    </td>
+    </td> */}
   </tr>
 );

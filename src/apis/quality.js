@@ -72,7 +72,7 @@ export const getQualityBatchesInTesting = async (page, limit) => {
   const loggedinuser = loggedInUser();
   try {
     const res = await axios.get(
-      loggedinuser.role == "ADMIN"
+      loggedinuser.role == "ADMIN" || loggedinuser.role == "QUALITY"
         ? `${API_URL}/quality/getAllBatchesInTesting?page=${page}&limit=${limit}`
         : `${API_URL}/quality/getBatchesInTestingBycws/${loggedinuser?.cwsId}?page=${page}&limit=${limit}`,
 

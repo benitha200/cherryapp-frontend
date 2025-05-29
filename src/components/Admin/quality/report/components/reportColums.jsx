@@ -8,14 +8,14 @@ export const columns = [
     header: "Batch Number",
   },
 
-  {
-    field: "Qauntity",
-    header: "Parchment Qty(kg)",
-  },
+  // {
+  //   field: "Qauntity",
+  //   header: "Parchment Qty(kg)",
+  // },
   // { field: "driverPhone", header: "Date of analysis" },
-  // { field: "driverPhone", header: "MC lab(%)/Samples" },
-  // { field: "driverPhone", header: "MC CWS (%)/Delivery" },
-  // { field: "driverPhone", header: "Variation M.C" },
+  { field: "driverPhone", header: "Transported (kg)" },
+  { field: "driverPhone", header: "Received Category (kg)" },
+  { field: "driverPhone", header: "Variation (kg)" },
   { field: "driverPhone", header: "16+" },
   { field: "driverPhone", header: "15.00" },
   { field: "driverPhone", header: "AV.15+/Delivery" },
@@ -36,7 +36,7 @@ export const columns = [
   { field: "driverPhone", header: "Variation OT" },
   { field: "driverPhone", header: "PP Score/Delivery" },
   { field: "driverPhone", header: "PP Score/samples" },
-  { field: "driverPhone", header: "Category" },
   { field: "driverPhone", header: "Variation PP Score" },
+  { field: "driverPhone", header: "Category" },
   { field: "driverPhone", header: "Sample storage" },
 ];
