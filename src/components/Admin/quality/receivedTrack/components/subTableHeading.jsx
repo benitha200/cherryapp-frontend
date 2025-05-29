@@ -85,13 +85,13 @@ export const SubTableHeading = () => (
     >
       Sample Category
     </td>
-    <td
+    {/* <td
       style={{
         width: "10rem",
         backgroundColor: theme.green,
       }}
     >
       Delivery Category
-    </td>
+    </td> */}
   </tr>
 );
