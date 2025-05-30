@@ -1,3 +1,4 @@
 export const formatNumberWithCommas = (number) => {
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const new_number = Number(number).toFixed(1);
+  return new_number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };

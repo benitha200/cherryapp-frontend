@@ -146,7 +146,10 @@ const StockManagement = () => {
         );
         setCwsGradeDistribution(distributionData);
 
-        const tableData = prepareDetailedTableData(stockAnalysis.gradeByCWS, stockAnalysis.batchDetailsByCWS);
+        const tableData = prepareDetailedTableData(
+          stockAnalysis.gradeByCWS,
+          stockAnalysis.batchDetailsByCWS
+        );
         setDetailedTableData(tableData);
 
         setLoading(false);
@@ -159,7 +162,6 @@ const StockManagement = () => {
 
     fetchData();
   }, []);
-
 
   console.log("d:::::::::::", detailedTableData);
 
@@ -292,7 +294,7 @@ const StockManagement = () => {
         totalOutputKgs: item.totalOutputKgs,
         outputKgs: item.outputKgs || {},
         qualityStatus: item.qualityStatus,
-        processingId: item.processingId
+        processingId: item.processingId,
       };
 
       batchDetailsByCWS[cwsName].push(batchDetail);
@@ -322,9 +324,8 @@ const StockManagement = () => {
     const processingYield =
       totalCherry > 0 ? (totalParchment / totalCherry) * 100 : 0;
 
-    const uniqueBatchNos = new Set(
-      baggingOffData.map((item) => item.batchNo)
-    ).size;
+    const uniqueBatchNos = new Set(baggingOffData.map((item) => item.batchNo))
+      .size;
 
     const monthlyTrends = generateMonthlyTrends(baggingOffData);
 
@@ -510,68 +511,14 @@ const StockManagement = () => {
 
       {selectedCWS == "All"
         ? !isPending &&
-        stocksData && (
-          <div className="row g-4 mb-4">
-            <div className="col-12 col-md-6">
-              <DashboardCard
-                title="Total Cherry Purchased (kg)"
-                value={formatNumberWithCommas(
-                  stocksData?.data?.totals?.totCherryPurchase ?? 0
-                )}
-                iconClass="bi-basket-fill"
-              />
-            </div>
-            <div className="col-12 col-md-6">
-              <DashboardCard
-                title={
-                  selectedCWS === "All"
-                    ? "Total Parchment output (kg)"
-                    : `${selectedCWS} Parchment Output (kg)`
-                }
-                value={formatNumberWithCommas(
-                  stocksData?.data?.totals?.totalParchmentOutput ?? 0
-                )}
-                iconClass="bi-box-seam"
-              />
-            </div>
-            <div className="col-12 col-md-6">
-              <DashboardCard
-                title={
-                  selectedCWS === "All"
-                    ? "Total Transported (kg)"
-                    : `${selectedCWS} Transported (kg)`
-                }
-                value={formatNumberWithCommas(
-                  stocksData?.data?.totals?.totalTransportedKgs ?? 0
-                )}
-                iconClass="bi-bus-front"
-              />
-            </div>{" "}
-            <div className="col-12 col-md-6">
-              <DashboardCard
-                title={
-                  selectedCWS === "All"
-                    ? "Total Purchment in store (kg)"
-                    : `${selectedCWS} Purchment in store (kg)`
-                }
-                value={formatNumberWithCommas(
-                  stocksData?.data?.totals?.parchmentInstore ?? 0
-                )}
-                iconClass="bi-shop"
-              />
-            </div>
-          </div>
-        )
-        : !isPending &&
-        stocksData &&
-        stocksData?.data?.byCws
-          ?.filter((cws) => cws?.cwsName == selectedCWS)
-          .map((element) => (
+          stocksData && (
             <div className="row g-4 mb-4">
               <div className="col-12 col-md-6">
                 <DashboardCard
-                  title="Total Cherry Purchased (kg)"
-                  value={formatNumberWithCommas(element?.cherryPurchase ?? 0)}
+                  title="Total Cherry Parchased (kg)"
+                  value={formatNumberWithCommas(
+                    stocksData?.data?.totals?.totCherryPurchase ?? 0
+                  )}
                   iconClass="bi-basket-fill"
                 />
               </div>
@@ -579,11 +526,11 @@ const StockManagement = () => {
                 <DashboardCard
                   title={
                     selectedCWS === "All"
-                      ? "Total Parchment output (kg)"
-                      : `${selectedCWS} Total Parchment output (kg)`
+                      ? "Total Parchment Bagged Off (kg)"
+                      : `${selectedCWS} Parchment Bagged Off (kg)`
                   }
                   value={formatNumberWithCommas(
-                    element?.parchmentOutput ?? 0
+                    stocksData?.data?.totals?.totalParchmentOutput ?? 0
                   )}
                   iconClass="bi-box-seam"
                 />
@@ -595,7 +542,9 @@ const StockManagement = () => {
                       ? "Total Transported (kg)"
                       : `${selectedCWS} Transported (kg)`
                   }
-                  value={formatNumberWithCommas(element?.transportedKgs)}
+                  value={formatNumberWithCommas(
+                    stocksData?.data?.totals?.totalTransportedKgs ?? 0
+                  )}
                   iconClass="bi-bus-front"
                 />
               </div>{" "}
@@ -603,15 +552,73 @@ const StockManagement = () => {
                 <DashboardCard
                   title={
                     selectedCWS === "All"
-                      ? "Total Purchment in store (kg)"
-                      : `${selectedCWS} Purchment in store (kg)`
+                      ? "Total Parchment in store (kg)"
+                      : `${selectedCWS} Parchment in store (kg)`
                   }
-                  value={formatNumberWithCommas(element?.parchmentInstore)}
+                  value={formatNumberWithCommas(
+                    stocksData?.data?.totals?.parchmentInstore ?? 0
+                  )}
                   iconClass="bi-shop"
                 />
               </div>
             </div>
-          ))}
+          )
+        : !isPending &&
+          stocksData &&
+          stocksData?.data?.byCws
+            ?.filter((cws) => cws?.cwsName == selectedCWS)
+            .map((element) => (
+              <div className="row g-4 mb-4">
+                <div className="col-12 col-md-6">
+                  <DashboardCard
+                    title="Total Cherry Parchased (kg)"
+                    value={formatNumberWithCommas(
+                      Number(element?.cherryPurchase ?? 0).toFixed(1)
+                    )}
+                    iconClass="bi-basket-fill"
+                  />
+                </div>
+                <div className="col-12 col-md-6">
+                  <DashboardCard
+                    title={
+                      selectedCWS === "All"
+                        ? "Total Parchment output (kg)"
+                        : `${selectedCWS} Total Parchment Bagged Off (kg)`
+                    }
+                    value={formatNumberWithCommas(
+                      Number(element?.parchmentOutput ?? 0).toFixed(1)
+                    )}
+                    iconClass="bi-box-seam"
+                  />
+                </div>
+                <div className="col-12 col-md-6">
+                  <DashboardCard
+                    title={
+                      selectedCWS === "All"
+                        ? "Total Transported (kg)"
+                        : `${selectedCWS} Transported (kg)`
+                    }
+                    value={formatNumberWithCommas(
+                      Number(element?.transportedKgs).toFixed(1)
+                    )}
+                    iconClass="bi-bus-front"
+                  />
+                </div>{" "}
+                <div className="col-12 col-md-6">
+                  <DashboardCard
+                    title={
+                      selectedCWS === "All"
+                        ? "Total Parchment in store (kg)"
+                        : `${selectedCWS} Parchment in store (kg)`
+                    }
+                    value={formatNumberWithCommas(
+                      Number(element?.parchmentInstore).toFixed(1)
+                    )}
+                    iconClass="bi-shop"
+                  />
+                </div>
+              </div>
+            ))}
 
       {/* Summary Cards - Grade Totals */}
       {/* <div className="row g-4 mb-4">
@@ -758,18 +765,26 @@ const StockManagement = () => {
                   <tbody>
                     {(selectedCWS !== "All"
                       ? detailedTableData.filter(
-                        (station) => station?.cws == selectedCWS
-                      )
+                          (station) => station?.cws == selectedCWS
+                        )
                       : detailedTableData
                     ).map((station, index) => (
                       <React.Fragment key={index}>
                         <tr
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: "pointer" }}
                           onClick={() => toggleRowExpansion(station.cws)}
-                          className={expandedRows.has(station.cws) ? 'table-primary' : ''}
+                          className={
+                            expandedRows.has(station.cws) ? "table-primary" : ""
+                          }
                         >
                           <td className="fw-medium">
-                            <i className={`bi ${expandedRows.has(station.cws) ? 'bi-chevron-down' : 'bi-chevron-right'} me-2`}></i>
+                            <i
+                              className={`bi ${
+                                expandedRows.has(station.cws)
+                                  ? "bi-chevron-down"
+                                  : "bi-chevron-right"
+                              } me-2`}
+                            ></i>
                             {station.cws}
                           </td>
                           {allGrades.map((grade) => (
@@ -783,61 +798,106 @@ const StockManagement = () => {
                             {station.total.toLocaleString()}
                           </td>
                         </tr>
-                        {expandedRows.has(station.cws) && station.batches && station.batches.length > 0 && (
-                          <tr>
-                            <td colSpan={allGrades.length + 2} className="p-0">
-                              <div className="bg-light p-3">
-                                <h6 className="mb-3">Batches for {station.cws}</h6>
-                                <div className="table-responsive">
-                                  <table className="table table-sm table-bordered mb-0">
-                                    <thead className="table-secondary">
-                                      <tr>
-                                        <th>Batch No</th>
-                                        <th>Date</th>
-                                        <th>Processing Type</th>
-                                        <th>Status</th>
-                                        <th>Quality Status</th>
-                                        <th>Total Output (kg)</th>
-                                        {allGrades.map((grade) => (
-                                          <th key={grade} className="text-end">{grade} (kg)</th>
-                                        ))}
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {station.batches.map((batch, batchIndex) => (
-                                        <tr key={batchIndex}>
-                                          <td>{batch.batchNo}</td>
-                                          <td>{batch.date ? new Date(batch.date).toLocaleDateString() : 'N/A'}</td>
-                                          <td>{batch.processingType}</td>
-                                          <td>
-                                            <span className={`badge ${batch.status === 'COMPLETED' ? 'bg-success' :
-                                              batch.status === 'RECEIVED' ? 'bg-info' : 'bg-warning'
-                                              }`}>
-                                              {batch.status}
-                                            </span>
-                                          </td>
-                                          <td>
-                                            <span className={`badge ${batch.qualityStatus === 'PASSED' ? 'bg-success' :
-                                              batch.qualityStatus === 'TESTING' ? 'bg-warning' : 'bg-secondary'
-                                              }`}>
-                                              {batch.qualityStatus || 'N/A'}
-                                            </span>
-                                          </td>
-                                          <td className="text-end">{batch.totalOutputKgs?.toLocaleString() || '0'}</td>
+                        {expandedRows.has(station.cws) &&
+                          station.batches &&
+                          station.batches.length > 0 && (
+                            <tr>
+                              <td
+                                colSpan={allGrades.length + 2}
+                                className="p-0"
+                              >
+                                <div className="bg-light p-3">
+                                  <h6 className="mb-3">
+                                    Batches for {station.cws}
+                                  </h6>
+                                  <div className="table-responsive">
+                                    <table className="table table-sm table-bordered mb-0">
+                                      <thead className="table-secondary">
+                                        <tr>
+                                          <th>Batch No</th>
+                                          <th>Date</th>
+                                          <th>Processing Type</th>
+                                          <th>Status</th>
+                                          <th>Quality Status</th>
+                                          <th>Total Output (kg)</th>
                                           {allGrades.map((grade) => (
-                                            <td key={grade} className="text-end">
-                                              {batch.outputKgs[grade] ? parseFloat(batch.outputKgs[grade]).toLocaleString() : '0'}
-                                            </td>
+                                            <th
+                                              key={grade}
+                                              className="text-end"
+                                            >
+                                              {grade} (kg)
+                                            </th>
                                           ))}
                                         </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
+                                      </thead>
+                                      <tbody>
+                                        {station.batches.map(
+                                          (batch, batchIndex) => (
+                                            <tr key={batchIndex}>
+                                              <td>{batch.batchNo}</td>
+                                              <td>
+                                                {batch.date
+                                                  ? new Date(
+                                                      batch.date
+                                                    ).toLocaleDateString()
+                                                  : "N/A"}
+                                              </td>
+                                              <td>{batch.processingType}</td>
+                                              <td>
+                                                <span
+                                                  className={`badge ${
+                                                    batch.status === "COMPLETED"
+                                                      ? "bg-success"
+                                                      : batch.status ===
+                                                        "RECEIVED"
+                                                      ? "bg-info"
+                                                      : "bg-warning"
+                                                  }`}
+                                                >
+                                                  {batch.status}
+                                                </span>
+                                              </td>
+                                              <td>
+                                                <span
+                                                  className={`badge ${
+                                                    batch.qualityStatus ===
+                                                    "PASSED"
+                                                      ? "bg-success"
+                                                      : batch.qualityStatus ===
+                                                        "TESTING"
+                                                      ? "bg-warning"
+                                                      : "bg-secondary"
+                                                  }`}
+                                                >
+                                                  {batch.qualityStatus || "N/A"}
+                                                </span>
+                                              </td>
+                                              <td className="text-end">
+                                                {batch.totalOutputKgs?.toLocaleString() ||
+                                                  "0"}
+                                              </td>
+                                              {allGrades.map((grade) => (
+                                                <td
+                                                  key={grade}
+                                                  className="text-end"
+                                                >
+                                                  {batch.outputKgs[grade]
+                                                    ? parseFloat(
+                                                        batch.outputKgs[grade]
+                                                      ).toLocaleString()
+                                                    : "0"}
+                                                </td>
+                                              ))}
+                                            </tr>
+                                          )
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
+                              </td>
+                            </tr>
+                          )}
                       </React.Fragment>
                     ))}
                     {selectedCWS == "All" && (
