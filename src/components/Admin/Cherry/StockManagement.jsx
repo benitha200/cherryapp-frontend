@@ -52,6 +52,7 @@ const StockManagement = () => {
   const [stockData, setStockData] = useState({
     gradeStock: {},
     gradeByCWS: {},
+    batchDetailsByCWS: {}, // New: Track batch details per CWS
     totalCherry: 0,
     totalParchment: 0,
     batchesByStatus: {},
@@ -68,7 +69,8 @@ const StockManagement = () => {
   const [selectedGrade, setSelectedGrade] = useState("A0");
   const [cwsGradeDistribution, setCwsGradeDistribution] = useState([]);
   const [detailedTableData, setDetailedTableData] = useState([]);
-  console.log("d:::::::::::", detailedTableData);
+  const [expandedRows, setExpandedRows] = useState(new Set()); // New: Track expanded rows
+
   // Define all grades to track
   const allGrades = ["A0", "A1", "A2", "A3", "H1", "N1", "N2"];
   const mainGrades = ["A0", "A1", "H1", "N1"];
@@ -106,14 +108,14 @@ const StockManagement = () => {
       try {
         setLoading(true);
 
-        // Fetch bagging-off data
         const baggingResponse = await fetch(`${API_URL}/bagging-off`);
         if (!baggingResponse.ok) {
           throw new Error(`HTTP error! Status: ${baggingResponse.status}`);
         }
         const baggingData = await baggingResponse.json();
 
-        // Fetch processing data
+        console.log("baggingData:::::::::::", baggingData);
+
         const processingResponse = await fetch(
           `${API_URL}/processing?limit=100000`
         );
@@ -123,31 +125,31 @@ const StockManagement = () => {
         const processingResponseData = await processingResponse.json();
         const processingData = processingResponseData.data; // Access the nested 'data' property
 
-        // Process the data
+        console.log("processingData:::::::::::", processingData);
+
         const stockAnalysis = analyzeStock(baggingData, processingData);
         setStockData(stockAnalysis);
 
-        // Extract unique CWS list
         const uniqueCWS = [
           "All",
           ...new Set(processingData.map((item) => item.cws?.name || "Unknown")),
         ];
         setCwsList(uniqueCWS);
 
-        // Prepare CWS grade contribution data
         const contributionData = prepareCwsGradeContribution(
           stockAnalysis.gradeByCWS
         );
         setCwsGradeContribution(contributionData);
 
-        // Prepare CWS grade distribution data (for horizontal stacked bar chart)
         const distributionData = prepareCwsGradeDistribution(
           stockAnalysis.gradeByCWS
         );
         setCwsGradeDistribution(distributionData);
 
-        // Prepare detailed table data
-        const tableData = prepareDetailedTableData(stockAnalysis.gradeByCWS);
+        const tableData = prepareDetailedTableData(
+          stockAnalysis.gradeByCWS,
+          stockAnalysis.batchDetailsByCWS
+        );
         setDetailedTableData(tableData);
 
         setLoading(false);
@@ -161,8 +163,9 @@ const StockManagement = () => {
     fetchData();
   }, []);
 
-  // Prepare detailed table data showing all grades for each CWS
-  const prepareDetailedTableData = (gradeByCWS) => {
+  console.log("d:::::::::::", detailedTableData);
+
+  const prepareDetailedTableData = (gradeByCWS, batchesByCWS) => {
     return Object.keys(gradeByCWS)
       .map((cws) => {
         const cwsData = { cws };
@@ -175,19 +178,18 @@ const StockManagement = () => {
           total += amount;
         });
 
-        // Add total
+        // Add total and batches
         cwsData.total = total;
+        cwsData.batches = batchesByCWS[cws] || [];
 
         return cwsData;
       })
       .sort((a, b) => b.total - a.total); // Sort by total in descending order
   };
 
-  // Prepare CWS grade distribution data for horizontal stacked bar chart
   const prepareCwsGradeDistribution = (gradeByCWS) => {
     const cwsList = Object.keys(gradeByCWS);
 
-    // Sort CWS by total production
     const sortedCWS = cwsList.sort((a, b) => {
       const totalA = Object.values(gradeByCWS[a] || {}).reduce(
         (sum, val) => sum + val,
@@ -200,16 +202,13 @@ const StockManagement = () => {
       return totalB - totalA;
     });
 
-    // Create distribution data
     const distributionData = sortedCWS.map((cws) => {
       const cwsData = { cws };
 
-      // For each grade, add its quantity
       mainGrades.forEach((grade) => {
         cwsData[grade] = gradeByCWS[cws][grade] || 0;
       });
 
-      // Add total for sorting
       cwsData.total = mainGrades.reduce(
         (sum, grade) => sum + (gradeByCWS[cws][grade] || 0),
         0
@@ -221,15 +220,12 @@ const StockManagement = () => {
     return distributionData;
   };
 
-  // Prepare CWS grade contribution data
   const prepareCwsGradeContribution = (gradeByCWS) => {
     const cwsContributions = {};
 
-    // Initialize data structure for each grade
     allGrades.forEach((grade) => {
       cwsContributions[grade] = [];
 
-      // Calculate total for this grade across all CWS
       const totalForGrade = Object.values(gradeByCWS).reduce(
         (sum, cwsGrades) => {
           return sum + (cwsGrades[grade] || 0);
@@ -237,7 +233,6 @@ const StockManagement = () => {
         0
       );
 
-      // For each CWS, calculate their contribution to this grade
       Object.entries(gradeByCWS).forEach(([cwsName, cwsGrades]) => {
         const amount = cwsGrades[grade] || 0;
         const percentage =
@@ -250,7 +245,6 @@ const StockManagement = () => {
         });
       });
 
-      // Sort by amount in descending order
       cwsContributions[grade].sort((a, b) => b.amount - a.amount);
     });
 
@@ -259,82 +253,86 @@ const StockManagement = () => {
 
   const analyzeStock = (baggingOffData, processingData) => {
     // Filter for completed and receiver_completed statuses in bagging off
-    const completedBaggingOff = baggingOffData.filter(
-      (item) =>
-        item.status === "COMPLETED" || item.status === "RECEIVER_COMPLETED"
-    );
+    // const completedBaggingOff = baggingOffData.filter(
+    //   (item) =>
+    //     item.status === "COMPLETED" || item.status === "RECEIVER_COMPLETED"
+    // );
 
     // Filter processing for completed and baggingoff_started
-    const relevantProcessing = processingData.filter(
-      (item) =>
-        item.status === "COMPLETED" || item.status === "BAGGINGOFF_STARTED"
-    );
+    // const relevantProcessing = processingData.filter(
+    //   (item) =>
+    //     item.status === "COMPLETED" || item.status === "BAGGINGOFF_STARTED"
+    // );
 
     // Initialize objects for tracking
     const gradeStock = {};
     const gradeByCWS = {};
     const batchesByStatus = {};
     const batchesByCWS = {};
+    const batchDetailsByCWS = {};
 
-    // Process bagging off data to get grade information
-    completedBaggingOff.forEach((item) => {
-      // Count batches by status
+    baggingOffData.forEach((item) => {
       batchesByStatus[item.status] = (batchesByStatus[item.status] || 0) + 1;
 
-      // Get CWS info from related processing object or default to Unknown
       const cwsName = item.processing?.cws?.name || "Unknown";
 
-      // Count batches by CWS
       batchesByCWS[cwsName] = (batchesByCWS[cwsName] || 0) + 1;
 
-      // Initialize CWS in gradeByCWS if not exists
       if (!gradeByCWS[cwsName]) {
         gradeByCWS[cwsName] = {};
       }
 
-      // Count output by grade
+      if (!batchDetailsByCWS[cwsName]) {
+        batchDetailsByCWS[cwsName] = [];
+      }
+
+      const batchDetail = {
+        batchNo: item.batchNo,
+        date: item.date,
+        status: item.status,
+        processingType: item.processingType,
+        totalOutputKgs: item.totalOutputKgs,
+        outputKgs: item.outputKgs || {},
+        qualityStatus: item.qualityStatus,
+        processingId: item.processingId,
+      };
+
+      batchDetailsByCWS[cwsName].push(batchDetail);
+
       if (item.outputKgs) {
         Object.entries(item.outputKgs).forEach(([grade, kg]) => {
-          // Parse kg value to ensure it's a number
           const kgValue = parseFloat(kg) || 0;
 
-          // Update overall grade stock
           gradeStock[grade] = (gradeStock[grade] || 0) + kgValue;
 
-          // Update CWS-specific grade stock
           gradeByCWS[cwsName][grade] =
             (gradeByCWS[cwsName][grade] || 0) + kgValue;
         });
       }
     });
 
-    // Calculate total cherry processed from processing data
-    const totalCherry = relevantProcessing.reduce(
+    const totalCherry = processingData.reduce(
       (sum, item) => sum + (parseFloat(item.totalKgs) || 0),
       0
     );
 
-    // Calculate total parchment (sum of all grades)
     const totalParchment = Object.values(gradeStock).reduce(
       (sum, kg) => sum + (parseFloat(kg) || 0),
       0
     );
 
-    // Calculate processing yield
     const processingYield =
       totalCherry > 0 ? (totalParchment / totalCherry) * 100 : 0;
 
-    // Count unique batches
-    const uniqueBatchNos = new Set(
-      completedBaggingOff.map((item) => item.batchNo)
-    ).size;
+    const uniqueBatchNos = new Set(baggingOffData.map((item) => item.batchNo))
+      .size;
 
-    // Create monthly trends data
-    const monthlyTrends = generateMonthlyTrends(completedBaggingOff);
+    const monthlyTrends = generateMonthlyTrends(baggingOffData);
 
     return {
       gradeStock,
       gradeByCWS,
+      batchDetailsByCWS,
       totalCherry,
       totalParchment,
       batchesByStatus,
@@ -345,7 +343,6 @@ const StockManagement = () => {
     };
   };
 
-  // Generate monthly trends data from bagging off data
   const generateMonthlyTrends = (baggingOffData) => {
     const months = {};
 
@@ -389,17 +386,24 @@ const StockManagement = () => {
     });
   };
 
-  // Handle CWS selection change
   const handleCWSChange = (e) => {
     setSelectedCWS(e.target.value);
   };
 
-  // Handle grade selection change
   const handleGradeChange = (e) => {
     setSelectedGrade(e.target.value);
   };
 
-  // Calculate totals for specific grades
+  const toggleRowExpansion = (cwsName) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(cwsName)) {
+      newExpandedRows.delete(cwsName);
+    } else {
+      newExpandedRows.add(cwsName);
+    }
+    setExpandedRows(newExpandedRows);
+  };
+
   const calculateGradeTotals = () => {
     const result = {};
 
@@ -410,7 +414,6 @@ const StockManagement = () => {
     return result;
   };
 
-  // Filter data based on selected CWS
   const getFilteredData = () => {
     if (selectedCWS === "All") {
       return {
@@ -438,11 +441,9 @@ const StockManagement = () => {
     }
   };
 
-  // Prepare grade CWS data for pie chart
   const prepareGradeCwsData = () => {
     if (!cwsGradeContribution[selectedGrade]) return [];
 
-    // Get top contributors (up to 9) and combine the rest as "Others"
     const topContributors = cwsGradeContribution[selectedGrade].slice(0, 9);
     const othersContribution = cwsGradeContribution[selectedGrade]
       .slice(9)
@@ -508,14 +509,13 @@ const StockManagement = () => {
         </div>
       </div>
 
-      {/* Summary Cards - First Row */}
       {selectedCWS == "All"
         ? !isPending &&
           stocksData && (
             <div className="row g-4 mb-4">
               <div className="col-12 col-md-6">
                 <DashboardCard
-                  title="Total Cherry Purchased (kg)"
+                  title="Total Cherry Parchased (kg)"
                   value={formatNumberWithCommas(
                     stocksData?.data?.totals?.totCherryPurchase ?? 0
                   )}
@@ -526,8 +526,8 @@ const StockManagement = () => {
                 <DashboardCard
                   title={
                     selectedCWS === "All"
-                      ? "Total Parchment output (kg)"
-                      : `${selectedCWS} Parchment Output (kg)`
+                      ? "Total Parchment Bagged Off (kg)"
+                      : `${selectedCWS} Parchment Bagged Off (kg)`
                   }
                   value={formatNumberWithCommas(
                     stocksData?.data?.totals?.totalParchmentOutput ?? 0
@@ -552,8 +552,8 @@ const StockManagement = () => {
                 <DashboardCard
                   title={
                     selectedCWS === "All"
-                      ? "Total Purchment in store (kg)"
-                      : `${selectedCWS} Purchment in store (kg)`
+                      ? "Total Parchment in store (kg)"
+                      : `${selectedCWS} Parchment in store (kg)`
                   }
                   value={formatNumberWithCommas(
                     stocksData?.data?.totals?.parchmentInstore ?? 0
@@ -571,8 +571,10 @@ const StockManagement = () => {
               <div className="row g-4 mb-4">
                 <div className="col-12 col-md-6">
                   <DashboardCard
-                    title="Total Cherry Purchased (kg)"
-                    value={formatNumberWithCommas(element?.cherryPurchase ?? 0)}
+                    title="Total Cherry Parchased (kg)"
+                    value={formatNumberWithCommas(
+                      Number(element?.cherryPurchase ?? 0).toFixed(1)
+                    )}
                     iconClass="bi-basket-fill"
                   />
                 </div>
@@ -581,10 +583,10 @@ const StockManagement = () => {
                     title={
                       selectedCWS === "All"
                         ? "Total Parchment output (kg)"
-                        : `${selectedCWS} Total Parchment output (kg)`
+                        : `${selectedCWS} Total Parchment Bagged Off (kg)`
                     }
                     value={formatNumberWithCommas(
-                      element?.parchmentOutput ?? 0
+                      Number(element?.parchmentOutput ?? 0).toFixed(1)
                     )}
                     iconClass="bi-box-seam"
                   />
@@ -596,7 +598,9 @@ const StockManagement = () => {
                         ? "Total Transported (kg)"
                         : `${selectedCWS} Transported (kg)`
                     }
-                    value={formatNumberWithCommas(element?.transportedKgs)}
+                    value={formatNumberWithCommas(
+                      Number(element?.transportedKgs).toFixed(1)
+                    )}
                     iconClass="bi-bus-front"
                   />
                 </div>{" "}
@@ -604,10 +608,12 @@ const StockManagement = () => {
                   <DashboardCard
                     title={
                       selectedCWS === "All"
-                        ? "Total Purchment in store (kg)"
-                        : `${selectedCWS} Purchment in store (kg)`
+                        ? "Total Parchment in store (kg)"
+                        : `${selectedCWS} Parchment in store (kg)`
                     }
-                    value={formatNumberWithCommas(element?.parchmentInstore)}
+                    value={formatNumberWithCommas(
+                      Number(element?.parchmentInstore).toFixed(1)
+                    )}
                     iconClass="bi-shop"
                   />
                 </div>
@@ -733,7 +739,6 @@ const StockManagement = () => {
                 </div>
             </div> */}
 
-      {/* Detailed Grade Table */}
       <div className="row g-4">
         <div className="col-12">
           <div className="card shadow-sm">
@@ -764,23 +769,143 @@ const StockManagement = () => {
                         )
                       : detailedTableData
                     ).map((station, index) => (
-                      <tr key={index}>
-                        <td className="fw-medium">{station.cws}</td>
-                        {allGrades.map((grade) => (
-                          <td key={grade} className="text-end">
-                            {station[grade]
-                              ? station[grade].toLocaleString()
-                              : "0"}
+                      <React.Fragment key={index}>
+                        <tr
+                          style={{ cursor: "pointer" }}
+                          onClick={() => toggleRowExpansion(station.cws)}
+                          className={
+                            expandedRows.has(station.cws) ? "table-primary" : ""
+                          }
+                        >
+                          <td className="fw-medium">
+                            <i
+                              className={`bi ${
+                                expandedRows.has(station.cws)
+                                  ? "bi-chevron-down"
+                                  : "bi-chevron-right"
+                              } me-2`}
+                            ></i>
+                            {station.cws}
                           </td>
-                        ))}
-                        <td className="text-end fw-bold">
-                          {station.total.toLocaleString()}
-                        </td>
-                      </tr>
+                          {allGrades.map((grade) => (
+                            <td key={grade} className="text-end">
+                              {station[grade]
+                                ? station[grade].toLocaleString()
+                                : "0"}
+                            </td>
+                          ))}
+                          <td className="text-end fw-bold">
+                            {station.total.toLocaleString()}
+                          </td>
+                        </tr>
+                        {expandedRows.has(station.cws) &&
+                          station.batches &&
+                          station.batches.length > 0 && (
+                            <tr>
+                              <td
+                                colSpan={allGrades.length + 2}
+                                className="p-0"
+                              >
+                                <div className="bg-light p-3">
+                                  <h6 className="mb-3">
+                                    Batches for {station.cws}
+                                  </h6>
+                                  <div className="table-responsive">
+                                    <table className="table table-sm table-bordered mb-0">
+                                      <thead className="table-secondary">
+                                        <tr>
+                                          <th>Batch No</th>
+                                          <th>Date</th>
+                                          <th>Processing Type</th>
+                                          <th>Status</th>
+                                          <th>Quality Status</th>
+                                          <th>Total Output (kg)</th>
+                                          {allGrades.map((grade) => (
+                                            <th
+                                              key={grade}
+                                              className="text-end"
+                                            >
+                                              {grade} (kg)
+                                            </th>
+                                          ))}
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {station.batches.map(
+                                          (batch, batchIndex) => (
+                                            <tr key={batchIndex}>
+                                              <td>{batch.batchNo}</td>
+                                              <td>
+                                                {batch.date
+                                                  ? new Date(
+                                                      batch.date
+                                                    ).toLocaleDateString()
+                                                  : "N/A"}
+                                              </td>
+                                              <td>{batch.processingType}</td>
+                                              <td>
+                                                <span
+                                                  className={`badge ${
+                                                    batch.status === "COMPLETED"
+                                                      ? "bg-success"
+                                                      : batch.status ===
+                                                        "RECEIVED"
+                                                      ? "bg-info"
+                                                      : "bg-warning"
+                                                  }`}
+                                                >
+                                                  {batch.status}
+                                                </span>
+                                              </td>
+                                              <td>
+                                                <span
+                                                  className={`badge ${
+                                                    batch.qualityStatus ===
+                                                    "PASSED"
+                                                      ? "bg-success"
+                                                      : batch.qualityStatus ===
+                                                        "TESTING"
+                                                      ? "bg-warning"
+                                                      : "bg-secondary"
+                                                  }`}
+                                                >
+                                                  {batch.qualityStatus || "N/A"}
+                                                </span>
+                                              </td>
+                                              <td className="text-end">
+                                                {batch.totalOutputKgs?.toLocaleString() ||
+                                                  "0"}
+                                              </td>
+                                              {allGrades.map((grade) => (
+                                                <td
+                                                  key={grade}
+                                                  className="text-end"
+                                                >
+                                                  {batch.outputKgs[grade]
+                                                    ? parseFloat(
+                                                        batch.outputKgs[grade]
+                                                      ).toLocaleString()
+                                                    : "0"}
+                                                </td>
+                                              ))}
+                                            </tr>
+                                          )
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                      </React.Fragment>
                     ))}
                     {selectedCWS == "All" && (
                       <tr className="table-light fw-bold">
-                        <td>Total</td>
+                        <td>
+                          <i className="bi bi-calculator me-2"></i>
+                          Total
+                        </td>
                         {allGrades.map((grade) => {
                           const gradeTotal = detailedTableData.reduce(
                             (sum, station) => sum + (station[grade] || 0),
