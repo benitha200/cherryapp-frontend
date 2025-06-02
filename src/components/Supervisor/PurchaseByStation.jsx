@@ -282,7 +282,9 @@ const PurchaseByStation = () => {
                 dateFormat="yyyy-MM-dd"
                 isClearable
                 placeholderText="Start Date"
-                maxDate={new Date()}
+                maxDate={
+                  selectedDate.endDate ? selectedDate.endDate : new Date()
+                }
                 style={{
                   borderColor: theme.primary,
                   "&:focus": {
