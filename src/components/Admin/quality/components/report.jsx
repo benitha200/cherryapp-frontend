@@ -492,7 +492,7 @@ const ShortSummary = () => {
     // const data = prepareExportData();
 
     const heading = [
-      "Processing",
+      "CWS",
       "Batch No",
       "Station Moisture",
       "Lab Moisture",
