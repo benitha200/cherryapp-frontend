@@ -85,11 +85,11 @@ const Sidebar = () => {
       icon: "file-earmark-text",
       text: "Out Turns Report",
     },
-    {
-      path: "quality-report",
-      icon: "file-earmark-text",
-      text: "Quality Report",
-    },
+    // {
+    //   path: "quality-report",
+    //   icon: "file-earmark-text",
+    //   text: "Quality Report",
+    // },
   ];
 
   // Settings menu items for admin
@@ -133,11 +133,11 @@ const Sidebar = () => {
   } else if (user.role === "QUALITY") {
     menuItems = [
       ...menuItems,
-      {
-        path: "quality-report",
-        icon: "file-earmark-text",
-        text: "Quality Report",
-      },
+      // {
+      //   path: "quality-report",
+      //   icon: "file-earmark-text",
+      //   text: "Quality Report",
+      // },
     ];
   } else {
     menuItems = [
