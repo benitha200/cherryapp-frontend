@@ -1259,27 +1259,23 @@ const Transport = () => {
                               {totalKgs.toLocaleString(2)} kg
                             </td>
                             <td className="align-middle">
-                              {Array.from(cupProfiles)
-                                .filter(
-                                  (profile) => profile !== "Select Cup Profile"
-                                )
-                                .map((profile) => (
-                                  <Badge
-                                    key={profile}
-                                    bg="info"
-                                    className="me-1"
-                                    style={{
-                                      backgroundColor:
-                                        profile === "C1"
-                                          ? "#28a745"
-                                          : profile === "C2"
-                                          ? "#ffc107"
-                                          : "#17a2b8",
-                                    }}
-                                  >
-                                    {profile}
-                                  </Badge>
-                                ))}
+                              {Array.from(cupProfiles).map((profile) => (
+                                <Badge
+                                  key={profile}
+                                  bg="info"
+                                  className="me-1"
+                                  style={{
+                                    backgroundColor:
+                                      profile === "C1"
+                                        ? "#28a745"
+                                        : profile === "C2"
+                                        ? "#ffc107"
+                                        : "#17a2b8",
+                                  }}
+                                >
+                                  {profile}
+                                </Badge>
+                              ))}
                             </td>
                             <td className="align-middle">
                               {group.records.length} batch
@@ -1349,98 +1345,69 @@ const Transport = () => {
                                             </tr>
                                           </thead>
                                           <tbody>
-                                            {[
-                                              ...new Set(
-                                                group?.records
-                                                  ?.map((element) =>
-                                                    Object.keys(
-                                                      element?.gradeDetails
+                                            {group.records.map((record) => {
+                                              const grades = record.outputKgs
+                                                ? Object.keys(
+                                                    record.outputKgs
+                                                  ).join(", ")
+                                                : "N/A";
+                                              const totalKgs = Object.values(
+                                                record.outputKgs || {}
+                                              ).reduce(
+                                                (sum, kg) =>
+                                                  sum + parseFloat(kg || 0),
+                                                0
+                                              );
+
+                                              // Get cup profiles from gradeDetails
+                                              const cupProfiles =
+                                                record.gradeDetails
+                                                  ? Object.values(
+                                                      record.gradeDetails
                                                     )
-                                                  )
-                                                  .flat(1)
-                                              ),
-                                            ].map((element, index) => {
-                                              const vv = group?.records?.filter(
-                                                (record) =>
-                                                  Object.keys(
-                                                    record.gradeDetails
-                                                  ).includes(element)
-                                              );
-
-                                              let kpp = "";
-                                              let outkg = 0;
-                                              let numberofbags = 0;
-                                              let status = "";
-                                              let batch = "";
-                                              vv?.map((gr) => {
-                                                gr?.cupProfile !==
-                                                "Select Cup Profile"
-                                                  ? (kpp = gr?.cupProfile)
-                                                  : kpp;
-
-                                                numberofbags +=
-                                                  gr?.numberOfBags ?? 0;
-                                                status = gr?.status ?? "";
-                                                batch = gr?.batchNo ?? "";
-                                              });
-                                              outkg = vv
-                                                ?.map((gr) => {
-                                                  return Object.values(
-                                                    gr?.outputKgs
-                                                  )?.reduce(
-                                                    (sum, kg) =>
-                                                      sum + parseFloat(kg || 0),
-                                                    0
-                                                  );
-                                                })
-                                                ?.reduce(
-                                                  (sum, kg) => sum + kg,
-                                                  0
-                                                );
-                                              console.log(
-                                                ";:::::::;vvv",
-                                                vv,
-                                                kpp,
-                                                outkg,
-                                                numberofbags,
-                                                status,
-                                                batch
-                                              );
+                                                      .map((d) => d.cupProfile)
+                                                      .filter(Boolean)
+                                                      .join(", ")
+                                                  : "N/A";
 
                                               return (
-                                                <tr key={index}>
-                                                  <td>{batch}</td>
-                                                  <td>{element}</td>
+                                                <tr key={record.id}>
+                                                  <td>{record.batchNo}</td>
+                                                  <td>{grades}</td>
                                                   <td>
                                                     {cupProfiles !== "N/A" ? (
                                                       <Badge
                                                         bg={
-                                                          kpp === "C1"
+                                                          cupProfiles === "C1"
                                                             ? "success"
-                                                            : kpp === "C2"
+                                                            : cupProfiles ===
+                                                              "C2"
                                                             ? "warning"
                                                             : "info"
                                                         }
                                                       >
-                                                        {kpp}
+                                                        {cupProfiles}
                                                       </Badge>
                                                     ) : (
                                                       "N/A"
                                                     )}
                                                   </td>
                                                   <td>
-                                                    {outkg?.toFixed(2)} kg
+                                                    {totalKgs.toFixed(2)} kg
                                                   </td>
-                                                  <td>{numberofbags || 0}</td>
+                                                  <td>
+                                                    {record.numberOfBags || 0}
+                                                  </td>
                                                   <td>
                                                     <Badge
                                                       bg={
-                                                        status === "COMPLETED"
+                                                        record.status ===
+                                                        "COMPLETED"
                                                           ? "success"
                                                           : "warning"
                                                       }
                                                     >
-                                                      {status}
+                                                      {record.status}
                                                     </Badge>
                                                   </td>
                                                 </tr>
