@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Form, Row, Col, Card, InputGroup, Placeholder } from "react-bootstrap";
+import {
+  Form,
+  Row,
+  Col,
+  Card,
+  InputGroup,
+  Placeholder,
+  Dropdown,
+  Button,
+} from "react-bootstrap";
 import { loggedInUser } from "../../../../utils/loggedInUser";
 import { useNavigate } from "react-router-dom";
 import GenericModal from "./model";
@@ -478,6 +487,103 @@ const ShortSummary = () => {
       })
     : displayData;
 
+  // export excele
+  const exportToExcel = () => {
+    // const data = prepareExportData();
+
+    const heading = [
+      "CWS",
+      "Batch No",
+      "Station Moisture",
+      "Lab Moisture",
+      "+16",
+      "15",
+      "14",
+      "13",
+      "B12",
+      "Defect",
+      "Pp Score(%)",
+      "Sample Storage",
+      "Category",
+    ];
+    const dateStr = new Date().toISOString().split("T")[0];
+    const fileName = `Quality_Sample_${dateStr}.xls`;
+
+    // Create HTML table from data
+    let htmlContent = `
+        <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    table { border-collapse: collapse; width: 100%; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: ${processingTheme.neutral}; }
+                </style>
+            </head>
+            <body>
+                <table> 
+                    <thead>
+                    <tr>
+                    ${heading
+                      .map((value) => `<td>${value}</td>`)
+                      .join("")}        
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                   ${sortedData
+                     .flatMap((batch) => {
+                       const elements =
+                         batch?.processing?.processingType == "FULLY_WASHED"
+                           ? [batch?.A0, batch?.A1]
+                           : [batch?.N1 || batch?.H1];
+
+                       return elements.map(
+                         (element, index) => `
+                        <tr>
+                          <td>${batch?.cws?.name ?? "-"}</td>
+                          <td>${batch?.batchNo}-${
+                           index === 0
+                             ? findKeys(batch?.processing?.processingType)?.key1
+                             : findKeys(batch?.processing?.processingType)?.key2
+                         }</td>
+                          <td>${element?.cwsMoisture1 ?? "-"}</td>
+                          <td>${element?.labMoisture ?? "-"}</td>
+                          <td>${element?.screen?.["16+"] ?? "-"}</td>
+                          <td>${element?.screen?.["15"] ?? "-"}</td>
+                          <td>${element?.screen?.["14"] ?? "-"}</td>
+                          <td>${element?.screen?.["13"] ?? "-"}</td>
+                          <td>${element?.screen?.["B/12"] ?? "-"}</td>
+                          <td>${element?.defect ?? "-"}</td>
+                          <td>${element?.ppScore ?? "-"}</td>
+                          <td>${
+                            element?.sampleStorage_0?.name ??
+                            element?.sampleStorage_1?.name ??
+                            "-"
+                          }</td>
+                          <td>${element?.category ?? "-"}</td>
+                        </tr>
+                      `
+                       );
+                     })
+                     .join("")}
+ 
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    `;
+    // Create blob and trigger download
+    const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="container-fluid">
       {isAdmin ? (
@@ -602,6 +708,17 @@ const ShortSummary = () => {
                   </option>
                 ))}
               </Form.Select>
+            </Col>
+            <Col style={{ marginLeft: "8rem" }}>
+              <div className="d-flex">
+                <Button
+                  variant="outline-success"
+                  className="me-2"
+                  onClick={exportToExcel}
+                >
+                  <i className="bi bi-download me-1"></i> Download
+                </Button>
+              </div>
             </Col>
           </Row>
         </Card.Body>
