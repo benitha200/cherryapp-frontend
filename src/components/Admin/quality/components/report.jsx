@@ -511,68 +511,98 @@ const ShortSummary = () => {
 
     // Create HTML table from data
     let htmlContent = `
-        <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    table { border-collapse: collapse; width: 100%; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: ${processingTheme.neutral}; }
-                </style>
-            </head>
-            <body>
-                <table> 
-                    <thead>
-                    <tr>
-                    ${heading
-                      .map((value) => `<td>${value}</td>`)
-                      .join("")}        
-                        </tr>
-                    </thead>
-                    <tbody>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            table { 
+                border-collapse: collapse; 
+                width: 100%; 
+            }
+            th, td { 
+                border: 1px solid #ddd; 
+                padding: 8px; 
+                text-align: center; 
+            }
+            th { 
+                background-color: ${processingTheme.neutral}; 
+                font-weight: bold;
+            }
+            .screen-header {
+                background-color: #90EE90; /* Light green background for Screen header */
+            }
+            .defect-header {
+                background-color: #FFB6C1; /* Light pink background for Defect header */
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <!-- First row with merged headers -->
+                <tr>
+                    <th rowspan="2">CWS</th>
+                    <th rowspan="2">Batch No</th>
+                    <th rowspan="2">Station Moisture</th>
+                    <th rowspan="2">Lab Moisture</th>
+                    <th colspan="5" class="screen-header">Screen</th>
+                    <th colspan="1" class="defect-header">Defect</th>
+                    <th rowspan="2">Pp Score(%)</th>
+                    <th rowspan="2">Sample Storage</th>
+                    <th rowspan="2">Category</th>
+                </tr>
+                <!-- Second row with individual column headers -->
+                <tr>
+                    <th>16+</th>
+                    <th>15.00</th>
+                    <th>14.00</th>
+                    <th>13.00</th>
+                    <th>B12</th>
+                    <th>(%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${sortedData
+                  .flatMap((batch) => {
+                    const elements =
+                      batch?.processing?.processingType == "FULLY_WASHED"
+                        ? [batch?.A0, batch?.A1]
+                        : [batch?.N1 || batch?.H1];
 
-                   ${sortedData
-                     .flatMap((batch) => {
-                       const elements =
-                         batch?.processing?.processingType == "FULLY_WASHED"
-                           ? [batch?.A0, batch?.A1]
-                           : [batch?.N1 || batch?.H1];
-
-                       return elements.map(
-                         (element, index) => `
-                        <tr>
-                          <td>${batch?.cws?.name ?? "-"}</td>
-                          <td>${batch?.batchNo}-${
-                           index === 0
-                             ? findKeys(batch?.processing?.processingType)?.key1
-                             : findKeys(batch?.processing?.processingType)?.key2
-                         }</td>
-                          <td>${element?.cwsMoisture1 ?? "-"}</td>
-                          <td>${element?.labMoisture ?? "-"}</td>
-                          <td>${element?.screen?.["16+"] ?? "-"}</td>
-                          <td>${element?.screen?.["15"] ?? "-"}</td>
-                          <td>${element?.screen?.["14"] ?? "-"}</td>
-                          <td>${element?.screen?.["13"] ?? "-"}</td>
-                          <td>${element?.screen?.["B/12"] ?? "-"}</td>
-                          <td>${element?.defect ?? "-"}</td>
-                          <td>${element?.ppScore ?? "-"}</td>
-                          <td>${
-                            element?.sampleStorage_0?.name ??
-                            element?.sampleStorage_1?.name ??
-                            "-"
-                          }</td>
-                          <td>${element?.category ?? "-"}</td>
-                        </tr>
-                      `
-                       );
-                     })
-                     .join("")}
- 
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    `;
+                    return elements.map(
+                      (element, index) => `
+                            <tr>
+                                <td>${batch?.cws?.name ?? "-"}</td>
+                                <td>${batch?.batchNo}-${
+                        index === 0
+                          ? findKeys(batch?.processing?.processingType)?.key1
+                          : findKeys(batch?.processing?.processingType)?.key2
+                      }</td>
+                                <td>${element?.cwsMoisture1 ?? "-"}</td>
+                                <td>${element?.labMoisture ?? "-"}</td>
+                                <td>${element?.screen?.["16+"] ?? "-"}</td>
+                                <td>${element?.screen?.["15"] ?? "-"}</td>
+                                <td>${element?.screen?.["14"] ?? "-"}</td>
+                                <td>${element?.screen?.["13"] ?? "-"}</td>
+                                <td>${element?.screen?.["B/12"] ?? "-"}</td>
+                                <td>${element?.defect ?? "-"}</td>
+                                <td>${element?.ppScore ?? "-"}</td>
+                                <td>${
+                                  element?.sampleStorage_0?.name ??
+                                  element?.sampleStorage_1?.name ??
+                                  "-"
+                                }</td>
+                                <td>${element?.category ?? "-"}</td>
+                            </tr>
+                        `
+                    );
+                  })
+                  .join("")}
+            </tbody>
+        </table>
+    </body>
+</html>
+`;
     // Create blob and trigger download
     const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel" });
     const url = URL.createObjectURL(blob);

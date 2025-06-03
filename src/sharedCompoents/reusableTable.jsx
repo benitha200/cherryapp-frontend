@@ -65,7 +65,7 @@ const ReusableTable = ({
                 }}
                 disabled={isLoading}
               >
-                {[5, 10, 20].map((type) => (
+                {[5, 10, 20, 100, 1000, 2000].map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
