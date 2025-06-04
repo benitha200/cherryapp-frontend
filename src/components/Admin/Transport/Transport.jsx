@@ -544,9 +544,7 @@ const Transport = () => {
   const fetchTransferRecords = async () => {
     try {
       setLoading(true);
-      console.log("Fetching transfer records...");
       const response = await axios.get(`${API_URL}/transfer`);
-      console.log("Transfer records response:", response.data);
       setTransferRecords(response.data || []);
       setLoading(false);
     } catch (error) {
@@ -697,14 +695,22 @@ const Transport = () => {
 
       // Filter by search term
       if (searchTerm) {
-        const hasMatch = group.records.some(
-          (record) =>
-            record.batchNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const hasMatch = group.records.some((record) => {
+          return (
+            record.batchNo
+              ?.toLowerCase()
+              ?.includes(searchTerm.toLowerCase().trim()) ||
             record.truckNumber
               ?.toLowerCase()
-              .includes(searchTerm.toLowerCase()) ||
-            record.driverName?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+              ?.includes(searchTerm.toLowerCase().trim()) ||
+            record.driverName
+              ?.toLowerCase()
+              ?.includes(searchTerm.toLowerCase().trim()) ||
+            record?.baggingOff?.processing?.cws?.name
+              ?.toLowerCase()
+              ?.includes(searchTerm?.toLowerCase().trim())
+          );
+        });
         if (!hasMatch) return false;
       }
 

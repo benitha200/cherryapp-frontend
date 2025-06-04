@@ -9,6 +9,7 @@ import { QuantityReceived } from "./quantityReceived";
 import { ProcessedBatches } from "./proccesedBatches";
 import { Error, Success } from "../../components/responses";
 import { DeliveryTableSkeleton } from "./skeleton";
+import { formatDate } from "../../../../../utils/formatDate";
 
 export const DerivalyTable = () => {
   // State declarations
@@ -124,6 +125,12 @@ export const DerivalyTable = () => {
       field: "cws",
       header: "cws",
       render: (item) => <span>{item?.cws ?? "N/A"}</span>,
+    },
+
+    {
+      field: "transferDate",
+      header: "Transfer Date",
+      render: (item) => <span>{formatDate(item?.transferDate) ?? "N/A"}</span>,
     },
     {
       field: "quantity",

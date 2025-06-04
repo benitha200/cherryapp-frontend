@@ -14,15 +14,18 @@ const RequireAuth = ({ allowedRoles }) => {
   if (isPending) {
     return <LoadingPage />;
   }
-  if (error) {
+  if (error || data?.error) {
     localStorage.clear();
     return <Navigate to={"/login"} state={{ from: location }} replace />;
   }
 
   if (!allowedRoles?.includes(data?.role)) {
-    return <Navigate to={"/"} state={{ from: location }} replace />;
+    return data?.response?.data?.error ? (
+      <Navigate to={"/login"} state={{ from: location }} replace />
+    ) : (
+      <Navigate to={"/"} state={{ from: location }} replace />
+    );
   }
-
   return <Outlet />;
 };
 
