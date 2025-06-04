@@ -544,9 +544,7 @@ const Transport = () => {
   const fetchTransferRecords = async () => {
     try {
       setLoading(true);
-      console.log("Fetching transfer records...");
       const response = await axios.get(`${API_URL}/transfer`);
-      console.log("Transfer records response:", response.data);
       setTransferRecords(response.data || []);
       setLoading(false);
     } catch (error) {

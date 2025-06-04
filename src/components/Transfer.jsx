@@ -49,6 +49,7 @@ const Transfer = () => {
     truckNumber: "",
     driverName: "",
     driverPhone: "",
+    expectedTrackDeriverlyDate: "",
     notes: "",
   });
   const [validated, setValidated] = useState(false);
@@ -353,6 +354,8 @@ const Transfer = () => {
                 truckNumber: transportDetails.truckNumber,
                 driverName: transportDetails.driverName,
                 driverPhone: transportDetails.driverPhone,
+                expectedTrackDeriverlyDate:
+                  transportDetails?.expectedTrackDeriverlyDate,
                 notes: transportDetails.notes,
               })
               .then((response) => {
@@ -400,6 +403,8 @@ const Transfer = () => {
                     truckNumber: transportDetails.truckNumber,
                     driverName: transportDetails.driverName,
                     driverPhone: transportDetails.driverPhone,
+                    expectedTrackDeriverlyDate:
+                      transportDetails?.expectedTrackDeriverlyDate,
                     notes: transportDetails.notes,
                   })
                   .then((response) => {
@@ -427,6 +432,7 @@ const Transfer = () => {
         truckNumber: "",
         driverName: "",
         driverPhone: "",
+        expectedTrackDeriverlyDate: "",
         notes: "",
       });
       setLowGradeBags("");
@@ -1148,6 +1154,25 @@ const Transfer = () => {
                           />
                           <Form.Control.Feedback type="invalid">
                             Please enter the driver's phone number
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+
+                      <Col md={6}>
+                        <Form.Group
+                          className="mb-3"
+                          controlId="expectedTrackDeriverlyDate"
+                        >
+                          <Form.Label>Expected Track delivery Date</Form.Label>
+                          <Form.Control
+                            type="date"
+                            required
+                            name="expectedTrackDeriverlyDate"
+                            value={transportDetails.expectedTrackDeriverlyDate}
+                            onChange={handleTransportDetailsChange}
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            Please selecte expected track delivery date
                           </Form.Control.Feedback>
                         </Form.Group>
                       </Col>
