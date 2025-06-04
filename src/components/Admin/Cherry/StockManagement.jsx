@@ -88,7 +88,6 @@ const StockManagement = () => {
     N2: "#34495E", // Dark Gray
     other: "#E67E22", // Orange
   };
-  console.log(selectedCWS, "::::::::");
   const pieColors = [
     "#008080",
     "#4FB3B3",
@@ -114,8 +113,6 @@ const StockManagement = () => {
         }
         const baggingData = await baggingResponse.json();
 
-        console.log("baggingData:::::::::::", baggingData);
-
         const processingResponse = await fetch(
           `${API_URL}/processing?limit=100000`
         );
@@ -124,8 +121,6 @@ const StockManagement = () => {
         }
         const processingResponseData = await processingResponse.json();
         const processingData = processingResponseData.data; // Access the nested 'data' property
-
-        console.log("processingData:::::::::::", processingData);
 
         const stockAnalysis = analyzeStock(baggingData, processingData);
         setStockData(stockAnalysis);
@@ -162,8 +157,6 @@ const StockManagement = () => {
 
     fetchData();
   }, []);
-
-  console.log("d:::::::::::", detailedTableData);
 
   const prepareDetailedTableData = (gradeByCWS, batchesByCWS) => {
     return Object.keys(gradeByCWS)
