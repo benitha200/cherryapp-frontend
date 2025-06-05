@@ -16,6 +16,6 @@ export const getMe = async () => {
     );
     return res?.data;
   } catch (error) {
-    return error;
+    throw error;
   }
 };
