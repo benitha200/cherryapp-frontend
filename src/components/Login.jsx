@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_URL from "../constants/Constants";
+import { UserLogin } from "./authAction";
 
 // Consistent theme colors
 const theme = {
@@ -22,22 +23,24 @@ const Login = () => {
   });
   const [error, setError] = useState("");
   const location = useLocation();
+  const { isPending, loginError, mutate } = UserLogin();
+  const [showAlert, setShowAlert] = useState(false);
+
+  useEffect(() => {
+    if (loginError) {
+      setShowAlert(true);
+      const timer = setTimeout(() => setShowAlert(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [loginError]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(`${API_URL}/auth/login`, credentials);
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      localStorage.setItem("cws", JSON.stringify(response.data.cws));
-      const from = location?.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
-    } catch (error) {
-      setError("Incorrect Username or Password");
-    }
+    mutate(credentials);
   };
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid" style={{ position: "relative" }}>
       <div className="row justify-content-center align-items-center min-vh-100">
         <div className="col-11 col-sm-8 col-md-6 col-lg-4">
           <div className="card border-0 shadow-lg">
@@ -59,23 +62,28 @@ const Login = () => {
 
             <div className="card-body p-4 p-lg-5">
               {/* Error Alert */}
-              {error && (
+              {showAlert && (
                 <div
                   className="alert d-flex align-items-center mb-4"
                   role="alert"
                   style={{
-                    backgroundColor: theme.accent + "20", // Adding transparency
+                    backgroundColor: theme.accent + "20",
                     color: theme.accent,
+                    position: "absolute",
+                    top: 120,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: 1000,
                   }}
                 >
                   <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                  <div>{error}</div>
+                  <div>{loginError?.message ?? "Something went wrong"}</div>
                 </div>
               )}
 
               <form onSubmit={handleSubmit}>
                 {/* Username Field */}
-                <div className="mb-4">
+                <div className="mb-4 " style={{ marginTop: "2rem" }}>
                   <label
                     className="form-label fw-semibold small"
                     style={{ color: theme.primary }}
@@ -85,6 +93,7 @@ const Login = () => {
                   <input
                     type="text"
                     className="form-control form-control-sm py-2"
+                    disabled={isPending}
                     style={{
                       fontSize: "0.875rem",
                       backgroundColor: theme.neutral,
@@ -119,6 +128,7 @@ const Login = () => {
                       border: "none",
                     }}
                     placeholder="Enter your password"
+                    disabled={isPending}
                     value={credentials.password}
                     onChange={(e) =>
                       setCredentials({
@@ -133,17 +143,31 @@ const Login = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="btn btn-md w-100 mb-3 text-uppercase fw-semibold"
+                  className="btn btn-md w-100 mb-3 text-uppercase fw-semibold d-flex align-items-center justify-content-center gap-2"
+                  disabled={isPending}
                   style={{
                     backgroundColor: theme.primary,
                     color: "white",
-                    ":hover": {
-                      backgroundColor: theme.secondary,
-                    },
+                    cursor: isPending ? "not-allowed" : "pointer",
                   }}
                 >
-                  <span>Sign In</span>
-                  <i className="bi bi-arrow-right ms-2"></i>
+                  {isPending ? (
+                    <>
+                      <span>Signing In</span>
+                      <div
+                        className="spinner-border spinner-border-sm text-light"
+                        role="status"
+                        style={{ width: "1rem", height: "1rem" }}
+                      >
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span>Sign In</span>
+                      <i className="bi bi-arrow-right ms-2"></i>
+                    </>
+                  )}
                 </button>
               </form>
             </div>

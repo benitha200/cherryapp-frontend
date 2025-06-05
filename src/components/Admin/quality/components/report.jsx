@@ -180,7 +180,7 @@ const ShortSummary = () => {
     "NATURAL",
   ];
   const calculateSummaryData = (batches) => {
-    let stations = ["Select_by_stations"];
+    let stations = ["Select_by_stations", "All"];
     batches?.forEach((batch) => {
       stations.push(batch?.cws?.name);
     });

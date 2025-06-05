@@ -99,18 +99,28 @@ export const DerivalyTable = () => {
         (element) =>
           element?.driverName
             ?.toLowerCase()
-            .includes(searchQuery?.toLowerCase()) ||
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
           element?.truckNumber
             ?.toLowerCase()
-            .includes(searchQuery?.toLowerCase()) ||
-          element?.cws?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
+          element?.cws
+            ?.toLowerCase()
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
           element?.transferGroupId
             ?.toLowerCase()
-            .includes(searchQuery?.toLowerCase()) ||
-          element?.transferGroupId?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
+          element?.transferGroupId
+            ?.toLowerCase()
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
           element?.driverPhone
             ?.toLowerCase()
-            .includes(searchQuery?.toLowerCase())
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, ""))
       )
       ?.slice(0, itemsPerPage);
     setAllTransportInfo((prev) => data);
