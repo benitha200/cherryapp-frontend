@@ -56,7 +56,7 @@ export const DerivalyTable = () => {
 
   const onUpdateSuccess = () => {
     handleopenModel();
-    setSelectedId({ trackId: null, transferDate: null });
+    setSelectedId({ trackId: null, transferDate: null, transferGroupId: null });
     setActivivatedBatches([]);
     setActivatedBatchesData([]);
     setCategories({
@@ -104,6 +104,10 @@ export const DerivalyTable = () => {
             ?.toLowerCase()
             .includes(searchQuery?.toLowerCase()) ||
           element?.cws?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+          element?.transferGroupId
+            ?.toLowerCase()
+            .includes(searchQuery?.toLowerCase()) ||
+          element?.transferGroupId?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
           element?.driverPhone
             ?.toLowerCase()
             .includes(searchQuery?.toLowerCase())
@@ -115,6 +119,8 @@ export const DerivalyTable = () => {
     mutate({ categories, activatedBatchesData });
   };
   // columns
+
+  console.log("item", allTransportInfo);
   const columns = [
     {
       field: "batchNo",
@@ -146,6 +152,10 @@ export const DerivalyTable = () => {
     },
     { field: "driverName", header: "Driver_Name" },
     { field: "driverPhone", header: "Driver_PHone" },
+    {
+      field: "transferGroupId",
+      header: "transferGroupId",
+    },
 
     {
       field: "category",
@@ -158,6 +168,7 @@ export const DerivalyTable = () => {
             setSelectedId({
               trackId: item?.truckNumber ?? "",
               transferDate: item?.transferDate ?? "",
+              transferGroupId: item?.transferGroupId ?? "",
             });
             setSelectedTransportInfo((prev) => ({
               ...prev,
@@ -170,7 +181,7 @@ export const DerivalyTable = () => {
             }));
           }}
         >
-          <i class="bi bi-pencil-square"></i>{" "}
+          <i className="bi bi-pencil-square"></i>{" "}
         </Button>
       ),
     },
