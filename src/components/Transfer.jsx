@@ -313,7 +313,9 @@ const Transfer = () => {
       Object.keys(itemsByGradeAndBatch).forEach((grade) => {
         const gradeItems = itemsByGradeAndBatch[grade];
         const isHighGrade = GRADE_GROUPS.HIGH.includes(grade);
-
+        console.log("Grades::::::::::::::::", grade);
+        console.log("Grades items::::::::::", gradeItems);
+        console.log("is Highgrades:::::::::", isHighGrade);
         const isGroupedLowGrade =
           !isHighGrade && lowGradeGrouping[grade]?.isGrouped;
 
@@ -323,7 +325,10 @@ const Transfer = () => {
           const combinedOutputKgs = {};
           const batchIds = [];
           let totalKgs = 0;
-
+          console.log(
+            "is grouped lowgrade:::::::::::::::::::",
+            isGroupedLowGrade
+          );
           // Combine all batches for this grade
           gradeItems.forEach((groupedItem) => {
             groupedItem.records.forEach((originalRecord) => {
@@ -334,7 +339,9 @@ const Transfer = () => {
                 originalRecord.kgValue;
             });
           });
-
+          console.log("combined gradeDetails:::::::", combinedGradeDetails);
+          console.log("combinedoutputkgs:::::::::::", combinedOutputKgs);
+          console.log("batchIds::::::::::::::::::::", batchIds);
           // Set the combined bag count
           combinedGradeDetails[grade] = {
             numberOfBags: parseInt(combinedLowGradeBags[grade] || 0),
@@ -351,7 +358,7 @@ const Transfer = () => {
                 gradeDetails: combinedGradeDetails,
                 isGroupedTransfer: true, // Important flag for backend to process as grouped transfer
                 transportGroupId: transportGroupId, // Pass the consistent transportGroupId
-                truckNumber: transportDetails.truckNumber,
+                truckNumber: transportDetails.truckNumber?.replace(/\s+/g, ""),
                 driverName: transportDetails.driverName,
                 driverPhone: transportDetails.driverPhone,
                 expectedTrackDeriverlyDate:
@@ -360,6 +367,7 @@ const Transfer = () => {
               })
               .then((response) => {
                 completedTransfers.push(response.data);
+                console.log(":::::::; transport results", response);
                 return response;
               })
           );
@@ -400,7 +408,10 @@ const Transfer = () => {
                     gradeDetails: gradeDetails,
                     isGroupedTransfer: false,
                     transportGroupId: transportGroupId, // Pass the consistent transportGroupId
-                    truckNumber: transportDetails.truckNumber,
+                    truckNumber: transportDetails.truckNumber?.replace(
+                      /\s+/g,
+                      ""
+                    ),
                     driverName: transportDetails.driverName,
                     driverPhone: transportDetails.driverPhone,
                     expectedTrackDeriverlyDate:
