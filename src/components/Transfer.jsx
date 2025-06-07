@@ -313,9 +313,6 @@ const Transfer = () => {
       Object.keys(itemsByGradeAndBatch).forEach((grade) => {
         const gradeItems = itemsByGradeAndBatch[grade];
         const isHighGrade = GRADE_GROUPS.HIGH.includes(grade);
-        console.log("Grades::::::::::::::::", grade);
-        console.log("Grades items::::::::::", gradeItems);
-        console.log("is Highgrades:::::::::", isHighGrade);
         const isGroupedLowGrade =
           !isHighGrade && lowGradeGrouping[grade]?.isGrouped;
 
@@ -325,10 +322,6 @@ const Transfer = () => {
           const combinedOutputKgs = {};
           const batchIds = [];
           let totalKgs = 0;
-          console.log(
-            "is grouped lowgrade:::::::::::::::::::",
-            isGroupedLowGrade
-          );
           // Combine all batches for this grade
           gradeItems.forEach((groupedItem) => {
             groupedItem.records.forEach((originalRecord) => {
@@ -339,14 +332,16 @@ const Transfer = () => {
                 originalRecord.kgValue;
             });
           });
-          console.log("combined gradeDetails:::::::", combinedGradeDetails);
-          console.log("combinedoutputkgs:::::::::::", combinedOutputKgs);
-          console.log("batchIds::::::::::::::::::::", batchIds);
+
           // Set the combined bag count
           combinedGradeDetails[grade] = {
             numberOfBags: parseInt(combinedLowGradeBags[grade] || 0),
           };
 
+          console.log(
+            ":::::::::::::::;;combined details1111",
+            combinedGradeDetails
+          );
           // Create a single transfer for all batches of this grade
           transferPromises.push(
             axios
@@ -367,17 +362,22 @@ const Transfer = () => {
               })
               .then((response) => {
                 completedTransfers.push(response.data);
-                console.log(":::::::; transport results", response);
                 return response;
               })
           );
         } else {
           // Handle individual batch transfers
           gradeItems.forEach((groupedItem) => {
+            let parentKey = "";
             groupedItem.records.forEach((originalRecord) => {
               const gradeDetails = {};
               const batchId = originalRecord.recordId;
               const batchGradeKey = `${batchId}-${grade}`;
+              parentKey =
+                isHighGrade &&
+                gradeQualityDetails[`${batchId}-${grade}`] !== undefined
+                  ? `${batchId}-${grade}`
+                  : parentKey;
 
               gradeDetails[originalRecord.grade] = {
                 numberOfBags: parseInt(
@@ -386,10 +386,10 @@ const Transfer = () => {
                 ...(isHighGrade
                   ? {
                       cupProfile:
-                        gradeQualityDetails[batchGradeKey]?.cupProfile ||
+                        gradeQualityDetails[parentKey]?.cupProfile ||
                         CUP_PROFILES[0],
                       moistureContent: parseFloat(
-                        gradeQualityDetails[batchGradeKey]?.moistureContent || 0
+                        gradeQualityDetails[parentKey]?.moistureContent || 0
                       ),
                     }
                   : {}),
@@ -397,7 +397,21 @@ const Transfer = () => {
 
               const outputKgs = {};
               outputKgs[originalRecord.grade] = originalRecord.kgValue;
+              // console.log(
+              //   "f",
+              //   gradeQualityDetails[`${batchId}-${grade}`],
+              //   "batchIdd::::::::::",
+              //   batchId,
+              //   "parentKey:::::",
+              //   parentKey,
+              //   "batchGrde key:::::::::::::::",
+              //   batchGradeKey,
+              //   ":::::::::::::profile 2222222::::",
 
+              //   gradeDetails,
+              //   "::::::::::",
+              //   gradeQualityDetails
+              // );
               transferPromises.push(
                 axios
                   .post(`${API_URL}/transfer`, {
@@ -419,6 +433,7 @@ const Transfer = () => {
                     notes: transportDetails.notes,
                   })
                   .then((response) => {
+                    console.log("::::::::::::results22222:::::", response);
                     completedTransfers.push(response.data);
                     return response;
                   })
@@ -429,7 +444,7 @@ const Transfer = () => {
       });
 
       // Wait for all transfers to complete
-      await Promise.all(transferPromises);
+      const result = await Promise.all(transferPromises);
 
       // Refresh untransferred records
       await fetchUntransferredRecords();
@@ -437,22 +452,24 @@ const Transfer = () => {
       // await fetchTransferHistory();
 
       // Reset form and selections
-      setSelectedGradeItems([]);
-      setGradeQualityDetails({});
-      setTransportDetails({
-        truckNumber: "",
-        driverName: "",
-        driverPhone: "",
-        expectedTrackDeriverlyDate: "",
-        notes: "",
-      });
-      setLowGradeBags("");
-      setSelectedLowGrade(null);
-      setShowTransferModal(false);
-      setValidated(false);
-      setActiveGradeTab(null);
-      setLowGradeGrouping({});
-      setCombinedLowGradeBags({});
+      if (result) {
+        setSelectedGradeItems([]);
+        setGradeQualityDetails({});
+        setTransportDetails({
+          truckNumber: "",
+          driverName: "",
+          driverPhone: "",
+          expectedTrackDeriverlyDate: "",
+          notes: "",
+        });
+        setLowGradeBags("");
+        setSelectedLowGrade(null);
+        setShowTransferModal(false);
+        setValidated(false);
+        setActiveGradeTab(null);
+        setLowGradeGrouping({});
+        setCombinedLowGradeBags({});
+      }
 
       // Show success message with transport group ID for reference
       toast.success(
