@@ -405,6 +405,7 @@ const Transfer = () => {
             recordIds: baggingOffIds,
           };
 
+
           const payload = {
             baggingOffId: baggingOffIds[0], // Only the first one 
             batchNo: gradeItems[0]?.records[0]?.batchKey,
