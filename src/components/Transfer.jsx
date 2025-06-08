@@ -365,55 +365,66 @@ const Transfer = () => {
           );
         } else {
           // Handle individual batch transfers
+          const baggingOffIds = [];
+          const outputKgs = {};
+          const gradeDetails = {};
+
           gradeItems.forEach((groupedItem) => {
             groupedItem.records.forEach((originalRecord) => {
-              const gradeDetails = {};
+              // Collect baggingOffId
+              baggingOffIds.push(originalRecord.recordId);
+
+              // Merge outputKgs
+              if (!outputKgs[originalRecord.grade]) {
+                outputKgs[originalRecord.grade] = 0;
+              }
+              outputKgs[originalRecord.grade] += originalRecord.kgValue;
+
+              // Merge gradeDetails (sum numberOfBags, keep cupProfile/moistureContent from first)
               const batchId = originalRecord.recordId;
-              const batchGradeKey = `${batchId}-${grade}`;
-
-              gradeDetails[originalRecord.grade] = {
-                numberOfBags: parseInt(
-                  gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
-                ),
-                ...(isHighGrade
-                  ? {
-                    cupProfile:
-                      gradeQualityDetails[batchGradeKey]?.cupProfile ||
-                      CUP_PROFILES[0],
-                    moistureContent: parseFloat(
-                      gradeQualityDetails[batchGradeKey]?.moistureContent || 0
-                    ),
-                  }
-                  : {}),
-              };
-
-              const outputKgs = {};
-              outputKgs[originalRecord.grade] = originalRecord.kgValue;
-
-              transferPromises.push(
-                axios
-                  .post(`${API_URL}/transfer`, {
-                    baggingOffId: originalRecord.recordId,
-                    batchNo: originalRecord.batchKey,
-                    gradeGroup: isHighGrade ? "HIGH" : "LOW",
-                    outputKgs: outputKgs,
-                    gradeDetails: gradeDetails,
-                    isGroupedTransfer: false,
-                    transportGroupId: transportGroupId, // Pass the consistent transportGroupId
-                    truckNumber: transportDetails.truckNumber,
-                    driverName: transportDetails.driverName,
-                    driverPhone: transportDetails.driverPhone,
-                    expectedTrackDeriverlyDate:
-                      transportDetails?.expectedTrackDeriverlyDate,
-                    notes: transportDetails.notes,
-                  })
-                  .then((response) => {
-                    completedTransfers.push(response.data);
-                    return response;
-                  })
+              const batchGradeKey = `${batchId}-${originalRecord.grade}`;
+              if (!gradeDetails[originalRecord.grade]) {
+                gradeDetails[originalRecord.grade] = {
+                  numberOfBags: 0,
+                  cupProfile: isHighGrade
+                    ? gradeQualityDetails[batchGradeKey]?.cupProfile || CUP_PROFILES[0]
+                    : undefined,
+                  moistureContent: isHighGrade
+                    ? parseFloat(gradeQualityDetails[batchGradeKey]?.moistureContent || 0)
+                    : undefined,
+                };
+              }
+              gradeDetails[originalRecord.grade].numberOfBags += parseInt(
+                gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
               );
             });
           });
+
+          // Add baggingOffIds and groupInfo to gradeDetails
+          gradeDetails.baggingOffIds = baggingOffIds;
+          gradeDetails.groupInfo = {
+            totalRecords: baggingOffIds.length,
+            recordIds: baggingOffIds,
+          };
+
+          // Build the payload
+          const payload = {
+            baggingOffId: baggingOffIds[0], // Only the first one here!
+            batchNo: gradeItems[0]?.records[0]?.batchKey,
+            gradeGroup: isHighGrade ? "HIGH" : "LOW",
+            outputKgs: outputKgs,
+            gradeDetails: gradeDetails,
+            isGroupedTransfer: false,
+            transportGroupId: transportGroupId,
+            truckNumber: transportDetails.truckNumber?.replace(/\s+/g, ""),
+            driverName: transportDetails.driverName,
+            driverPhone: transportDetails.driverPhone,
+            expectedTrackDeriverlyDate: transportDetails?.expectedTrackDeriverlyDate,
+            notes: transportDetails.notes,
+          };
+
+          // Add the request to the promises array instead of awaiting immediately
+          transferPromises.push(axios.post(`${API_URL}/transfer`, payload));
         }
       });
 
