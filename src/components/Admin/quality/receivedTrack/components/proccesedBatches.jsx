@@ -49,6 +49,7 @@ export const ProcessedBatches = ({
   setCategories,
 }) => {
   // state
+  const [searchQuery, setSearchQuery] = useState("");
   const [deliveryData, setDeliveryData] = useState({
     baggingOff: null,
     batchNo: null,
@@ -68,6 +69,11 @@ export const ProcessedBatches = ({
     }));
     setDeliveryData(delivary?.data);
   }, [delivary]);
+
+  const handleSearch = (searchTerm) => {
+    setSearchQuery((prev) => searchTerm);
+  };
+
   const handleCheckboxChange = (batchId, ischecked, spId, transferId) => {
     ischecked == true
       ? setActivivatedBatches((prev) => [...new Set([...prev, batchId])])
@@ -148,14 +154,16 @@ export const ProcessedBatches = ({
         {/* Filters Section */}
         <Card.Body style={{ backgroundColor: processingTheme.neutral }}>
           <Row className="g-3">
-            {/* <Col md={2}>
+            <Col md={2}>
               <InputGroup>
                 <Form.Control
                   type="text"
-                  placeholder="Search across all fields..."
+                  placeholder="Search batch..."
+                  onChange={(e) => handleSearch(e.target.value)}
+                  disabled={getByIdPending}
                 />
               </InputGroup>
-            </Col> */}
+            </Col>
           </Row>
         </Card.Body>
 
@@ -179,7 +187,17 @@ export const ProcessedBatches = ({
             <tbody>
               {/* Card */}
 
-              {deliveryData?.batches?.map((element) => {
+              {(searchQuery
+                ? deliveryData?.batches.filter((element) =>
+                    element?.batchNo
+                      ?.toLowerCase()
+                      ?.replace(/\s+/g, "")
+                      ?.includes(
+                        searchQuery?.toLowerCase()?.replace(/\s+/g, "")
+                      )
+                  )
+                : deliveryData?.batches
+              )?.map((element) => {
                 return (
                   <tr>
                     {/* processing type  */}
