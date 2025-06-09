@@ -30,6 +30,12 @@ export const QuantityReceived = ({
                       <strong>Driver:</strong> {selectedTransportInfo?.driver}
                     </p>
                   </Col>
+                  <Col xs="auto">
+                    <p className="mb-1">
+                      <strong>Truck:</strong>{" "}
+                      {selectedTransportInfo?.trackPlatNumber}
+                    </p>
+                  </Col>
                 </Row>
               </Col>
 

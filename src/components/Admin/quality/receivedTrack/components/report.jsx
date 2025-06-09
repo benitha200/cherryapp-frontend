@@ -43,6 +43,7 @@ export const DerivalyTable = () => {
     cws: null,
     quantity: null,
     driver: null,
+    trackPlatNumber: null,
   });
   const [searchQuery, setSearchQuery] = useState(null);
 
@@ -183,6 +184,7 @@ export const DerivalyTable = () => {
             setSelectedTransportInfo((prev) => ({
               ...prev,
               cws: item?.cws,
+              trackPlatNumber: item?.truckNumber,
               quantity: Object.values(item?.outputKgs).reduce(
                 (acc, value) => parseInt(value, 10) + acc,
                 0
