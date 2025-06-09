@@ -365,14 +365,27 @@ const Transfer = () => {
                 return response;
               })
           );
-        } else {
+        }
+        else {
 
-          const baggingOffIds = [];
-          const outputKgs = {};
-          const gradeDetails = {};
-
+          const itemsByBatchNo = {};
           gradeItems.forEach((groupedItem) => {
             groupedItem.records.forEach((originalRecord) => {
+              const batchNo = originalRecord.batchKey || originalRecord.batchNo;
+              if (!itemsByBatchNo[batchNo]) {
+                itemsByBatchNo[batchNo] = [];
+              }
+              itemsByBatchNo[batchNo].push(originalRecord);
+            });
+          });
+
+          Object.keys(itemsByBatchNo).forEach((batchNo) => {
+            const records = itemsByBatchNo[batchNo];
+            const baggingOffIds = [];
+            const outputKgs = {};
+            const gradeDetails = {};
+
+            records.forEach((originalRecord) => {
               baggingOffIds.push(originalRecord.recordId);
 
               if (!outputKgs[originalRecord.grade]) {
@@ -397,31 +410,83 @@ const Transfer = () => {
                 gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
               );
             });
+
+            gradeDetails.baggingOffIds = baggingOffIds;
+            gradeDetails.groupInfo = {
+              totalRecords: baggingOffIds.length,
+              recordIds: baggingOffIds,
+            };
+
+            const payload = {
+              baggingOffId: baggingOffIds[0], // Only the first one
+              batchNo: batchNo,
+              gradeGroup: isHighGrade ? "HIGH" : "LOW",
+              outputKgs: outputKgs,
+              gradeDetails: gradeDetails,
+              isGroupedTransfer: false,
+              transportGroupId: transportGroupId,
+              truckNumber: transportDetails.truckNumber?.replace(/\s+/g, ""),
+              driverName: transportDetails.driverName,
+              driverPhone: transportDetails.driverPhone,
+              expectedTrackDeriverlyDate: transportDetails?.expectedTrackDeriverlyDate,
+              notes: transportDetails.notes,
+            };
+
+            transferPromises.push(axios.post(`${API_URL}/transfer`, payload));
           });
-
-          gradeDetails.baggingOffIds = baggingOffIds;
-          gradeDetails.groupInfo = {
-            totalRecords: baggingOffIds.length,
-            recordIds: baggingOffIds,
-          };
-
-          const payload = {
-            baggingOffId: baggingOffIds[0], // Only the first one 
-            batchNo: gradeItems[0]?.records[0]?.batchKey,
-            gradeGroup: isHighGrade ? "HIGH" : "LOW",
-            outputKgs: outputKgs,
-            gradeDetails: gradeDetails,
-            isGroupedTransfer: false,
-            transportGroupId: transportGroupId,
-            truckNumber: transportDetails.truckNumber?.replace(/\s+/g, ""),
-            driverName: transportDetails.driverName,
-            driverPhone: transportDetails.driverPhone,
-            expectedTrackDeriverlyDate: transportDetails?.expectedTrackDeriverlyDate,
-            notes: transportDetails.notes,
-          };
-
-          transferPromises.push(axios.post(`${API_URL}/transfer`, payload));
         }
+        //else {
+        //   // Handle individual batch transfers
+        //   gradeItems.forEach((groupedItem) => {
+        //     groupedItem.records.forEach((originalRecord) => {
+        //       const gradeDetails = {};
+        //       const batchId = originalRecord.recordId;
+        //       const batchGradeKey = `${batchId}-${grade}`;
+
+        //       gradeDetails[originalRecord.grade] = {
+        //         numberOfBags: parseInt(
+        //           gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
+        //         ),
+        //         ...(isHighGrade
+        //           ? {
+        //             cupProfile:
+        //               gradeQualityDetails[batchGradeKey]?.cupProfile ||
+        //               CUP_PROFILES[0],
+        //             moistureContent: parseFloat(
+        //               gradeQualityDetails[batchGradeKey]?.moistureContent || 0
+        //             ),
+        //           }
+        //           : {}),
+        //       };
+
+        //       const outputKgs = {};
+        //       outputKgs[originalRecord.grade] = originalRecord.kgValue;
+
+        //       transferPromises.push(
+        //         axios
+        //           .post(`${API_URL}/transfer`, {
+        //             baggingOffId: originalRecord.recordId,
+        //             batchNo: originalRecord.batchKey,
+        //             gradeGroup: isHighGrade ? "HIGH" : "LOW",
+        //             outputKgs: outputKgs,
+        //             gradeDetails: gradeDetails,
+        //             isGroupedTransfer: false,
+        //             transportGroupId: transportGroupId, // Pass the consistent transportGroupId
+        //             truckNumber: transportDetails.truckNumber,
+        //             driverName: transportDetails.driverName,
+        //             driverPhone: transportDetails.driverPhone,
+        //             expectedTrackDeriverlyDate:
+        //               transportDetails?.expectedTrackDeriverlyDate,
+        //             notes: transportDetails.notes,
+        //           })
+        //           .then((response) => {
+        //             completedTransfers.push(response.data);
+        //             return response;
+        //           })
+        //       );
+        //     });
+        //   });
+        // }
       });
 
       const result = await Promise.all(transferPromises);
