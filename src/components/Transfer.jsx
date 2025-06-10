@@ -159,11 +159,11 @@ const Transfer = () => {
     setSelectedGradeItems(
       isSelected
         ? flattenBatchRecords()
-            .slice(
-              (currentPage - 1 ?? 0) * batchesPerPage,
-              (batchesPerPage ?? 10) * currentPage ?? 1
-            )
-            .map((item) => item.gradeKey)
+          .slice(
+            (currentPage - 1 ?? 0) * batchesPerPage,
+            (batchesPerPage ?? 10) * currentPage ?? 1
+          )
+          .map((item) => item.gradeKey)
         : []
     );
   };
@@ -313,7 +313,6 @@ const Transfer = () => {
       Object.keys(itemsByGradeAndBatch).forEach((grade) => {
         const gradeItems = itemsByGradeAndBatch[grade];
         const isHighGrade = GRADE_GROUPS.HIGH.includes(grade);
-
         const isGroupedLowGrade =
           !isHighGrade && lowGradeGrouping[grade]?.isGrouped;
 
@@ -323,7 +322,6 @@ const Transfer = () => {
           const combinedOutputKgs = {};
           const batchIds = [];
           let totalKgs = 0;
-
           // Combine all batches for this grade
           gradeItems.forEach((groupedItem) => {
             groupedItem.records.forEach((originalRecord) => {
@@ -340,6 +338,10 @@ const Transfer = () => {
             numberOfBags: parseInt(combinedLowGradeBags[grade] || 0),
           };
 
+          console.log(
+            ":::::::::::::::;;combined details1111",
+            combinedGradeDetails
+          );
           // Create a single transfer for all batches of this grade
           transferPromises.push(
             axios
@@ -351,7 +353,7 @@ const Transfer = () => {
                 gradeDetails: combinedGradeDetails,
                 isGroupedTransfer: true, // Important flag for backend to process as grouped transfer
                 transportGroupId: transportGroupId, // Pass the consistent transportGroupId
-                truckNumber: transportDetails.truckNumber,
+                truckNumber: transportDetails.truckNumber?.replace(/\s+/g, ""),
                 driverName: transportDetails.driverName,
                 driverPhone: transportDetails.driverPhone,
                 expectedTrackDeriverlyDate:
@@ -363,62 +365,131 @@ const Transfer = () => {
                 return response;
               })
           );
-        } else {
-          // Handle individual batch transfers
+        }
+        else {
+
+          const itemsByBatchNo = {};
           gradeItems.forEach((groupedItem) => {
             groupedItem.records.forEach((originalRecord) => {
-              const gradeDetails = {};
-              const batchId = originalRecord.recordId;
-              const batchGradeKey = `${batchId}-${grade}`;
-
-              gradeDetails[originalRecord.grade] = {
-                numberOfBags: parseInt(
-                  gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
-                ),
-                ...(isHighGrade
-                  ? {
-                      cupProfile:
-                        gradeQualityDetails[batchGradeKey]?.cupProfile ||
-                        CUP_PROFILES[0],
-                      moistureContent: parseFloat(
-                        gradeQualityDetails[batchGradeKey]?.moistureContent || 0
-                      ),
-                    }
-                  : {}),
-              };
-
-              const outputKgs = {};
-              outputKgs[originalRecord.grade] = originalRecord.kgValue;
-
-              transferPromises.push(
-                axios
-                  .post(`${API_URL}/transfer`, {
-                    baggingOffId: originalRecord.recordId,
-                    batchNo: originalRecord.batchKey,
-                    gradeGroup: isHighGrade ? "HIGH" : "LOW",
-                    outputKgs: outputKgs,
-                    gradeDetails: gradeDetails,
-                    isGroupedTransfer: false,
-                    transportGroupId: transportGroupId, // Pass the consistent transportGroupId
-                    truckNumber: transportDetails.truckNumber,
-                    driverName: transportDetails.driverName,
-                    driverPhone: transportDetails.driverPhone,
-                    expectedTrackDeriverlyDate:
-                      transportDetails?.expectedTrackDeriverlyDate,
-                    notes: transportDetails.notes,
-                  })
-                  .then((response) => {
-                    completedTransfers.push(response.data);
-                    return response;
-                  })
-              );
+              const batchNo = originalRecord.batchKey || originalRecord.batchNo;
+              if (!itemsByBatchNo[batchNo]) {
+                itemsByBatchNo[batchNo] = [];
+              }
+              itemsByBatchNo[batchNo].push(originalRecord);
             });
           });
+
+          Object.keys(itemsByBatchNo).forEach((batchNo) => {
+            const records = itemsByBatchNo[batchNo];
+            const baggingOffIds = [];
+            const outputKgs = {};
+            const gradeDetails = {};
+
+            records.forEach((originalRecord) => {
+              baggingOffIds.push(originalRecord.recordId);
+
+              if (!outputKgs[originalRecord.grade]) {
+                outputKgs[originalRecord.grade] = 0;
+              }
+              outputKgs[originalRecord.grade] += originalRecord.kgValue;
+
+              const batchId = originalRecord.recordId;
+              const batchGradeKey = `${batchId}-${originalRecord.grade}`;
+              if (!gradeDetails[originalRecord.grade]) {
+                gradeDetails[originalRecord.grade] = {
+                  numberOfBags: 0,
+                  cupProfile: isHighGrade
+                    ? gradeQualityDetails[batchGradeKey]?.cupProfile || CUP_PROFILES[0]
+                    : undefined,
+                  moistureContent: isHighGrade
+                    ? parseFloat(gradeQualityDetails[batchGradeKey]?.moistureContent || 0)
+                    : undefined,
+                };
+              }
+              gradeDetails[originalRecord.grade].numberOfBags += parseInt(
+                gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
+              );
+            });
+
+            gradeDetails.baggingOffIds = baggingOffIds;
+            gradeDetails.groupInfo = {
+              totalRecords: baggingOffIds.length,
+              recordIds: baggingOffIds,
+            };
+
+            const payload = {
+              baggingOffId: baggingOffIds[0], // Only the first one
+              batchNo: batchNo,
+              gradeGroup: isHighGrade ? "HIGH" : "LOW",
+              outputKgs: outputKgs,
+              gradeDetails: gradeDetails,
+              isGroupedTransfer: false,
+              transportGroupId: transportGroupId,
+              truckNumber: transportDetails.truckNumber?.replace(/\s+/g, ""),
+              driverName: transportDetails.driverName,
+              driverPhone: transportDetails.driverPhone,
+              expectedTrackDeriverlyDate: transportDetails?.expectedTrackDeriverlyDate,
+              notes: transportDetails.notes,
+            };
+
+            transferPromises.push(axios.post(`${API_URL}/transfer`, payload));
+          });
         }
+        //         else {
+        //   // Handle individual batch transfers
+        //   gradeItems.forEach((groupedItem) => {
+        //     groupedItem.records.forEach((originalRecord) => {
+        //       const gradeDetails = {};
+        //       const batchId = originalRecord.recordId;
+        //       const batchGradeKey = `${batchId}-${grade}`;
+
+        //       gradeDetails[originalRecord.grade] = {
+        //         numberOfBags: parseInt(
+        //           gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
+        //         ),
+        //         ...(isHighGrade
+        //           ? {
+        //             cupProfile:
+        //               gradeQualityDetails[batchGradeKey]?.cupProfile ||
+        //               CUP_PROFILES[0],
+        //             moistureContent: parseFloat(
+        //               gradeQualityDetails[batchGradeKey]?.moistureContent || 0
+        //             ),
+        //           }
+        //           : {}),
+        //       };
+
+        //       const outputKgs = {};
+        //       outputKgs[originalRecord.grade] = originalRecord.kgValue;
+
+        //       transferPromises.push(
+        //         axios
+        //           .post(`${API_URL}/transfer`, {
+        //             baggingOffId: originalRecord.recordId,
+        //             batchNo: originalRecord.batchKey,
+        //             gradeGroup: isHighGrade ? "HIGH" : "LOW",
+        //             outputKgs: outputKgs,
+        //             gradeDetails: gradeDetails,
+        //             isGroupedTransfer: false,
+        //             transportGroupId: transportGroupId, // Pass the consistent transportGroupId
+        //             truckNumber: transportDetails.truckNumber,
+        //             driverName: transportDetails.driverName,
+        //             driverPhone: transportDetails.driverPhone,
+        //             expectedTrackDeriverlyDate:
+        //               transportDetails?.expectedTrackDeriverlyDate,
+        //             notes: transportDetails.notes,
+        //           })
+        //           .then((response) => {
+        //             completedTransfers.push(response.data);
+        //             return response;
+        //           })
+        //       );
+        //     });
+        //   });
+        // }
       });
 
-      // Wait for all transfers to complete
-      await Promise.all(transferPromises);
+      const result = await Promise.all(transferPromises);
 
       // Refresh untransferred records
       await fetchUntransferredRecords();
@@ -426,22 +497,24 @@ const Transfer = () => {
       // await fetchTransferHistory();
 
       // Reset form and selections
-      setSelectedGradeItems([]);
-      setGradeQualityDetails({});
-      setTransportDetails({
-        truckNumber: "",
-        driverName: "",
-        driverPhone: "",
-        expectedTrackDeriverlyDate: "",
-        notes: "",
-      });
-      setLowGradeBags("");
-      setSelectedLowGrade(null);
-      setShowTransferModal(false);
-      setValidated(false);
-      setActiveGradeTab(null);
-      setLowGradeGrouping({});
-      setCombinedLowGradeBags({});
+      if (result) {
+        setSelectedGradeItems([]);
+        setGradeQualityDetails({});
+        setTransportDetails({
+          truckNumber: "",
+          driverName: "",
+          driverPhone: "",
+          expectedTrackDeriverlyDate: "",
+          notes: "",
+        });
+        setLowGradeBags("");
+        setSelectedLowGrade(null);
+        setShowTransferModal(false);
+        setValidated(false);
+        setActiveGradeTab(null);
+        setLowGradeGrouping({});
+        setCombinedLowGradeBags({});
+      }
 
       // Show success message with transport group ID for reference
       toast.success(
@@ -450,8 +523,7 @@ const Transfer = () => {
     } catch (error) {
       console.error("Transfer error:", error);
       toast.error(
-        `Failed to complete transfer: ${
-          error.response?.data?.error || error.message
+        `Failed to complete transfer: ${error.response?.data?.error || error.message
         }`
       );
     }
@@ -485,10 +557,22 @@ const Transfer = () => {
 
       const transfersByBaggingOff = {};
       allTransfers.forEach((transfer) => {
+        // Handle individual transfers (direct baggingOffId)
         if (!transfersByBaggingOff[transfer.baggingOffId]) {
           transfersByBaggingOff[transfer.baggingOffId] = [];
         }
         transfersByBaggingOff[transfer.baggingOffId].push(transfer);
+
+        // Handle grouped transfers (baggingOffIds in gradeDetails)
+        if (transfer.gradeDetails && transfer.gradeDetails.baggingOffIds && Array.isArray(transfer.gradeDetails.baggingOffIds)) {
+          transfer.gradeDetails.baggingOffIds.forEach((baggingOffId) => {
+            if (!transfersByBaggingOff[baggingOffId]) {
+              transfersByBaggingOff[baggingOffId] = [];
+            }
+            // Add the transfer to each bagging off ID in the group
+            transfersByBaggingOff[baggingOffId].push(transfer);
+          });
+        }
       });
 
       const processedRecords = (response.data || []).map((record) => {
@@ -547,8 +631,8 @@ const Transfer = () => {
     const filtered = flattenBatchRecords().filter((item) =>
       searchTerm
         ? item.displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.processingType.toLowerCase().includes(searchTerm.toLowerCase())
+        item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.processingType.toLowerCase().includes(searchTerm.toLowerCase())
         : true
     );
 
@@ -823,10 +907,10 @@ const Transfer = () => {
                                 </Badge>
                                 <span className="fw-bold">
                                   {getItemsGroupedByGradeAndBatch()
-                                    [grade].reduce(
-                                      (sum, item) => sum + item.kgValue,
-                                      0
-                                    )
+                                  [grade].reduce(
+                                    (sum, item) => sum + item.kgValue,
+                                    0
+                                  )
                                     .toFixed(2)}{" "}
                                   kg
                                 </span>
@@ -1068,7 +1152,7 @@ const Transfer = () => {
                                                           key={profile}
                                                           value={
                                                             profile !=
-                                                            "Select Cup Profile"
+                                                              "Select Cup Profile"
                                                               ? profile
                                                               : ""
                                                           }
@@ -1247,7 +1331,7 @@ const Transfer = () => {
                   // className='m-4'
                   checked={
                     selectedGradeItems.length ===
-                      flattenBatchRecords().length &&
+                    flattenBatchRecords().length &&
                     flattenBatchRecords().length > 0
                   }
                   onChange={(e) => handleSelectAllGradeItems(e.target.checked)}
@@ -1283,10 +1367,10 @@ const Transfer = () => {
                           title="Select All"
                           checked={
                             selectedGradeItems.length ===
-                              flattenBatchRecords().slice(
-                                (currentPage - 1) * (batchesPerPage ?? 1),
-                                (batchesPerPage ?? 1) * currentPage ?? 1
-                              ).length && flattenBatchRecords().length > 0
+                            flattenBatchRecords().slice(
+                              (currentPage - 1) * (batchesPerPage ?? 1),
+                              (batchesPerPage ?? 1) * currentPage ?? 1
+                            ).length && flattenBatchRecords().length > 0
                           }
                           onChange={(e) =>
                             handleSelectFirstPageGradeItems(e.target.checked)
@@ -1308,8 +1392,8 @@ const Transfer = () => {
                           backgroundColor: isGradeItemSelected(item.gradeKey)
                             ? `${processingTheme.neutral}`
                             : item.isHighGrade
-                            ? "rgba(0, 128, 128, 0.05)"
-                            : "transparent",
+                              ? "rgba(0, 128, 128, 0.05)"
+                              : "transparent",
                           borderLeft: item.isHighGrade
                             ? `4px solid ${processingTheme.primary}`
                             : "none",
@@ -1399,9 +1483,8 @@ const Transfer = () => {
                 </div>
                 <ul className="pagination mb-0">
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1418,9 +1501,8 @@ const Transfer = () => {
                   }).map((_, index) => (
                     <li
                       key={index}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -1431,12 +1513,11 @@ const Transfer = () => {
                     </li>
                   ))}
                   <li
-                    className={`page-item ${
-                      currentPage ===
+                    className={`page-item ${currentPage ===
                       Math.ceil(flattenBatchRecords().length / batchesPerPage)
-                        ? "disabled"
-                        : ""
-                    }`}
+                      ? "disabled"
+                      : ""
+                      }`}
                   >
                     <button
                       className="page-link"

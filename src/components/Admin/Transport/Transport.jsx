@@ -699,16 +699,26 @@ const Transport = () => {
           return (
             record.batchNo
               ?.toLowerCase()
-              ?.includes(searchTerm.toLowerCase().trim()) ||
+              ?.replace(/\s+/g, "")
+              ?.includes(
+                searchTerm.toLowerCase().trim()?.replace(/\s+/g, "")
+              ) ||
             record.truckNumber
               ?.toLowerCase()
-              ?.includes(searchTerm.toLowerCase().trim()) ||
+              ?.replace(/\s+/g, "")
+              ?.includes(
+                searchTerm.toLowerCase().trim()?.replace(/\s+/g, "")
+              ) ||
             record.driverName
               ?.toLowerCase()
-              ?.includes(searchTerm.toLowerCase().trim()) ||
+              ?.replace(/\s+/g, "")
+              ?.includes(
+                searchTerm.toLowerCase().trim()?.replace(/\s+/g, "")
+              ) ||
             record?.baggingOff?.processing?.cws?.name
               ?.toLowerCase()
-              ?.includes(searchTerm?.toLowerCase().trim())
+              ?.replace(/\s+/g, "")
+              ?.includes(searchTerm?.toLowerCase().trim()?.replace(/\s+/g, ""))
           );
         });
         if (!hasMatch) return false;

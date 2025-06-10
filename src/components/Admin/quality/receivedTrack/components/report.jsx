@@ -43,6 +43,7 @@ export const DerivalyTable = () => {
     cws: null,
     quantity: null,
     driver: null,
+    trackPlatNumber: null,
   });
   const [searchQuery, setSearchQuery] = useState(null);
 
@@ -99,18 +100,28 @@ export const DerivalyTable = () => {
         (element) =>
           element?.driverName
             ?.toLowerCase()
-            .includes(searchQuery?.toLowerCase()) ||
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
           element?.truckNumber
             ?.toLowerCase()
-            .includes(searchQuery?.toLowerCase()) ||
-          element?.cws?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
+          element?.cws
+            ?.toLowerCase()
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
           element?.transferGroupId
             ?.toLowerCase()
-            .includes(searchQuery?.toLowerCase()) ||
-          element?.transferGroupId?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
+          element?.transferGroupId
+            ?.toLowerCase()
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
           element?.driverPhone
             ?.toLowerCase()
-            .includes(searchQuery?.toLowerCase())
+            ?.replace(/\s+/g, "")
+            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, ""))
       )
       ?.slice(0, itemsPerPage);
     setAllTransportInfo((prev) => data);
@@ -173,6 +184,7 @@ export const DerivalyTable = () => {
             setSelectedTransportInfo((prev) => ({
               ...prev,
               cws: item?.cws,
+              trackPlatNumber: item?.truckNumber,
               quantity: Object.values(item?.outputKgs).reduce(
                 (acc, value) => parseInt(value, 10) + acc,
                 0
