@@ -435,7 +435,7 @@ const Transfer = () => {
             transferPromises.push(axios.post(`${API_URL}/transfer`, payload));
           });
         }
-        //else {
+        //         else {
         //   // Handle individual batch transfers
         //   gradeItems.forEach((groupedItem) => {
         //     groupedItem.records.forEach((originalRecord) => {
