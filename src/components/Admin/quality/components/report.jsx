@@ -739,17 +739,19 @@ const ShortSummary = () => {
                 ))}
               </Form.Select>
             </Col>
-            <Col style={{ marginLeft: "8rem" }}>
-              <div className="d-flex">
-                <Button
-                  variant="outline-success"
-                  className="me-2"
-                  onClick={exportToExcel}
-                >
-                  <i className="bi bi-download me-1"></i> Download
-                </Button>
-              </div>
-            </Col>
+            {isAdmin && (
+              <Col style={{ marginLeft: "8rem" }}>
+                <div className="d-flex">
+                  <Button
+                    variant="outline-success"
+                    className="me-2"
+                    onClick={exportToExcel}
+                  >
+                    <i className="bi bi-download me-1"></i> Download
+                  </Button>
+                </div>
+              </Col>
+            )}
           </Row>
         </Card.Body>
 
