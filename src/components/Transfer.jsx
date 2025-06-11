@@ -547,12 +547,14 @@ const Transfer = () => {
 
   const fetchUntransferredRecords = async () => {
     try {
-      const response = await axios.get(
-        `${API_URL}/bagging-off/cws/${userInfo.cwsId}`
-      );
-      const transfersResponse = await axios.get(
-        `${API_URL}/transfer/cws/${userInfo.cwsId}`
-      );
+
+      const [response, transfersResponse, wetTransported] = await Promise.all([
+        axios.get(`${API_URL}/bagging-off/cws/${userInfo.cwsId}`),
+        axios.get(`${API_URL}/transfer/cws/${userInfo.cwsId}`),
+        axios.get(`${API_URL}/wet-transfer/transported/byreceiver/cws/${userInfo.cwsId}`),
+      ])
+
+
       const allTransfers = transfersResponse.data || [];
 
       const transfersByBaggingOff = {};
@@ -569,21 +571,53 @@ const Transfer = () => {
             if (!transfersByBaggingOff[baggingOffId]) {
               transfersByBaggingOff[baggingOffId] = [];
             }
-            // Add the transfer to each bagging off ID in the group
             transfersByBaggingOff[baggingOffId].push(transfer);
           });
         }
       });
 
+
+      const wetTransportedGrades = {};
+      (wetTransported.data || []).forEach(wt => {
+        const baggingOffIds = [];
+
+        if (wt.baggingOffId) {
+          baggingOffIds.push(wt.baggingOffId);
+        }
+
+        if (wt.gradeDetails && wt.gradeDetails.baggingOffIds && Array.isArray(wt.gradeDetails.baggingOffIds)) {
+          baggingOffIds.push(...wt.gradeDetails.baggingOffIds);
+        }
+
+        baggingOffIds.forEach(baggingOffId => {
+          if (!wetTransportedGrades[baggingOffId]) {
+            wetTransportedGrades[baggingOffId] = new Set();
+          }
+
+          if (wt.outputKgs) {
+            Object.keys(wt.outputKgs).forEach(grade => {
+              wetTransportedGrades[baggingOffId].add(grade);
+            });
+          }
+        });
+      });
+
       const processedRecords = (response.data || []).map((record) => {
         const recordTransfers = transfersByBaggingOff[record.id] || [];
         const transferredGrades = {};
+        const wetTransportedGradesForRecord = wetTransportedGrades[record.id] || new Set();
+
         recordTransfers.forEach((transfer) => {
           if (transfer.outputKgs) {
             Object.keys(transfer.outputKgs).forEach((grade) => {
               transferredGrades[grade] = true;
             });
           }
+        });
+
+
+        wetTransportedGradesForRecord.forEach(grade => {
+          transferredGrades[grade] = true;
         });
 
         return {
@@ -600,7 +634,10 @@ const Transfer = () => {
         };
       });
 
-      const untransferred = processedRecords.filter(
+
+      const filteredRecords = processedRecords;
+
+      const untransferred = filteredRecords.filter(
         (record) => record.hasUntransferredGrades
       );
       const grouped = untransferred.reduce((acc, record) => {
