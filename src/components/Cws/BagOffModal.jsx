@@ -35,16 +35,16 @@
 //       setLoading(true);
 //       setError('');
 //       const response = await axios.get(`${API_URL}/wet-transfer/batch/${batchNo}`);
-      
+
 //       // Handle array response and pick the first item (or handle as needed)
 //       if (response.data && response.data.length > 0) {
 //         console.log('Batch details:', response.data[0]); // Log the first item for debugging
 //         setBatchDetails(response.data[0]); // Use the first item in the array
-        
+
 //         // Initialize bagOffOutputKgs based on batch type
 //         const isSecondaryBatch = response.data[0]?.batchNo?.endsWith('-2') || 
 //                                  response.data[0]?.batchNo?.endsWith('B');
-        
+
 //         if (isSecondaryBatch) {
 //           setBagOffOutputKgs({ B1: '', B2: '' });
 //         } else {
@@ -94,7 +94,7 @@
 //   const handleSubmit = async () => {
 //     try {
 //       setLoading(true);
-      
+
 //       // Filter out empty values
 //       const outputData = Object.entries(bagOffOutputKgs)
 //         .filter(([_, value]) => value !== '')
@@ -102,20 +102,20 @@
 //           obj[key] = parseFloat(value);
 //           return obj;
 //         }, {});
-        
+
 //       // Make sure we have valid data
 //       if (Object.keys(outputData).length === 0) {
 //         setError('Please enter at least one output value.');
 //         setLoading(false);
 //         return;
 //       }
-      
+
 //       // Format the processing type to match expected format
 //       let processingType = batchDetails?.processingType || 'FULLY WASHED';
 //       if (processingType === 'FULLY_WASHED') {
 //         processingType = 'FULLY WASHED';
 //       }
-      
+
 //       // Create proper request payload with all required fields
 //       const payload = {
 //         batchNo: batchNo,
@@ -126,20 +126,20 @@
 //         notes: notes,
 //         existingProcessing: batchDetails?.processingId ? { processingId: batchDetails.processingId } : undefined
 //       };
-      
+
 //       console.log('Sending payload to bagging-off API:', payload);
-      
+
 //       const response = await axios.post(`${API_URL}/bagging-off`, payload);
 //       console.log('Response from bagging-off API:', response.data);
-      
+
 //       // Consider any response as successful, even empty array
 //       setLoading(false);
-      
+
 //       // Call the success callback if provided
 //       if (onSuccess && typeof onSuccess === 'function') {
 //         onSuccess(response.data);
 //       }
-      
+
 //       onHide();
 //     } catch (error) {
 //       console.error('Error submitting bag off:', error);
@@ -302,7 +302,7 @@
 //                       <td>{batchDetails.status}</td>
 //                       <th>Date</th>
 //                       <td>{new Date(batchDetails.date).toLocaleDateString()}</td>
-                     
+
 //                     </tr>
 //                   </tbody>
 //                 </table>
@@ -370,13 +370,13 @@ import { Modal, Button, Form, Alert, Spinner, Row, Col, Table } from 'react-boot
 import API_URL from '../../constants/Constants';
 
 const processingTheme = {
-    primary: '#008080',    // Sucafina teal
-    secondary: '#4FB3B3',  // Lighter teal
-    neutral: '#E6F3F3',    // Very light teal
-    tableHover: '#F8FAFA', // Ultra light teal for table hover
-    success: '#28a745',    // Success green
-    warning: '#ffc107',    // Warning yellow
-    danger: '#dc3545',     // Danger red
+  primary: '#008080',    // Sucafina teal
+  secondary: '#4FB3B3',  // Lighter teal
+  neutral: '#E6F3F3',    // Very light teal
+  tableHover: '#F8FAFA', // Ultra light teal for table hover
+  success: '#28a745',    // Success green
+  warning: '#ffc107',    // Warning yellow
+  danger: '#dc3545',     // Danger red
 };
 
 const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
@@ -396,7 +396,7 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
     if (show && batchNo) {
       fetchBatchDetails();
       fetchExistingBaggingOffs();
-      
+
       // Reset form state when modal opens
       if (!isEditing) {
         setBagOffOutputKgs({});
@@ -411,12 +411,12 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
       setLoading(true);
       setError('');
       const response = await axios.get(`${API_URL}/wet-transfer/batch/${batchNo}`);
-      
+
       // Handle array response and pick the first item
       if (response.data && response.data.length > 0) {
         console.log('Batch details:', response.data[0]);
         setBatchDetails(response.data[0]);
-        
+
         // Initialize bagOffOutputKgs based on batch type if not editing
         if (!isEditing) {
           initializeOutputFields(response.data[0]);
@@ -445,17 +445,17 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
   };
 
   const initializeOutputFields = (batchData) => {
-    const isSecondaryBatch = batchData?.batchNo?.endsWith('-2') || 
-                           batchData?.batchNo?.endsWith('B');
-    
+    const isSecondaryBatch = batchData?.batchNo?.endsWith('-2') ||
+      batchData?.batchNo?.endsWith('B');
+
     if (isSecondaryBatch) {
       setBagOffOutputKgs({ B1: '', B2: '' });
     } else {
       // For FULLY WASHED, we use A0, A1, etc.
-      if (batchData?.processingType === 'FULLY WASHED' || 
-          batchData?.processingType === 'FULLY_WASHED') {
+      if (batchData?.processingType === 'FULLY WASHED' ||
+        batchData?.processingType === 'FULLY_WASHED') {
         setBagOffOutputKgs({ A0: '', A1: '', A2: '', A3: '' });
-      } 
+      }
       // For NATURAL processing
       else if (batchData?.processingType === 'NATURAL') {
         setBagOffOutputKgs({ N1: '', N2: '' });
@@ -487,7 +487,7 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
 
   const calculateTotalsByGrade = () => {
     const totals = {};
-    
+
     savedBaggingOffs.forEach(record => {
       Object.entries(record.outputKgs).forEach(([grade, value]) => {
         if (value && parseFloat(value) > 0) {
@@ -498,7 +498,7 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
         }
       });
     });
-    
+
     return totals;
   };
 
@@ -537,7 +537,7 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
     Object.entries(record.outputKgs).forEach(([key, value]) => {
       outputKgs[key] = value !== null && value !== undefined ? value.toString() : '';
     });
-    
+
     setBagOffOutputKgs(outputKgs);
   };
 
@@ -549,10 +549,14 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
     setSelectedDate(new Date().toISOString().split('T')[0]);
   };
 
+  // const handleSubmit = () => {
+  //   console.log('handleSubmit called ')
+  // }
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      
+
       // Filter out empty values
       const outputData = Object.entries(bagOffOutputKgs)
         .filter(([_, value]) => value !== '')
@@ -560,20 +564,20 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
           obj[key] = parseFloat(value);
           return obj;
         }, {});
-        
+
       // Make sure we have valid data
       if (Object.keys(outputData).length === 0) {
         setError('Please enter at least one output value.');
         setLoading(false);
         return;
       }
-      
+
       // Format the processing type to match expected format
       let processingType = batchDetails?.processingType || 'FULLY WASHED';
       if (processingType === 'FULLY_WASHED') {
         processingType = 'FULLY WASHED';
       }
-      
+
       // Create proper request payload with all required fields
       let payload = {
         batchNo: batchNo,
@@ -585,11 +589,11 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
         progressive: progressiveMode,
         existingProcessing: batchDetails?.processingId ? { processingId: batchDetails.processingId } : undefined
       };
-      
+
       console.log('Sending payload to bagging-off API:', payload);
-      
+
       let response;
-      
+
       if (isEditing && editingRecord) {
         // If editing, use PUT to update the existing record
         response = await axios.put(`${API_URL}/bagging-off/${editingRecord.id}`, {
@@ -600,29 +604,29 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
         // If not editing, create a new record
         response = await axios.post(`${API_URL}/bagging-off`, payload);
       }
-      
+
       console.log('Response from bagging-off API:', response.data);
-      
+
       // Reset form if not in progressive mode
       if (!progressiveMode) {
         setBagOffOutputKgs({});
         setNotes('');
       }
-      
+
       // Reset editing state
       setIsEditing(false);
       setEditingRecord(null);
-      
+
       // Refresh the bagging offs data
       await fetchExistingBaggingOffs();
-      
+
       // Call the success callback if provided
       if (onSuccess && typeof onSuccess === 'function') {
         onSuccess(response.data);
       }
-      
+
       setLoading(false);
-      
+
       // Don't close the modal if in progressive mode
       if (!progressiveMode && !isEditing) {
         onHide();
@@ -636,57 +640,57 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
   };
 
   const handleCompleteBaggingOff = async () => {
-  try {
-    setLoading(true);
-    
-    // Check if there are new values to submit
-    const hasNewValues = Object.values(bagOffOutputKgs).some(val => val !== '');
-    
-    // If there are new values, submit them first
-    if (hasNewValues) {
-      await handleSubmit();
-    }
-    
-    // Update all existing entries to "COMPLETED"
-    if (savedBaggingOffs.length > 0) {
-      await Promise.all(
-        savedBaggingOffs.map(entry =>
-          axios.put(`${API_URL}/bagging-off/${entry.id}`, {
-            ...entry,
-            status: "RECEIVER_COMPLETED",
-          })
-        )
-      );
-      
-      // Also update the batch status to COMPLETED
-      if (batchDetails && batchDetails.id) {
-        try {
-          await axios.put(`${API_URL}/wet-transfer/batch/${batchNo}`, {
-            status: "RECEIVER_COMPLETED"
-          });
-        } catch (batchUpdateError) {
-          console.error('Error updating batch status:', batchUpdateError);
-          // Continue even if this fails
+    try {
+      setLoading(true);
+
+      // Check if there are new values to submit
+      // const hasNewValues = Object.values(bagOffOutputKgs).some(val => val !== '');
+
+      // // If there are new values, submit them first
+      // if (hasNewValues) {
+      //   await handleSubmit();
+      // }
+
+      // Update all existing entries to "COMPLETED"
+      if (savedBaggingOffs.length > 0) {
+        await Promise.all(
+          savedBaggingOffs.map(entry =>
+            axios.put(`${API_URL}/bagging-off/completeWetbagggingoff/${entry.id}`, {
+              ...entry,
+              status: "RECEIVER_COMPLETED",
+            })
+          )
+        );
+
+        // Also update the batch status to COMPLETED
+        if (batchDetails && batchDetails.id) {
+          try {
+            await axios.put(`${API_URL}/wet-transfer/batch/${batchNo}`, {
+              status: "RECEIVER_COMPLETED"
+            });
+          } catch (batchUpdateError) {
+            console.error('Error updating batch status:', batchUpdateError);
+            // Continue even if this fails
+          }
         }
       }
+
+      // Refresh the data
+      await fetchExistingBaggingOffs();
+
+      // Call the success callback with completed flag
+      if (onSuccess && typeof onSuccess === 'function') {
+        onSuccess({ completed: true, batchNo });
+      }
+
+      setLoading(false);
+      onHide();
+    } catch (error) {
+      console.error('Error completing bagging off:', error);
+      setError('Failed to complete bagging off process.');
+      setLoading(false);
     }
-    
-    // Refresh the data
-    await fetchExistingBaggingOffs();
-    
-    // Call the success callback with completed flag
-    if (onSuccess && typeof onSuccess === 'function') {
-      onSuccess({ completed: true, batchNo });
-    }
-    
-    setLoading(false);
-    onHide();
-  } catch (error) {
-    console.error('Error completing bagging off:', error);
-    setError('Failed to complete bagging off process.');
-    setLoading(false);
-  }
-};
+  };
 
   const isSecondaryBatch = batchDetails?.batchNo?.endsWith('-2') || batchDetails?.batchNo?.endsWith('B');
   const processingType = batchDetails?.processingType || 'FULLY WASHED';
@@ -793,7 +797,7 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
               }}
             />
           </Col>
-          
+
         </>
       );
     }
@@ -997,14 +1001,14 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
       <Modal.Footer>
         {isEditing ? (
           <>
-            <Button 
-              variant="outline-secondary" 
+            <Button
+              variant="outline-secondary"
               onClick={cancelEdit}
             >
               Cancel Edit
             </Button>
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               onClick={handleSubmit}
               disabled={loading || !batchDetails}
               style={{
@@ -1017,14 +1021,14 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
           </>
         ) : (
           <>
-            <Button 
-              variant="outline-secondary" 
+            <Button
+              variant="outline-secondary"
               onClick={onHide}
             >
               Cancel
             </Button>
-            <Button 
-              variant="outline-success" 
+            <Button
+              variant="outline-success"
               onClick={handleSubmit}
               disabled={loading || !batchDetails || Object.values(bagOffOutputKgs).every(v => v === '')}
               style={{
@@ -1033,8 +1037,8 @@ const BagOffModal = ({ show, onHide, batchNo, onSuccess }) => {
             >
               {loading ? <Spinner animation="border" size="sm" /> : progressiveMode ? 'Save & Continue' : 'Save'}
             </Button>
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               onClick={handleCompleteBaggingOff}
               disabled={loading || !batchDetails}
               style={{

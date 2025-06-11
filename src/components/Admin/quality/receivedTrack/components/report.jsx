@@ -35,7 +35,7 @@ export const DerivalyTable = () => {
     B2: null,
     relatedCategories: [],
   });
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
   const [allTransportInfo, setAllTransportInfo] = useState([]);
 
@@ -78,24 +78,27 @@ export const DerivalyTable = () => {
     onUpdateSuccess
   );
 
-  useEffect(() => {
-    const data = allDelivaries?.data?.trucks ?? [];
-    let skip = (currentPage - 1) * itemsPerPage;
-    if (skip >= allTransportInfo.length + itemsPerPage - 1) {
-      const res = data.slice(0, itemsPerPage);
-      setAllTransportInfo(res);
-    } else {
-      const res = data.slice(skip, skip + itemsPerPage);
-      setAllTransportInfo(res);
-    }
-    setSearchQuery("");
-  }, [allDelivaries, selectedTransportInfo, currentPage, itemsPerPage]);
+  // useEffect(() => {
+  //   const data = allDelivaries?.data?.trucks ?? [];
+  //   let skip = (currentPage - 1) * itemsPerPage;
+  //   if (skip >= allTransportInfo.length + itemsPerPage - 1) {
+  //     const res = data.slice(0, itemsPerPage);
+  //     // setAllTransportInfo(res);
+  //   } else {
+  //     const res = data.slice(skip, skip + itemsPerPage);
+  //     // setAllTransportInfo(res);
+  //   }
+  // }, [allDelivaries, selectedTransportInfo, currentPage, itemsPerPage]);
   useEffect(() => {
     setSearchQuery("");
   }, [currentPage]);
 
   useEffect(() => {
-    const data = (allDelivaries?.data?.trucks ?? [])
+    const data = allDelivaries?.data?.trucks ?? [];
+    let skip = (currentPage - 1) * itemsPerPage;
+    let res = data;
+
+    const d = res
       ?.filter(
         (element) =>
           element?.driverName
@@ -124,14 +127,24 @@ export const DerivalyTable = () => {
             .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, ""))
       )
       ?.slice(0, itemsPerPage);
-    setAllTransportInfo((prev) => data);
-  }, [searchQuery]);
+    if (skip >= allTransportInfo.length + itemsPerPage - 1) {
+      res = d.slice(0, itemsPerPage);
+    } else {
+      res = d.slice(skip, skip + itemsPerPage);
+    }
+    setAllTransportInfo(() => d);
+  }, [
+    searchQuery,
+    allDelivaries,
+    selectedTransportInfo,
+    currentPage,
+    itemsPerPage,
+  ]);
   const handleFormSubmission = () => {
     mutate({ categories, activatedBatchesData });
   };
   // columns
 
-  console.log("item", allTransportInfo);
   const columns = [
     {
       field: "batchNo",
@@ -223,8 +236,8 @@ export const DerivalyTable = () => {
         <ReusableTable
           data={allTransportInfo}
           columns={columns}
-          pageSizeOptions={[5, 10, 20, 1000, 2000]}
-          initialPageSize={5}
+          pageSizeOption={[5, 50, 100, 1000, 2000]}
+          initialPageSize={50}
           isLoading={false}
           onPageSizeChange={setItemsPerPage}
           rowKeyField="id"
@@ -250,7 +263,16 @@ export const DerivalyTable = () => {
         confirmButtonText="Confirm"
         cancelButtonText="Cancel"
         modalSize="xl"
-        onConfirmDisalbe={activatedBatchesData.length == 0}
+        onConfirmDisalbe={
+          activatedBatchesData.length == 0
+          //  &&Object.values(categories).filter(
+          //   (element) =>
+          //     element !== null &&
+          //     element !== 0 &&
+          //     element !== undefined &&
+          //     element !== ""
+          // ).length <= 1
+        }
       >
         {updatingError && (
           <Error

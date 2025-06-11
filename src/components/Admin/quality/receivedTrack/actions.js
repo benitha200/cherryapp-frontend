@@ -8,7 +8,6 @@ import {
 import { sampleStorage } from "../../../../apis/sampleStorage";
 import toast from "react-hot-toast";
 
-
 export const GetAllDelivaries = (page, size) => {
   const {
     isPending: getAllPending,
