@@ -46,6 +46,7 @@ export const DerivalyTable = () => {
     trackPlatNumber: null,
   });
   const [searchQuery, setSearchQuery] = useState(null);
+  const [onSave, setOnSave] = useState(false);
 
   // logs
 
@@ -56,39 +57,37 @@ export const DerivalyTable = () => {
   };
 
   const onUpdateSuccess = () => {
-    handleopenModel();
-    setSelectedId({ trackId: null, transferDate: null, transferGroupId: null });
+    onSave ? "" : handleopenModel();
+    onSave
+      ? ""
+      : setSelectedId({
+          trackId: null,
+          transferDate: null,
+          transferGroupId: null,
+        });
     setActivivatedBatches([]);
     setActivatedBatchesData([]);
-    setCategories({
-      c1: null,
-      c2: null,
-      s86: null,
-      s87: null,
-      s88: null,
-      A2: null,
-      A3: null,
-      B1: null,
-      B2: null,
-      relatedCategories: [],
-    });
+    onSave
+      ? ""
+      : setCategories({
+          c1: null,
+          c2: null,
+          s86: null,
+          s87: null,
+          s88: null,
+          A2: null,
+          A3: null,
+          B1: null,
+          B2: null,
+          relatedCategories: [],
+        });
+    setOnSave(false);
   };
   const { updatingError, isUpdating, mutate } = UpdateDelivary(
     selectedId,
     onUpdateSuccess
   );
 
-  // useEffect(() => {
-  //   const data = allDelivaries?.data?.trucks ?? [];
-  //   let skip = (currentPage - 1) * itemsPerPage;
-  //   if (skip >= allTransportInfo.length + itemsPerPage - 1) {
-  //     const res = data.slice(0, itemsPerPage);
-  //     // setAllTransportInfo(res);
-  //   } else {
-  //     const res = data.slice(skip, skip + itemsPerPage);
-  //     // setAllTransportInfo(res);
-  //   }
-  // }, [allDelivaries, selectedTransportInfo, currentPage, itemsPerPage]);
   useEffect(() => {
     setSearchQuery("");
   }, [currentPage]);
@@ -260,7 +259,7 @@ export const DerivalyTable = () => {
         onConfirm={handleFormSubmission}
         isLoading={isUpdating}
         title="Coffee Quality accessment"
-        confirmButtonText="Confirm"
+        confirmButtonText="Complite"
         cancelButtonText="Cancel"
         modalSize="xl"
         onConfirmDisalbe={
@@ -289,10 +288,12 @@ export const DerivalyTable = () => {
         <ProcessedBatches
           activatedBatches={activatedBatches}
           setActivivatedBatches={setActivivatedBatches}
-          activatedBatchesData={activatedBatchesData}
+          handleSave={handleFormSubmission}
           setActivatedBatchesData={setActivatedBatchesData}
           selectedTrackPlat={selectedId}
           setCategories={setCategories}
+          setOnSave={setOnSave}
+          disableSave={activatedBatches.length <= 0 || isUpdating}
         />
       </GenericModel>
     </div>
