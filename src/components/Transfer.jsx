@@ -138,7 +138,7 @@ const Transfer = () => {
       ? { day: parseInt(dateMatch[1], 10), month: parseInt(dateMatch[2], 10) }
       : { day: 0, month: 0 };
   };
-
+  console.log(selectedGradeItems, ":::::::::::");
   const handleGradeItemSelection = (gradeKey, isSelected) => {
     setSelectedGradeItems((prev) =>
       isSelected ? [...prev, gradeKey] : prev.filter((key) => key !== gradeKey)
@@ -151,7 +151,9 @@ const Transfer = () => {
 
   const handleSelectAllGradeItems = (isSelected) => {
     setSelectedGradeItems(
-      isSelected ? flattenBatchRecords().map((item) => item.gradeKey) : []
+      isSelected
+        ? flattenBatchRecords().map((item) => item.combinedGradeKey)
+        : []
     );
   };
 
@@ -159,18 +161,18 @@ const Transfer = () => {
     setSelectedGradeItems(
       isSelected
         ? flattenBatchRecords()
-          .slice(
-            (currentPage - 1 ?? 0) * batchesPerPage,
-            (batchesPerPage ?? 10) * currentPage ?? 1
-          )
-          .map((item) => item.gradeKey)
+            .slice(
+              (currentPage - 1 ?? 0) * batchesPerPage,
+              (batchesPerPage ?? 10) * currentPage ?? 1
+            )
+            .map((item) => item.combinedGradeKey)
         : []
     );
   };
 
   const getSelectedGradeItems = () => {
     return flattenBatchRecords().filter((item) =>
-      selectedGradeItems.includes(item.gradeKey)
+      selectedGradeItems.includes(item.combinedGradeKey)
     );
   };
 
@@ -365,9 +367,7 @@ const Transfer = () => {
                 return response;
               })
           );
-        }
-        else {
-
+        } else {
           const itemsByBatchNo = {};
           gradeItems.forEach((groupedItem) => {
             groupedItem.records.forEach((originalRecord) => {
@@ -399,10 +399,13 @@ const Transfer = () => {
                 gradeDetails[originalRecord.grade] = {
                   numberOfBags: 0,
                   cupProfile: isHighGrade
-                    ? gradeQualityDetails[batchGradeKey]?.cupProfile || CUP_PROFILES[0]
+                    ? gradeQualityDetails[batchGradeKey]?.cupProfile ||
+                      CUP_PROFILES[0]
                     : undefined,
                   moistureContent: isHighGrade
-                    ? parseFloat(gradeQualityDetails[batchGradeKey]?.moistureContent || 0)
+                    ? parseFloat(
+                        gradeQualityDetails[batchGradeKey]?.moistureContent || 0
+                      )
                     : undefined,
                 };
               }
@@ -428,7 +431,8 @@ const Transfer = () => {
               truckNumber: transportDetails.truckNumber?.replace(/\s+/g, ""),
               driverName: transportDetails.driverName,
               driverPhone: transportDetails.driverPhone,
-              expectedTrackDeriverlyDate: transportDetails?.expectedTrackDeriverlyDate,
+              expectedTrackDeriverlyDate:
+                transportDetails?.expectedTrackDeriverlyDate,
               notes: transportDetails.notes,
             };
 
@@ -523,7 +527,8 @@ const Transfer = () => {
     } catch (error) {
       console.error("Transfer error:", error);
       toast.error(
-        `Failed to complete transfer: ${error.response?.data?.error || error.message
+        `Failed to complete transfer: ${
+          error.response?.data?.error || error.message
         }`
       );
     }
@@ -547,13 +552,13 @@ const Transfer = () => {
 
   const fetchUntransferredRecords = async () => {
     try {
-
       const [response, transfersResponse, wetTransported] = await Promise.all([
         axios.get(`${API_URL}/bagging-off/cws/${userInfo.cwsId}`),
         axios.get(`${API_URL}/transfer/cws/${userInfo.cwsId}`),
-        axios.get(`${API_URL}/wet-transfer/transported/byreceiver/cws/${userInfo.cwsId}`),
-      ])
-
+        axios.get(
+          `${API_URL}/wet-transfer/transported/byreceiver/cws/${userInfo.cwsId}`
+        ),
+      ]);
 
       const allTransfers = transfersResponse.data || [];
 
@@ -566,7 +571,11 @@ const Transfer = () => {
         transfersByBaggingOff[transfer.baggingOffId].push(transfer);
 
         // Handle grouped transfers (baggingOffIds in gradeDetails)
-        if (transfer.gradeDetails && transfer.gradeDetails.baggingOffIds && Array.isArray(transfer.gradeDetails.baggingOffIds)) {
+        if (
+          transfer.gradeDetails &&
+          transfer.gradeDetails.baggingOffIds &&
+          Array.isArray(transfer.gradeDetails.baggingOffIds)
+        ) {
           transfer.gradeDetails.baggingOffIds.forEach((baggingOffId) => {
             if (!transfersByBaggingOff[baggingOffId]) {
               transfersByBaggingOff[baggingOffId] = [];
@@ -576,26 +585,29 @@ const Transfer = () => {
         }
       });
 
-
       const wetTransportedGrades = {};
-      (wetTransported.data || []).forEach(wt => {
+      (wetTransported.data || []).forEach((wt) => {
         const baggingOffIds = [];
 
         if (wt.baggingOffId) {
           baggingOffIds.push(wt.baggingOffId);
         }
 
-        if (wt.gradeDetails && wt.gradeDetails.baggingOffIds && Array.isArray(wt.gradeDetails.baggingOffIds)) {
+        if (
+          wt.gradeDetails &&
+          wt.gradeDetails.baggingOffIds &&
+          Array.isArray(wt.gradeDetails.baggingOffIds)
+        ) {
           baggingOffIds.push(...wt.gradeDetails.baggingOffIds);
         }
 
-        baggingOffIds.forEach(baggingOffId => {
+        baggingOffIds.forEach((baggingOffId) => {
           if (!wetTransportedGrades[baggingOffId]) {
             wetTransportedGrades[baggingOffId] = new Set();
           }
 
           if (wt.outputKgs) {
-            Object.keys(wt.outputKgs).forEach(grade => {
+            Object.keys(wt.outputKgs).forEach((grade) => {
               wetTransportedGrades[baggingOffId].add(grade);
             });
           }
@@ -605,7 +617,8 @@ const Transfer = () => {
       const processedRecords = (response.data || []).map((record) => {
         const recordTransfers = transfersByBaggingOff[record.id] || [];
         const transferredGrades = {};
-        const wetTransportedGradesForRecord = wetTransportedGrades[record.id] || new Set();
+        const wetTransportedGradesForRecord =
+          wetTransportedGrades[record.id] || new Set();
 
         recordTransfers.forEach((transfer) => {
           if (transfer.outputKgs) {
@@ -615,8 +628,7 @@ const Transfer = () => {
           }
         });
 
-
-        wetTransportedGradesForRecord.forEach(grade => {
+        wetTransportedGradesForRecord.forEach((grade) => {
           transferredGrades[grade] = true;
         });
 
@@ -633,7 +645,6 @@ const Transfer = () => {
             ),
         };
       });
-
 
       const filteredRecords = processedRecords;
 
@@ -668,8 +679,8 @@ const Transfer = () => {
     const filtered = flattenBatchRecords().filter((item) =>
       searchTerm
         ? item.displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.processingType.toLowerCase().includes(searchTerm.toLowerCase())
+          item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.processingType.toLowerCase().includes(searchTerm.toLowerCase())
         : true
     );
 
@@ -678,6 +689,7 @@ const Transfer = () => {
     return filtered.slice(indexOfFirstBatch, indexOfLastBatch);
   };
 
+  console.log(getPaginatedBatches(), "::::::::::::::::::::::");
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Calculate total KGs for a grade group
@@ -898,7 +910,10 @@ const Transfer = () => {
                                 size="sm"
                                 variant="outline-danger"
                                 onClick={() =>
-                                  handleGradeItemSelection(item.gradeKey, false)
+                                  handleGradeItemSelection(
+                                    item.combinedGradeKey,
+                                    false
+                                  )
                                 }
                               >
                                 Remove
@@ -944,10 +959,10 @@ const Transfer = () => {
                                 </Badge>
                                 <span className="fw-bold">
                                   {getItemsGroupedByGradeAndBatch()
-                                  [grade].reduce(
-                                    (sum, item) => sum + item.kgValue,
-                                    0
-                                  )
+                                    [grade].reduce(
+                                      (sum, item) => sum + item.kgValue,
+                                      0
+                                    )
                                     .toFixed(2)}{" "}
                                   kg
                                 </span>
@@ -1189,7 +1204,7 @@ const Transfer = () => {
                                                           key={profile}
                                                           value={
                                                             profile !=
-                                                              "Select Cup Profile"
+                                                            "Select Cup Profile"
                                                               ? profile
                                                               : ""
                                                           }
@@ -1368,7 +1383,7 @@ const Transfer = () => {
                   // className='m-4'
                   checked={
                     selectedGradeItems.length ===
-                    flattenBatchRecords().length &&
+                      flattenBatchRecords().length &&
                     flattenBatchRecords().length > 0
                   }
                   onChange={(e) => handleSelectAllGradeItems(e.target.checked)}
@@ -1404,10 +1419,10 @@ const Transfer = () => {
                           title="Select All"
                           checked={
                             selectedGradeItems.length ===
-                            flattenBatchRecords().slice(
-                              (currentPage - 1) * (batchesPerPage ?? 1),
-                              (batchesPerPage ?? 1) * currentPage ?? 1
-                            ).length && flattenBatchRecords().length > 0
+                              flattenBatchRecords().slice(
+                                (currentPage - 1) * (batchesPerPage ?? 1),
+                                (batchesPerPage ?? 1) * currentPage ?? 1
+                              ).length && flattenBatchRecords().length > 0
                           }
                           onChange={(e) =>
                             handleSelectFirstPageGradeItems(e.target.checked)
@@ -1429,8 +1444,8 @@ const Transfer = () => {
                           backgroundColor: isGradeItemSelected(item.gradeKey)
                             ? `${processingTheme.neutral}`
                             : item.isHighGrade
-                              ? "rgba(0, 128, 128, 0.05)"
-                              : "transparent",
+                            ? "rgba(0, 128, 128, 0.05)"
+                            : "transparent",
                           borderLeft: item.isHighGrade
                             ? `4px solid ${processingTheme.primary}`
                             : "none",
@@ -1441,10 +1456,10 @@ const Transfer = () => {
                             type="checkbox"
                             id={`check-${item.id}`}
                             aria-label={`Select batch ${item.displayId}`}
-                            checked={isGradeItemSelected(item.gradeKey)}
+                            checked={isGradeItemSelected(item.combinedGradeKey)}
                             onChange={(e) =>
                               handleGradeItemSelection(
-                                item.gradeKey,
+                                item.combinedGradeKey,
                                 e.target.checked
                               )
                             }
@@ -1479,18 +1494,18 @@ const Transfer = () => {
                           <Button
                             size="sm"
                             variant={
-                              isGradeItemSelected(item.gradeKey)
+                              isGradeItemSelected(item.combinedGradeKey)
                                 ? "outline-danger"
                                 : "outline-primary"
                             }
                             onClick={() =>
                               handleGradeItemSelection(
-                                item.gradeKey,
-                                !isGradeItemSelected(item.gradeKey)
+                                item.combinedGradeKey,
+                                !isGradeItemSelected(item.combinedGradeKey)
                               )
                             }
                           >
-                            {isGradeItemSelected(item.gradeKey)
+                            {isGradeItemSelected(item.combinedGradeKey)
                               ? "Deselect"
                               : "Select"}
                           </Button>
@@ -1520,8 +1535,9 @@ const Transfer = () => {
                 </div>
                 <ul className="pagination mb-0">
                   <li
-                    className={`page-item ${currentPage === 1 ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1538,8 +1554,9 @@ const Transfer = () => {
                   }).map((_, index) => (
                     <li
                       key={index}
-                      className={`page-item ${currentPage === index + 1 ? "active" : ""
-                        }`}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -1550,11 +1567,12 @@ const Transfer = () => {
                     </li>
                   ))}
                   <li
-                    className={`page-item ${currentPage ===
+                    className={`page-item ${
+                      currentPage ===
                       Math.ceil(flattenBatchRecords().length / batchesPerPage)
-                      ? "disabled"
-                      : ""
-                      }`}
+                        ? "disabled"
+                        : ""
+                    }`}
                   >
                     <button
                       className="page-link"
