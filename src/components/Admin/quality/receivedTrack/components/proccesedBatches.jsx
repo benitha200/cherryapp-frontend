@@ -155,12 +155,7 @@ export const ProcessedBatches = ({
       <Card className="mb-4">
         {/* Filters Section */}
         <Card.Body style={{ backgroundColor: processingTheme.neutral }}>
-          <Row
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
+          <Row className="justify-content-between align-items-center">
             <Col md={2}>
               <InputGroup>
                 <Form.Control
@@ -171,7 +166,7 @@ export const ProcessedBatches = ({
                 />
               </InputGroup>
             </Col>
-            <Col>
+            <Col md="auto">
               <Button
                 variant="success"
                 onClick={() => {
@@ -239,6 +234,7 @@ export const ProcessedBatches = ({
                       <div style={{ marginLeft: "0.3rem" }}>
                         <input
                           type="checkbox"
+                          checked={isChecked(element?.batchNo)}
                           onChange={(e) => {
                             const isChecked = e.target?.checked;
                             handleCheckboxChange(
