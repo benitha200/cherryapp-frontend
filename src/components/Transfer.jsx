@@ -138,7 +138,6 @@ const Transfer = () => {
       ? { day: parseInt(dateMatch[1], 10), month: parseInt(dateMatch[2], 10) }
       : { day: 0, month: 0 };
   };
-  console.log(selectedGradeItems, ":::::::::::");
   const handleGradeItemSelection = (gradeKey, isSelected) => {
     setSelectedGradeItems((prev) =>
       isSelected ? [...prev, gradeKey] : prev.filter((key) => key !== gradeKey)
@@ -340,10 +339,6 @@ const Transfer = () => {
             numberOfBags: parseInt(combinedLowGradeBags[grade] || 0),
           };
 
-          console.log(
-            ":::::::::::::::;;combined details1111",
-            combinedGradeDetails
-          );
           // Create a single transfer for all batches of this grade
           transferPromises.push(
             axios
@@ -689,7 +684,6 @@ const Transfer = () => {
     return filtered.slice(indexOfFirstBatch, indexOfLastBatch);
   };
 
-  console.log(getPaginatedBatches(), "::::::::::::::::::::::");
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Calculate total KGs for a grade group
