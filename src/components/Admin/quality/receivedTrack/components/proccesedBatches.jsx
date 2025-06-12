@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
+import { Form, Row, Col, Card, InputGroup, Button } from "react-bootstrap";
 import { SubTableHeading } from "./subTableHeading";
 import { SubBatchTable } from "./subBatchTable";
 import { GetDelivaryById, GetSampleStorage } from "../actions";
@@ -43,10 +43,12 @@ const getProcessingTypeBadgeStyle = (type) => ({
 export const ProcessedBatches = ({
   activatedBatches,
   setActivivatedBatches,
-  activatedBatchesData,
+  handleSave,
   setActivatedBatchesData,
   selectedTrackPlat,
   setCategories,
+  setOnSave,
+  disableSave,
 }) => {
   // state
   const [searchQuery, setSearchQuery] = useState("");
@@ -153,7 +155,12 @@ export const ProcessedBatches = ({
       <Card className="mb-4">
         {/* Filters Section */}
         <Card.Body style={{ backgroundColor: processingTheme.neutral }}>
-          <Row className="g-3">
+          <Row
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
             <Col md={2}>
               <InputGroup>
                 <Form.Control
@@ -163,6 +170,18 @@ export const ProcessedBatches = ({
                   disabled={getByIdPending}
                 />
               </InputGroup>
+            </Col>
+            <Col>
+              <Button
+                variant="success"
+                onClick={() => {
+                  setOnSave(true);
+                  handleSave();
+                }}
+                disabled={disableSave}
+              >
+                Save
+              </Button>
             </Col>
           </Row>
         </Card.Body>

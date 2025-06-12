@@ -46,6 +46,7 @@ export const DerivalyTable = () => {
     trackPlatNumber: null,
   });
   const [searchQuery, setSearchQuery] = useState(null);
+  const [onSave, setOnSave] = useState(false);
 
   // logs
 
@@ -56,9 +57,9 @@ export const DerivalyTable = () => {
   };
 
   const onUpdateSuccess = () => {
-    handleopenModel();
+    onSave ? "" : handleopenModel();
     setSelectedId({ trackId: null, transferDate: null, transferGroupId: null });
-    setActivivatedBatches([]);
+    onSave ? "" : setActivivatedBatches([]);
     setActivatedBatchesData([]);
     setCategories({
       c1: null,
@@ -260,7 +261,7 @@ export const DerivalyTable = () => {
         onConfirm={handleFormSubmission}
         isLoading={isUpdating}
         title="Coffee Quality accessment"
-        confirmButtonText="Confirm"
+        confirmButtonText="Complite"
         cancelButtonText="Cancel"
         modalSize="xl"
         onConfirmDisalbe={
@@ -289,10 +290,12 @@ export const DerivalyTable = () => {
         <ProcessedBatches
           activatedBatches={activatedBatches}
           setActivivatedBatches={setActivivatedBatches}
-          activatedBatchesData={activatedBatchesData}
+          handleSave={handleFormSubmission}
           setActivatedBatchesData={setActivatedBatchesData}
           selectedTrackPlat={selectedId}
           setCategories={setCategories}
+          setOnSave={setOnSave}
+          disableSave={activatedBatches.length <= 0 || isUpdating}
         />
       </GenericModel>
     </div>

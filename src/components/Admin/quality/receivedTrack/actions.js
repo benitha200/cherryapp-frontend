@@ -42,7 +42,6 @@ export const UpdateDelivary = (id, onupdateSuccess) => {
     mutationFn: (formData) => updateDelivaryById({ id, payload: formData }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["Derivary", "Derivaries"] });
-      queryClient.resetQueries({ queryKey: ["Derivaries"] });
       onupdateSuccess();
     },
     onError: (error) => {
