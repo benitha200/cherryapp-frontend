@@ -177,14 +177,7 @@ const AppContent = () => {
                   />
                 }
               >
-                <Route
-                  path="/quality-all"
-                  element={
-                    <PrivateRoute>
-                      <Quality />
-                    </PrivateRoute>
-                  }
-                />
+                <Route path="/quality-all" element={<Quality />} />
               </Route>
               {/* AUTHENTICATE SUPERVISOR , MD , FINACNE AND OPERATION */}
               <Route

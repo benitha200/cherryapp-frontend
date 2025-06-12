@@ -169,7 +169,7 @@ const ShortSummary = () => {
   const [respondSampleError, setRespondSampleError] = useState(false);
   const [respondSampleSuccess, setRespondSampleSuccess] = useState(false);
   const [activatedBatches, setActivivatedBatches] = useState([]);
-  const [displayItems, setDisplayItems] = useState(5);
+  const [displayItems, setDisplayItems] = useState(50);
   const [page, setPage] = useState(1);
   const [sampleStorage, setSampleStorage] = useState([]);
 
@@ -732,7 +732,7 @@ const ShortSummary = () => {
                 }}
                 disabled={loading}
               >
-                {[5, 10, 20, 1000, 2000].map((type) => (
+                {[50, 100, 1000, 2000].map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>

@@ -236,7 +236,7 @@ export const DerivalyTable = () => {
         <ReusableTable
           data={allTransportInfo}
           columns={columns}
-          pageSizeOption={[5, 50, 100, 1000, 2000]}
+          pageSizeOption={[50, 100, 1000, 2000]}
           initialPageSize={50}
           isLoading={false}
           onPageSizeChange={setItemsPerPage}
