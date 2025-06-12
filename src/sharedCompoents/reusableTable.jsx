@@ -18,6 +18,7 @@ const ReusableTable = ({
   children,
   data = [],
   columns = [],
+  pageSizeOption = [5, 10, 20],
   emptyStateMessage = "No data available",
   isLoading = false,
   rowKeyField = "id",
@@ -65,7 +66,7 @@ const ReusableTable = ({
                 }}
                 disabled={isLoading}
               >
-                {[5, 10, 20, 100, 1000, 2000].map((type) => (
+                {pageSizeOption.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
