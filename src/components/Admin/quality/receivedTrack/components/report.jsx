@@ -259,7 +259,7 @@ export const DerivalyTable = () => {
         onConfirm={handleFormSubmission}
         isLoading={isUpdating}
         title="Coffee Quality accessment"
-        confirmButtonText="Complite"
+        confirmButtonText="Complete"
         cancelButtonText="Cancel"
         modalSize="xl"
         onConfirmDisalbe={
