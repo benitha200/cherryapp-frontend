@@ -28,10 +28,11 @@ export const SubBatchTable = ({
         {/* lab moisture */}
         <td className="align-middle">
           <input
+            key={`${batchNo}-${index}`}
             type="number"
             className="form-control"
             style={{ width: "7rem" }}
-            defaultValue={subelement?.labMoisture}
+            defaultValue={subelement?.labMoisture || ""}
             disabled={!isChecked(batchNo)}
             onChange={(e) =>
               handleInputChange(
@@ -46,6 +47,7 @@ export const SubBatchTable = ({
         {/* +16 */}
         <td className="align-middle">
           <input
+            key={`${batchNo}-${index}`}
             type="number"
             className="form-control"
             style={{ width: "7rem" }}
@@ -63,6 +65,7 @@ export const SubBatchTable = ({
         </td>
         <td className="align-middle">
           <input
+            key={`${batchNo}-${index}`}
             type="number"
             className="form-control"
             style={{ width: "7rem" }}
@@ -80,6 +83,7 @@ export const SubBatchTable = ({
         </td>
         <td className="align-middle">
           <input
+            key={`${batchNo}-${index}`}
             type="number"
             className="form-control"
             style={{ width: "7rem" }}
@@ -97,6 +101,7 @@ export const SubBatchTable = ({
         </td>
         <td className="align-middle">
           <input
+            key={`${batchNo}-${index}`}
             type="number"
             className="form-control"
             style={{ width: "7rem" }}
@@ -114,6 +119,7 @@ export const SubBatchTable = ({
         </td>
         <td className="align-middle">
           <input
+            key={`${batchNo}-${index}`}
             type="number"
             className="form-control"
             style={{ width: "7rem" }}
@@ -133,6 +139,7 @@ export const SubBatchTable = ({
         {/* deffect */}
         <td className="align-middle">
           <input
+            key={`${batchNo}-${index}`}
             type="number"
             className="form-control"
             style={{ width: "7rem" }}
@@ -151,6 +158,7 @@ export const SubBatchTable = ({
         {/* pp score */}
         <td className="align-middle">
           <input
+            key={`${batchNo}-${index}`}
             type="number"
             className="form-control"
             style={{ width: "7rem" }}
@@ -174,6 +182,7 @@ export const SubBatchTable = ({
           </div> */}
           <div>
             <Form.Select
+              key={`${batchNo}-${index}`}
               style={{ width: "7rem" }}
               disabled={!isChecked(batchNo)}
               onChange={(e) =>
