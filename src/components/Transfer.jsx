@@ -547,14 +547,16 @@ const Transfer = () => {
 
   const fetchUntransferredRecords = async () => {
     try {
-      const [response, transfersResponse, wetTransported] = await Promise.all([
+      let [response, transfersResponse, wetTransported] = await Promise.all([
         axios.get(`${API_URL}/bagging-off/cws/${userInfo.cwsId}`),
         axios.get(`${API_URL}/transfer/cws/${userInfo.cwsId}`),
         axios.get(
           `${API_URL}/wet-transfer/transported/byreceiver/cws/${userInfo.cwsId}`
         ),
       ]);
-
+      response.data = Array.from(
+        new Map((response?.data || []).map((item) => [item?.id, item])).values()
+      );
       const allTransfers = transfersResponse.data || [];
 
       const transfersByBaggingOff = {};
