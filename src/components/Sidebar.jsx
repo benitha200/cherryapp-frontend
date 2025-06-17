@@ -401,7 +401,7 @@ const Sidebar = () => {
             </span>
             <button
               onClick={handleLogout}
-              className="btn btn-danger btn-sm"
+              className=" btn btn-danger btn-sm "
               style={{
                 backgroundColor: theme.danger,
                 border: "none",
