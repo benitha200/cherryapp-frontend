@@ -24,7 +24,7 @@ const ReusableTable = ({
   rowKeyField = "id",
   itemsPerPage = 5,
   onPageSizeChange,
-  searchQuery = null,
+  searchQuery = "",
   setSearchQuery = () => null,
 }) => {
   if (isLoading) {
@@ -77,7 +77,7 @@ const ReusableTable = ({
         </Card.Body>
       </div>
 
-      <div className="table-responsive">
+      <div className="table-responsive mt-4">
         <table
           className="table"
           style={{

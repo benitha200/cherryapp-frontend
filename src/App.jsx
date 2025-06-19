@@ -46,6 +46,7 @@ import { Toaster } from "react-hot-toast";
 import QualityReport from "./components/Admin/quality/report/index.jsx";
 import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
 import RequireAuth from "./components/guard.jsx";
+import GeneralReport from "./components/Admin/Reports/GeneralReport/index.jsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -148,6 +149,7 @@ const AppContent = () => {
                 <Route path="/processing-all" element={<ProcessingListAll />} />
 
                 <Route path="/quality-delivery" element={<DeliveryTracks />} />
+                <Route path="/general-report" element={<GeneralReport />} />
               </Route>
               {/* GUARANTEE CWS MANAGER ONLY */}
               <Route
