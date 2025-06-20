@@ -34,7 +34,7 @@ export const DeliveryTableSkeleton = () => {
               </tr>
             </thead>
             <tbody>
-              {[...Array(5)].map((_, index) => (
+              {[...Array(3)].map((_, index) => (
                 <tr key={index}>
                   <td>
                     <Placeholder animation="glow">
