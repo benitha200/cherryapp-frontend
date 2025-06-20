@@ -1,4 +1,5 @@
 import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
+import { SelectionBox } from "./selection";
 
 const processingTheme = {
   primary: "#008080",
@@ -26,6 +27,10 @@ const ReusableTable = ({
   onPageSizeChange,
   searchQuery = null,
   setSearchQuery = () => null,
+  enableSelectionBox = false,
+  selectionOPtions = [],
+  handleSelection = () => null,
+  placeholder = "",
 }) => {
   if (isLoading) {
     return (
@@ -43,18 +48,30 @@ const ReusableTable = ({
         <Card.Body>
           <div className="d-flex justify-content-between align-items-center">
             {/* Search box on right */}
-            <div style={{ width: "250px" }}>
-              <InputGroup>
-                <InputGroup.Text>
-                  <i className="bi bi-search"></i>
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </InputGroup>
+            <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ width: "250px" }}>
+                <InputGroup>
+                  <InputGroup.Text>
+                    <i className="bi bi-search"></i>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </InputGroup>
+              </div>
+              {enableSelectionBox && (
+                <div style={{ width: "550px" }}>
+                  <SelectionBox
+                    selectionOPtions={selectionOPtions}
+                    disable={isLoading}
+                    handleSelection={handleSelection}
+                    placeHolder={placeholder}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Items per page select on left */}

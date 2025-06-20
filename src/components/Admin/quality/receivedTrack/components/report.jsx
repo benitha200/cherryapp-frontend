@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Card, Button } from "react-bootstrap";
+import { Card, Button, Col, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 import { Pagination } from "../../../../../sharedCompoents/paginations";
+import { SelectionBox } from "../../../../../sharedCompoents/selection";
 import { GetAllDelivaries, UpdateDelivary } from "../actions";
 import { GenericModel } from "../../../../../sharedCompoents/genericModel";
 import { QuantityReceived } from "./quantityReceived";
@@ -47,9 +48,15 @@ export const DerivalyTable = () => {
   });
   const [searchQuery, setSearchQuery] = useState(null);
   const [onSave, setOnSave] = useState(false);
+  const [stations, setStations] = useState([
+    "Select_by_stations",
+    "all",
+    "Ruhango",
+    "Cyebumba",
+  ]);
 
+  const [selectedStation, setSelectedStation] = useState("");
   // logs
-
   // data query
   const { getAllPending, getAllError, allDelivaries } = GetAllDelivaries(1, 10);
   const handleopenModel = () => {
@@ -95,9 +102,19 @@ export const DerivalyTable = () => {
   useEffect(() => {
     const data = allDelivaries?.data?.trucks ?? [];
     let skip = (currentPage - 1) * itemsPerPage;
+
+    const stations = [
+      ...new Set(allDelivaries?.data?.trucks?.map((track) => track?.cws) ?? []),
+    ];
+    stations.length > 0 && setStations((prev) => [...prev, ...stations]);
     let res = data;
 
     const d = res
+      ?.filter((element) =>
+        selectedStation && selectedStation !== "all"
+          ? element?.cws == selectedStation
+          : element
+      )
       ?.filter(
         (element) =>
           element?.driverName
@@ -105,10 +122,6 @@ export const DerivalyTable = () => {
             ?.replace(/\s+/g, "")
             .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
           element?.truckNumber
-            ?.toLowerCase()
-            ?.replace(/\s+/g, "")
-            .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
-          element?.cws
             ?.toLowerCase()
             ?.replace(/\s+/g, "")
             .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, "")) ||
@@ -125,6 +138,7 @@ export const DerivalyTable = () => {
             ?.replace(/\s+/g, "")
             .includes(searchQuery?.toLowerCase()?.replace(/\s+/g, ""))
       )
+
       ?.slice(0, itemsPerPage);
     if (skip >= allTransportInfo.length + itemsPerPage - 1) {
       res = d.slice(0, itemsPerPage);
@@ -138,6 +152,7 @@ export const DerivalyTable = () => {
     selectedTransportInfo,
     currentPage,
     itemsPerPage,
+    selectedStation,
   ]);
   const handleFormSubmission = () => {
     mutate({ categories, activatedBatchesData });
@@ -228,21 +243,30 @@ export const DerivalyTable = () => {
     paginationData.totalItems = delivariersSize;
     paginationData.itemsPerPage = itemsPerPage;
   }
-
   return (
     <div className="container-fluid">
+      {/* <SelectionBox
+        selectionOPtions={stations}
+        disable={isUpdating}
+        handleSelection={setSelectedStation}
+        placeHolder={"Select_by_stations"}
+      /> */}
       <Card className="mb-4">
         <ReusableTable
           data={allTransportInfo}
           columns={columns}
           pageSizeOption={[50, 100, 1000, 2000]}
           initialPageSize={50}
-          isLoading={false}
+          isLoading={isUpdating}
           onPageSizeChange={setItemsPerPage}
           rowKeyField="id"
           itemsPerPage={itemsPerPage}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
+          enableSelectionBox={true}
+          selectionOPtions={stations}
+          handleSelection={setSelectedStation}
+          placeholder="Select_by_stations"
         >
           <Pagination
             currentPage={currentPage}
