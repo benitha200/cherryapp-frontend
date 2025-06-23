@@ -140,31 +140,73 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
             {data?.cws?.name ?? ""}
           </div>
         </td>
-        <td style={styleTotals()}>{data?.cws?.totalTransportedKgs ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totalDeliveredKgs ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totalVariationKgs ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.tot16plus ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.tot15 ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totAvg15PlusDelivery ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totAvg15PlusSample ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totv15plus ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.tot14 ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.tot13 ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totAvg1314Delivery ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totAvg1314Sample ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totv1314 ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totB12 ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totDefect ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totAVLGDelivery ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totAVLGSample ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totvlg ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totOTDelivery ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totOTSample ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.totvOT ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.avgPPScoreDelivery ?? ""}</td>
-        <td style={styleTotals()}>{data?.cws?.avgPPScoreSample ?? ""}</td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totalTransportedKgs ?? 0).toFixed(2)}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totalDeliveredKgs ?? 0).toFixed}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totalVariationKgs ?? 0).toFixed}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.tot16plus ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>{Number(data?.cws?.tot15 ?? 0)}</td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totAvg15PlusDelivery ?? 0)}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totAvg15PlusSample ?? 0)}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totv15plus ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>{Number(data?.cws?.tot14 ?? 0).toFixed()}</td>
+        <td style={styleTotals()}>{Number(data?.cws?.tot13 ?? 0).toFixed()}</td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totAvg1314Delivery ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totAvg1314Sample ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totv1314 ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totB12 ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totDefect ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totAVLGDelivery ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totAVLGSample ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totvlg ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totOTDelivery ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totOTSample ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totvOT ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.avgPPScoreDelivery ?? 0).toFixed()}
+        </td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.avgPPScoreSample ?? 0).toFixed()}
+        </td>
         <td style={styleTotals()}>{""}</td>
-        <td style={styleTotals()}>{data?.cws?.totvppscore ?? ""}</td>
+        <td style={styleTotals()}>
+          {Number(data?.cws?.totvppscore ?? 0).toFixed()}
+        </td>
         <td style={styleTotals()}>{""}</td>
       </tr>
       {!selectedStationName.includes(data?.cws?.name?.toLowerCase()) &&
