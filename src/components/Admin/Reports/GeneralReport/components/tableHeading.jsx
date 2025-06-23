@@ -21,6 +21,7 @@ export const Columns = [
   {
     field: "cherry",
     header: "Batch No",
+    render: (item) => <div style={{ width: "10rem" }}>{item?.cherry}</div>,
   },
 
   {
