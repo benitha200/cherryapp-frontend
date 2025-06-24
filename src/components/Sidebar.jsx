@@ -90,11 +90,11 @@ const Sidebar = () => {
       text: "Quality Report",
     },
 
-    {
-      path: "general-report",
-      icon: "file-earmark-text",
-      text: "Genral Report",
-    },
+    // {
+    //   path: "general-report",
+    //   icon: "file-earmark-text",
+    //   text: "Genral Report",
+    // },
   ];
 
   // Settings menu items for admin
