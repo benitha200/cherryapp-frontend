@@ -69,7 +69,6 @@ const Sidebar = () => {
 
   const qualityItemsAdmin = [
     { path: "/quality-all", icon: "capsule", text: "Sample" },
-    // { path: "/delivery-track", icon: "bus-front", text: "Receive Track" },
     { path: "/quality-delivery", icon: "box", text: "Delivery" },
   ];
 
@@ -85,10 +84,16 @@ const Sidebar = () => {
       icon: "file-earmark-text",
       text: "Out Turns Report",
     },
+    {
+      path: "quality-report",
+      icon: "file-earmark-text",
+      text: "Quality Report",
+    },
+
     // {
-    //   path: "quality-report",
+    //   path: "general-report",
     //   icon: "file-earmark-text",
-    //   text: "Quality Report",
+    //   text: "Genral Report",
     // },
   ];
 
@@ -133,11 +138,11 @@ const Sidebar = () => {
   } else if (user.role === "QUALITY") {
     menuItems = [
       ...menuItems,
-      // {
-      //   path: "quality-report",
-      //   icon: "file-earmark-text",
-      //   text: "Quality Report",
-      // },
+      {
+        path: "quality-report",
+        icon: "file-earmark-text",
+        text: "Quality Report",
+      },
     ];
   } else {
     menuItems = [
@@ -261,7 +266,7 @@ const Sidebar = () => {
                     cursor: "pointer",
                     marginLeft: "2rem",
                   }}
-                  // onClick={() => setQualityOpen(!qualityOpen)}
+                  onClick={() => setQualityOpen(!qualityOpen)}
                 >
                   {qualityItemsAdmin.map(renderNavLink)}
                 </div>
