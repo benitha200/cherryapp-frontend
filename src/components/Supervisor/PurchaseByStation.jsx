@@ -320,66 +320,104 @@ const PurchaseByStation = () => {
             </div>
           </div>
 
-          <div className="col-12 col-md-5 col-lg-7 mt-3">
+          <div className="">
             <div className="position-relative">
               <div
-                className=" d-flex g-5 justify-content-end"
-                style={{ gap: "1rem" }}
+                className="d-flex justify-content-start align-items-center cws-list-animated"
+                style={{
+                  borderColor: theme.primary,
+                  color: theme.primary,
+                  backgroundColor: "white",
+                  gap: "1rem",
+                  width: "40vw",
+                  padding: ".5rem",
+                  borderRadius: "0.5rem",
+                  transformOrigin: "left center",
+                  animation: "growFromLeft 0.5s ease-out forwards",
+                }}
               >
                 {selectedCWSList?.length > 0 && (
-                  <div
-                    className=" d-flex justify-content-start align-items-center"
-                    style={{
-                      borderColor: theme.primary,
-                      color: theme.primary,
-                      backgroundColor: "white",
-                      gap: "1rem",
-                      width: "50vw",
-                      overflowX: "scroll",
-                      padding: ".5rem",
-                      borderRadius: "0.5rem",
-                    }}
-                  >
-                    {cwsList
-                      .filter((cws) =>
-                        selectedCWSList.includes(cws?.id?.toString())
-                      )
-                      .map((cws) => (
-                        <div
-                          style={{
-                            backgroundColor: "#f9fafb",
-                            border: "1px solid #d1d5db",
-                            borderRadius: "0.5rem",
-                            padding: "0.3rem 0.6rem",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                            fontFamily: "sans-serif",
-                            fontSize: "0.9rem",
-                            color: "#111827",
-                          }}
-                        >
-                          <span style={{ color: "#0284c7" }}>
-                            {cws?.name ?? ""}
-                          </span>
-                          <span
-                            onClick={() =>
-                              steSelectedCWSList((prev) =>
-                                prev.filter((id) => id != cws?.id?.toString())
-                              )
-                            }
+                  <>
+                    <style>
+                      {`
+                        @keyframes growFromLeft {
+                          from {
+                            transform: scaleX(0);
+                            opacity: 0;
+                          }
+                          to {
+                            transform: scaleX(1);
+                            opacity: 1;
+                          }
+                        }
+
+                        @keyframes shlinkFromRight {
+                          from {
+                            transform: scaleX(1);
+                            opacity: 1;
+                          }
+                          to {
+                            transform: scaleX(0);
+                            opacity: 0;
+                          }
+                        }
+                       
+                    `}
+                    </style>
+                    <div
+                      className="d-flex justify-content-start align-items-center cws-list-animated"
+                      style={{
+                        borderColor: theme.primary,
+                        color: theme.primary,
+                        backgroundColor: "white",
+                        gap: "1rem",
+                        width: "30vw",
+                        overflowX: "scroll",
+                        padding: ".5rem",
+                        borderRadius: "0.5rem",
+                      }}
+                    >
+                      {cwsList
+                        .filter((cws) =>
+                          selectedCWSList.includes(cws?.id?.toString())
+                        )
+                        .map((cws) => (
+                          <div
                             style={{
-                              cursor: "pointer",
-                              color: "#ef4444",
-                              fontWeight: "bold",
+                              backgroundColor: "#f9fafb",
+                              border: "1px solid #d1d5db",
+                              borderRadius: "0.5rem",
+                              padding: "0.3rem 0.6rem",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                              fontFamily: "sans-serif",
+                              fontSize: "0.9rem",
+                              color: "#111827",
                             }}
                           >
-                            ×
-                          </span>
-                        </div>
-                      ))}
-                  </div>
+                            <span style={{ color: "#0284c7" }}>
+                              {cws?.name ?? ""}
+                            </span>
+                            <span
+                              onClick={() =>
+                                steSelectedCWSList((prev) =>
+                                  prev.filter((id) => id != cws?.id?.toString())
+                                )
+                              }
+                              style={{
+                                cursor: "pointer",
+                                color: "#ef4444",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              ×
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  </>
                 )}
 
                 <Button
