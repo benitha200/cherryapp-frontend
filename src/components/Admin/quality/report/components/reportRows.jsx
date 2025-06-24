@@ -215,7 +215,7 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
         </td>
         <td style={styleTotals()}>{""}</td>
       </tr>
-      {!selectedStationName.includes(data?.cws?.name?.toLowerCase()) &&
+      {selectedStationName.includes(data?.cws?.name?.toLowerCase()) &&
         data.batches.map((cwsBatches, rowIndex) =>
           cwsBatches?.delivery?.batches.map((elements, subBatchIndex) => {
             lows += 1;

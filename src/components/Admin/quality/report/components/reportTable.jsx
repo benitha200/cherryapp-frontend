@@ -38,7 +38,7 @@ export const QualityReportTable = () => {
         <div className="row g-4 mb-4">
           <div className="col-12 col-md-6">
             <DashboardCard
-              title="Total Cherry Purchased (kg)"
+              title="Total Parch Purchased (kg)"
               value={formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0
               )}
@@ -47,7 +47,7 @@ export const QualityReportTable = () => {
           </div>
           <div className="col-12 col-md-6">
             <DashboardCard
-              title="Total Delivered (kg)"
+              title="Total Parch Delivered (kg)"
               value={formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
               )}
