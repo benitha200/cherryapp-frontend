@@ -115,7 +115,7 @@ export const QualityReportTable = () => {
             className="table-responsive"
             style={{ height: "60vh", overflowY: "auto" }}
           >
-            <style>
+            {/* <style>
               {`
                   @media (min-width: 768px) {
                     .table-responsive {
@@ -128,7 +128,7 @@ export const QualityReportTable = () => {
                     }
                   }
                 `}
-            </style>
+            </style> */}
             <table
               className="table table-hover"
               style={{
