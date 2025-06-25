@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { columns } from "./reportColums";
-import { Card, Form, InputGroup } from "react-bootstrap";
+import { Button, Card, Col, Form, InputGroup } from "react-bootstrap";
 import { GetReport } from "../action";
 import { Skeleton } from "./skeleton";
 import { Error } from "../../components/responses";
 import { ReprotTable } from "./reportRows";
 import { DashboardCard } from "./dashboardCard";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
+import { exportToExcel } from "./exceleteToExport";
 
 export const QualityReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -29,6 +30,9 @@ export const QualityReportTable = () => {
     tableBorder: "#D1E0E0",
     emptyStateBackground: "#F5FAFA",
   };
+  function doit() {
+    exportToExcel(data?.data?.report ?? []);
+  }
 
   return isPending ? (
     <Skeleton />
@@ -96,18 +100,32 @@ export const QualityReportTable = () => {
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-1">
               <h4 className="mb-0">Station Quality report</h4>
-              <div style={{ width: "250px" }}>
-                <InputGroup>
-                  <InputGroup.Text>
-                    <i className="bi bi-search"></i>
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </InputGroup>
+              <div className=" d-flex">
+                <Col style={{ marginLeft: "8rem" }}>
+                  <div className="d-flex">
+                    <Button
+                      variant="outline-success"
+                      className="me-2"
+                      onClick={() => doit()}
+                    >
+                      <i className="bi bi-download me-1"></i> Download
+                    </Button>
+                  </div>
+                </Col>
+
+                <div style={{ width: "250px" }}>
+                  <InputGroup>
+                    <InputGroup.Text>
+                      <i className="bi bi-search"></i>
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </InputGroup>
+                </div>
               </div>
             </div>
           </div>

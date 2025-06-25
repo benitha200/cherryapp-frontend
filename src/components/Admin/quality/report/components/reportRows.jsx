@@ -38,23 +38,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
     );
   }
 
-  // Enhanced variation styling with color coding
-  function styleValiations() {
-    return {
-      width: "4rem",
-      background: "linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)",
-      fontSize: "0.85rem",
-      fontWeight: "700",
-      color: "white",
-      padding: "8px 12px",
-      textAlign: "center",
-      border: "none",
-      borderRadius: "20px",
-      boxShadow: "0 4px 12px rgba(39, 174, 96, 0.3)",
-      position: "relative",
-    };
-  }
-
   // Enhanced totals styling with gradient
   function styleTotals() {
     return {
@@ -137,7 +120,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
               gap: "8px",
             }}
           >
-            {/* <span style={{ fontSize: "1.1rem" }}>📍</span> */}
             {data?.cws?.name ?? ""}
           </div>
         </td>
