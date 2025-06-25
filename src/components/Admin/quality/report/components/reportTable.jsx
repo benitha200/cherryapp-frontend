@@ -111,7 +111,10 @@ export const QualityReportTable = () => {
               </div>
             </div>
           </div>
-          <div className="table-responsive">
+          <div
+            className="table-responsive"
+            style={{ height: "70vh", overflowY: "auto" }}
+          >
             <table
               className="table table-hover"
               style={{
@@ -121,18 +124,18 @@ export const QualityReportTable = () => {
                 border: `1px solid ${processingTheme.tableBorder}`,
               }}
             >
-              <thead>
+              <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
                 <tr>
                   {columns.map((column, index) => (
                     <th
                       key={index}
                       style={{
-                        // backgroundColor: processingTheme.tableHeader,
-                        // color: processingTheme.primary,
+                        backgroundColor:
+                          processingTheme.tableHeader || "#f8f9fa",
+                        color: processingTheme.primary,
                         padding: "10px 15px",
-                        // fontWeight: 400,
-                        // borderBottom: `1px solid`,
                         whiteSpace: "nowrap",
+                        borderBottom: `1px solid ${processingTheme.tableBorder}`,
                       }}
                     >
                       {column.header || column.field}
