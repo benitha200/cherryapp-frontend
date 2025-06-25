@@ -8,18 +8,24 @@ const theme = {
 export const DashboardCard = ({ title, value, iconClass }) => (
   <div className="card shadow-sm hover-shadow transition">
     <div className="card-body d-flex justify-content-between align-items-center">
-      <div>
-        <h6 className="text-muted small mb-2">{title}</h6>
-        <p className="h6 mb-0 ">{value}</p>
-      </div>
-      <div
-        style={{
-          backgroundColor: theme.neutral,
-          borderRadius: "50%",
-          padding: "1rem",
-        }}
-      >
-        <i className={`${iconClass}`} style={{ color: theme.primary }}></i>
+      <div style={{ width: "100%" }}>
+        <h6
+          className="text-muted small mb-2"
+          style={{
+            minHeight: "32px",
+            width: "100%",
+            whiteSpace: "normal",
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            lineHeight: "1.2",
+          }}
+          title={title}
+        >
+          {title}
+        </h6>
+        <p className="h6 mb-0 fw-bold">{value}</p>
       </div>
     </div>
   </div>
