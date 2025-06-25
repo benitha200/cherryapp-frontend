@@ -36,7 +36,7 @@ export const QualityReportTable = () => {
     !isPending && data && (
       <div>
         <div className="row g-4 mb-4">
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-2">
             <DashboardCard
               title="Total Parch Purchased (kg)"
               value={formatNumberWithCommas(
@@ -45,7 +45,7 @@ export const QualityReportTable = () => {
               iconClass="bi-basket-fill"
             />
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-2">
             <DashboardCard
               title="Total Parch Delivered (kg)"
               value={formatNumberWithCommas(
@@ -54,7 +54,7 @@ export const QualityReportTable = () => {
               iconClass="bi-bus-front"
             />
           </div>{" "}
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-2">
             <DashboardCard
               title="Total Average 15+ Delivered (kg)"
               value={formatNumberWithCommas(
@@ -63,7 +63,7 @@ export const QualityReportTable = () => {
               iconClass="bi-basket-fill"
             />
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-2">
             <DashboardCard
               title="Total Average 13/14 Delivered (kg)"
               value={formatNumberWithCommas(
@@ -72,7 +72,7 @@ export const QualityReportTable = () => {
               iconClass="bi-basket-fill"
             />
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-2">
             <DashboardCard
               title="Total Average Lowgrade Delivered (kg)"
               value={formatNumberWithCommas(
@@ -81,7 +81,7 @@ export const QualityReportTable = () => {
               iconClass="bi-basket-fill"
             />
           </div>
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-2">
             <DashboardCard
               title="Total OT Delivered (kg)"
               value={formatNumberWithCommas(
@@ -113,8 +113,22 @@ export const QualityReportTable = () => {
           </div>
           <div
             className="table-responsive"
-            style={{ height: "47vh", overflowY: "auto" }}
+            style={{ height: "60vh", overflowY: "auto" }}
           >
+            <style>
+              {`
+                  @media (min-width: 768px) {
+                    .table-responsive {
+                      height: 57vh !important;
+                    }
+                  }
+                  @media (min-width: 992px) {
+                    .table-responsive {
+                      height: 65vh !important;
+                    }
+                  }
+                `}
+            </style>
             <table
               className="table table-hover"
               style={{
