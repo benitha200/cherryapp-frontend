@@ -10,7 +10,7 @@ export const DashboardCard = ({ title, value, iconClass }) => (
     <div className="card-body d-flex justify-content-between align-items-center">
       <div>
         <h6 className="text-muted small mb-2">{title}</h6>
-        <p className="h3 mb-0 fw-bold">{value}</p>
+        <p className="h6 mb-0 ">{value}</p>
       </div>
       <div
         style={{
@@ -19,7 +19,7 @@ export const DashboardCard = ({ title, value, iconClass }) => (
           padding: "1rem",
         }}
       >
-        <i className={`${iconClass} fs-4`} style={{ color: theme.primary }}></i>
+        <i className={`${iconClass}`} style={{ color: theme.primary }}></i>
       </div>
     </div>
   </div>
