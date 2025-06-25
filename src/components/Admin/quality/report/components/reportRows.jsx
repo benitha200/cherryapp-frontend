@@ -151,6 +151,7 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
             Number(data?.cws?.totalDeliveredKgs ?? 0).toFixed(2)
           )}
         </td>
+
         <td style={styleTotals()}>
           {formatNumberWithCommas(
             Number(data?.cws?.totalVariationKgs ?? 0).toFixed(2)
