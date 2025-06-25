@@ -1,5 +1,6 @@
 import { Button } from "react-bootstrap";
 import { useState } from "react";
+import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
 
 const processingTheme = {
   primary: "#008080",
@@ -141,77 +142,107 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
           </div>
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totalTransportedKgs ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totalTransportedKgs ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totalDeliveredKgs ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totalDeliveredKgs ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totalVariationKgs ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totalVariationKgs ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.tot16plus ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.tot16plus ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.tot15 ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.tot15 ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totAvg15PlusDelivery ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totAvg15PlusDelivery ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totAvg15PlusSample ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totAvg15PlusSample ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totv15plus ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totv15plus ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.tot14 ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.tot14 ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.tot13 ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.tot13 ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totAvg1314Delivery ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totAvg1314Delivery ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totAvg1314Sample ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totAvg1314Sample ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totv1314 ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.totv1314 ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totB12 ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.totB12 ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totDefect ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.totDefect ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totAVLGDelivery ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totAVLGDelivery ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totAVLGSample ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totAVLGSample ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totvlg ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.totvlg ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totOTDelivery ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totOTDelivery ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totOTSample ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totOTSample ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totvOT ?? 0).toFixed(2)}
+          {formatNumberWithCommas(Number(data?.cws?.totvOT ?? 0).toFixed(2))}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.avgPPScoreDelivery ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.avgPPScoreDelivery ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.avgPPScoreSample ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.avgPPScoreSample ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>{""}</td>
         <td style={styleTotals()}>
-          {Number(data?.cws?.totvppscore ?? 0).toFixed(2)}
+          {formatNumberWithCommas(
+            Number(data?.cws?.totvppscore ?? 0).toFixed(2)
+          )}
         </td>
         <td style={styleTotals()}>{""}</td>
       </tr>

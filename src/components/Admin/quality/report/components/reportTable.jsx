@@ -36,7 +36,7 @@ export const QualityReportTable = () => {
     !isPending && data && (
       <div>
         <div className="row g-4 mb-4">
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-4">
             <DashboardCard
               title="Total Parch Purchased (kg)"
               value={formatNumberWithCommas(
@@ -45,7 +45,7 @@ export const QualityReportTable = () => {
               iconClass="bi-basket-fill"
             />
           </div>
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-4">
             <DashboardCard
               title="Total Parch Delivered (kg)"
               value={formatNumberWithCommas(
@@ -54,7 +54,7 @@ export const QualityReportTable = () => {
               iconClass="bi-bus-front"
             />
           </div>{" "}
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-4">
             <DashboardCard
               title="Total Average 15+ Delivered (kg)"
               value={formatNumberWithCommas(
@@ -63,7 +63,7 @@ export const QualityReportTable = () => {
               iconClass="bi-basket-fill"
             />
           </div>
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-4">
             <DashboardCard
               title="Total Average 13/14 Delivered (kg)"
               value={formatNumberWithCommas(
@@ -72,16 +72,16 @@ export const QualityReportTable = () => {
               iconClass="bi-basket-fill"
             />
           </div>
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-4">
             <DashboardCard
               title="Total Average Lowgrade Delivered (kg)"
               value={formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotAVLGDelivery ?? 0
               )}
-              iconClass="bi-battery-low"
+              iconClass="bi-basket-fill"
             />
           </div>
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-4">
             <DashboardCard
               title="Total OT Delivered (kg)"
               value={formatNumberWithCommas(
@@ -94,7 +94,7 @@ export const QualityReportTable = () => {
 
         <div className="card">
           <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex justify-content-between align-items-center mb-1">
               <h4 className="mb-0">Station Quality report</h4>
               <div style={{ width: "250px" }}>
                 <InputGroup>
@@ -113,7 +113,7 @@ export const QualityReportTable = () => {
           </div>
           <div
             className="table-responsive"
-            style={{ height: "70vh", overflowY: "auto" }}
+            style={{ height: "47vh", overflowY: "auto" }}
           >
             <table
               className="table table-hover"
