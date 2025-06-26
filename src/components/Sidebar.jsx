@@ -124,7 +124,6 @@ const Sidebar = () => {
     ];
   } else if (
     user.role === "SUPERVISOR" ||
-    user.role === "OPERATIONS" ||
     user.role === "FINANCE" ||
     user.role === "MD"
   ) {
@@ -132,6 +131,15 @@ const Sidebar = () => {
       ...menuItems,
       { path: "/purchase-by-station", icon: "cash", text: "Purchases" },
       { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
+      { path: "/transport", icon: "truck", text: "Transport" },
+      { path: "/stock", icon: "house", text: "Stock" },
+    ];
+  } else if (user.role === "OPERATIONS") {
+    menuItems = [
+      ...menuItems,
+      { path: "/purchase-by-station", icon: "cash", text: "Purchases" },
+      { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
+      { path: "/processing-all", icon: "hourglass-split", text: "Processing" },
       { path: "/transport", icon: "truck", text: "Transport" },
       { path: "/stock", icon: "house", text: "Stock" },
     ];

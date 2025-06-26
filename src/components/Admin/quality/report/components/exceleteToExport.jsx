@@ -48,18 +48,18 @@ export const exportToExcel = (data) => {
                 <tr>
                     <th rowspan="2" class="info-header">CWS</th>
                     <th rowspan="2" class="info-header">Batch No</th>
-                    <th colspan="3" class="info-header">Weight Information</th>
-                    <th colspan="5" class="delivery-header">Screen Size Analysis</th>
+                    <th colspan="1" class="info-header">Weight Information</th>
+                    <th colspan="5" class="delivery-header">Screen +15</th>
                     <th colspan="5" class="sample-header">Sample Comparison</th>
-                    <th colspan="3" class="delivery-header">Additional Metrics</th>
-                    <th colspan="6" class="variation-header">Quality Variations</th>
-                    <th colspan="2" class="info-header">Classification</th>
+                    <th colspan="2" class="delivery-header"> B12 & defect</th>
+                    <th colspan="3" class="sample-header">Low grads</th>
+                    <th colspan="3" class="variation-header">OT variation</th>
+                    <th colspan="3" class="delivery-header">PP score</th>
+                    <th colspan="2" class="info-header">Category</th>
                 </tr>
                 <!-- Sub-header row -->
                 <tr>
                     <th class="info-header">Transported</th>
-                    <th class="info-header">Received</th>
-                    <th class="info-header">Variation</th>
                     <th class="delivery-header">16+</th>
                     <th class="delivery-header">15</th>
                     <th class="delivery-header">AVG 15+</th>
@@ -106,16 +106,7 @@ export const exportToExcel = (data) => {
                             elements?.gradeKey ?? ""
                           ] ?? "-"
                         }</td>
-                        <td class="numeric-cell">${
-                          cwsBatches?.delivery?.deliveryKgs[
-                            elements?.category?.toLowerCase() ?? ""
-                          ] ?? "-"
-                        }</td>
-                        <td class="numeric-cell">${
-                          cwsBatches?.delivery?.variationKgs[
-                            elements?.gradeKey
-                          ] ?? "-"
-                        }</td>
+                        
                         <td class="numeric-cell">${Number(
                           elements?.screen?.["16+"] ?? 0
                         ).toFixed(2)}</td>
