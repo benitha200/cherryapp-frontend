@@ -157,7 +157,7 @@ const ShortSummary = () => {
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
-    limit: 100,
+    limit: 20000,
     totalPages: 0,
   });
   const [sortConfig, setSortConfig] = useState({
@@ -468,12 +468,9 @@ const ShortSummary = () => {
 
   // export excele
   const exportToExcel = () => {
-    // const data = prepareExportData();
-
     const dateStr = new Date().toISOString().split("T")[0];
     const fileName = `Quality_Sample_${dateStr}.xls`;
 
-    // Create HTML table from data
     let htmlContent = `
 <html>
     <head>
