@@ -146,8 +146,6 @@ const AppContent = () => {
                 <Route path="/pricing" element={<PricingManagement />} />
                 <Route path="/users" element={<Users />} />
 
-                <Route path="/processing-all" element={<ProcessingListAll />} />
-
                 <Route path="/quality-delivery" element={<DeliveryTracks />} />
                 <Route path="/general-report" element={<GeneralReport />} />
               </Route>
@@ -206,6 +204,7 @@ const AppContent = () => {
                   path="/wet-transfer-admin"
                   element={<WetTransferAdmin />}
                 />
+                <Route path="/processing-all" element={<ProcessingListAll />} />
 
                 <Route path="/transport" element={<Transport />} />
                 <Route path="/stock" element={<StockManagement />} />

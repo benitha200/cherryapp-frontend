@@ -42,7 +42,7 @@ export const QualityReportTable = () => {
         <div className="row g-4 mb-4">
           <div className="col-12 col-md-2">
             <DashboardCard
-              title="Total Parch Purchased (kg)"
+              title="Total Parch Processed (kg)"
               value={formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0
               )}
@@ -61,36 +61,36 @@ export const QualityReportTable = () => {
           <div className="col-12 col-md-2">
             <DashboardCard
               title="Total Average 15+ Delivered (kg)"
-              value={formatNumberWithCommas(
+              value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotAvg15PlusDelivery ?? 0
-              )}
+              )}%`}
               iconClass="bi-basket-fill"
             />
           </div>
           <div className="col-12 col-md-2">
             <DashboardCard
               title="Total Average 13/14 Delivered (kg)"
-              value={formatNumberWithCommas(
+              value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotAvg1314Delivery ?? 0
-              )}
+              )}%`}
               iconClass="bi-basket-fill"
             />
           </div>
           <div className="col-12 col-md-2">
             <DashboardCard
               title="Total Average Lowgrade Delivered (kg)"
-              value={formatNumberWithCommas(
+              value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotAVLGDelivery ?? 0
-              )}
+              )}%`}
               iconClass="bi-basket-fill"
             />
           </div>
           <div className="col-12 col-md-2">
             <DashboardCard
-              title="Total OT Delivered (kg)"
-              value={formatNumberWithCommas(
+              title="Total Average OT Delivered (kg)"
+              value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotOTDelivery ?? 0
-              )}
+              )}%`}
               iconClass="bi-highlights"
             />
           </div>
