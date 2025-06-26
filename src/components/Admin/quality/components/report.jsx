@@ -19,7 +19,6 @@ import {
 import { Error, Success } from "./responses";
 import { Pagination } from "./paginations";
 import { sampleStorage as storage } from "../../../../apis/sampleStorage";
-import { GenericModel } from "../../../../sharedCompoents/genericModel";
 
 const processingTheme = {
   primary: "#008080", // Sucafina teal
@@ -169,7 +168,7 @@ const ShortSummary = () => {
   const [respondSampleError, setRespondSampleError] = useState(false);
   const [respondSampleSuccess, setRespondSampleSuccess] = useState(false);
   const [activatedBatches, setActivivatedBatches] = useState([]);
-  const [displayItems, setDisplayItems] = useState(50);
+  const [displayItems, setDisplayItems] = useState(2000);
   const [page, setPage] = useState(1);
   const [sampleStorage, setSampleStorage] = useState([]);
 
@@ -450,26 +449,6 @@ const ShortSummary = () => {
         </div>
       );
     }
-
-    const paginationStyle = {
-      pageLink: {
-        color: processingTheme.primary,
-        border: `1px solid ${processingTheme.neutral}`,
-        ":hover": {
-          backgroundColor: processingTheme.neutral,
-        },
-      },
-      activePageLink: {
-        backgroundColor: processingTheme.primary,
-        borderColor: processingTheme.primary,
-        color: "white",
-      },
-      disabledPageLink: {
-        color: "#6c757d",
-        backgroundColor: "#f8f9fa",
-        borderColor: "#dee2e6",
-      },
-    };
   };
 
   if (isInitialLoad) return <LoadingSkeleton />;
@@ -491,21 +470,6 @@ const ShortSummary = () => {
   const exportToExcel = () => {
     // const data = prepareExportData();
 
-    const heading = [
-      "CWS",
-      "Batch No",
-      "Station Moisture",
-      "Lab Moisture",
-      "+16",
-      "15",
-      "14",
-      "13",
-      "B12",
-      "Defect",
-      "Pp Score(%)",
-      "Sample Storage",
-      "Category",
-    ];
     const dateStr = new Date().toISOString().split("T")[0];
     const fileName = `Quality_Sample_${dateStr}.xls`;
 

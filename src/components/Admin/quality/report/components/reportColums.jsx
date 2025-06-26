@@ -37,6 +37,6 @@ export const columns = [
   { field: "driverPhone", header: "PP Score/Delivery" },
   { field: "driverPhone", header: "PP Score/samples" },
   { field: "driverPhone", header: "Variation PP Score" },
-  { field: "driverPhone", header: "Category" },
+  // { field: "driverPhone", header: "Category" },
   { field: "driverPhone", header: "Sample storage" },
 ];

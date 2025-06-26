@@ -1,5 +1,5 @@
 import { Button } from "react-bootstrap";
-import { useState } from "react";
+import React, { useState } from "react";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
 
 const processingTheme = {
@@ -18,6 +18,7 @@ const processingTheme = {
 
 export const ReprotTable = ({ data = [], isLoading = false }) => {
   const [selectedStationName, setSelectedStationName] = useState([]);
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
   let lows = 0;
 
   if (isLoading) {
@@ -44,7 +45,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
       background: processingTheme.neutral,
       fontSize: "0.9rem",
       fontWeight: "600",
-      // color: "white",
       cursor: "pointer",
       padding: "15px 12px",
       textAlign: "center",
@@ -54,7 +54,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
   }
 
   const handleOpenstation = (stationName) => {
-    // station name is alredy exist
     const isAlredyExist = selectedStationName?.includes(
       stationName?.toLowerCase()
     );
@@ -67,9 +66,47 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
     }
   };
 
+  // Toggle category expansion
+  const toggleCategory = (stationName, category) => {
+    const categoryKey = `${stationName.toLowerCase()}-${category}`;
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryKey)) {
+      newExpanded.delete(categoryKey);
+    } else {
+      newExpanded.add(categoryKey);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  // Group data by category for a specific station
+  const getGroupedDataByCategory = () => {
+    const groupedByCategory = {};
+
+    data.batches?.forEach((cwsBatches, rowIndex) => {
+      cwsBatches?.delivery?.batches?.forEach((elements, subBatchIndex) => {
+        const category = elements?.newCategory || "Uncategorized";
+
+        if (!groupedByCategory[category]) {
+          groupedByCategory[category] = [];
+        }
+
+        groupedByCategory[category].push({
+          cwsBatches,
+          elements,
+          rowIndex,
+          subBatchIndex,
+        });
+      });
+    });
+
+    return groupedByCategory;
+  };
+
+  const groupedData = getGroupedDataByCategory();
+
   return (
     <>
-      {/* TOTALS  */}
+      {/* TOTALS ROW */}
       <tr
         onClick={() => handleOpenstation(data?.cws?.name ?? "")}
         style={{
@@ -99,7 +136,11 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
             <i
               className="bi bi-chevron-down"
               style={{
-                transform: true ? "rotate(180deg)" : "rotate(0deg)",
+                transform: selectedStationName.includes(
+                  data?.cws?.name?.toLowerCase()
+                )
+                  ? "rotate(180deg)"
+                  : "rotate(0deg)",
                 transition: "transform 0.2s",
               }}
             ></i>
@@ -133,7 +174,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
             Number(data?.cws?.totalDeliveredKgs ?? 0).toFixed(2)
           )}
         </td>
-
         <td style={styleTotals()}>
           {formatNumberWithCommas(
             Number(data?.cws?.totalVariationKgs ?? 0).toFixed(2)
@@ -229,408 +269,490 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
         </td>
         <td style={styleTotals()}>{""}</td>
       </tr>
+
       {selectedStationName.includes(data?.cws?.name?.toLowerCase()) &&
-        data.batches.map((cwsBatches, rowIndex) =>
-          cwsBatches?.delivery?.batches.map((elements, subBatchIndex) => {
-            lows += 1;
-            return (
-              <>
-                <tr
-                  key={rowIndex}
+        Object.entries(groupedData).map(([category, categoryItems]) => {
+          const categoryKey = `${data?.cws?.name?.toLowerCase()}-${category}`;
+          const isCategoryExpanded = expandedCategories.has(categoryKey);
+
+          return (
+            <React.Fragment key={category}>
+              <tr
+                style={{
+                  background: `linear-gradient(135deg, ${processingTheme.primary}15 0%, ${processingTheme.neutral}30 100%)`,
+                  cursor: "pointer",
+                  borderBottom: `2px solid ${processingTheme.primary}`,
+                  fontWeight: "bold",
+                }}
+                onClick={() => toggleCategory(data?.cws?.name, category)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = `linear-gradient(135deg, ${processingTheme.primary}25 0%, ${processingTheme.neutral}40 100%)`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = `linear-gradient(135deg, ${processingTheme.primary}15 0%, ${processingTheme.neutral}30 100%)`;
+                }}
+              >
+                <td
+                  colSpan="28"
                   style={{
-                    transition: "all 0.3s ease",
-                    borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = `linear-gradient(135deg, ${processingTheme.tableHover} 0%, ${processingTheme.neutral} 100%)`;
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 12px rgba(0, 128, 128, 0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
+                    padding: "15px 20px",
+                    color: processingTheme.primary,
+                    fontSize: "1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
                   }}
                 >
-                  <td
+                  <span
                     style={{
-                      padding: "12px 15px",
-                      fontWeight: "600",
-                      color: processingTheme.primary,
+                      transform: isCategoryExpanded
+                        ? "rotate(90deg)"
+                        : "rotate(0deg)",
+                      transition: "transform 0.2s ease",
+                      fontSize: "0.8rem",
                     }}
                   >
-                    {lows}
-                  </td>
-                  {/* batch number */}
-                  <td
+                    ▶
+                  </span>
+                  <span style={{ fontWeight: "700" }}>{category}</span>
+                  <span
                     style={{
-                      padding: "10px 15px",
-                      borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                      width: "6rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "10rem",
-                        background: processingTheme.neutral,
-                        padding: "6px 10px",
-                        borderRadius: "8px",
-                        color: processingTheme.primary,
-                        fontWeight: "600",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {`${cwsBatches?.batchNo ?? ""}-${
-                        elements?.gradeKey ?? ""
-                      }`}
-                    </div>
-                  </td>
-
-                  {/* transported  */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
+                      fontSize: "0.85rem",
+                      color: processingTheme.secondary,
+                      marginLeft: "auto",
                       fontWeight: "500",
                     }}
                   >
-                    {cwsBatches?.delivery?.transportedKgs[
-                      elements?.gradeKey ?? ""
-                    ] ?? "-"}
-                  </td>
-                  {/* received  */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                      fontWeight: "500",
-                    }}
-                  >
-                    {cwsBatches?.delivery?.deliveryKgs[
-                      elements?.category?.toLowerCase() ?? ""
-                    ] ?? "-"}
-                  </td>
-                  {/* variation  */}
-                  <td
-                    style={{
-                      padding: "10px 10px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                      fontWeight: "500",
-                    }}
-                  >
-                    {cwsBatches?.delivery?.variationKgs[elements?.gradeKey] ??
-                      "-"}
-                  </td>
+                    {/* ({categoryItems.length} items) */}
+                  </span>
+                </td>
+              </tr>
 
-                  {/* 16 */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements?.screen["16+"] ?? 0)?.toFixed(2)}
-                  </td>
-                  {/* 15 */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements?.screen["15"] ?? 0).toFixed(2)}
-                  </td>
-                  {/* av.15+/delivery */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements["AVG15+"] ?? 0)?.toFixed(2)}
-                  </td>
-                  {/* av.15+ samples */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(
-                      cwsBatches?.sample?.batches[subBatchIndex]["AVG15+"]
-                    ).toFixed(2)}
-                  </td>
-                  {/* variation 15+ */}
-                  <td
-                    style={{
-                      padding: "10px 15px",
-                      borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                      width: "6rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "5rem",
-                        background: processingTheme.neutral,
-                        padding: "6px 10px",
-                        borderRadius: "8px",
-                        color: processingTheme.primary,
-                        fontWeight: "600",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {Number(elements?.totals?.v15plus ?? 0)?.toFixed(2)}
-                    </div>
-                  </td>
-                  {/* 14 */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements?.screen["14"]).toFixed(2)}
-                  </td>
-                  {/* 13 */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements?.screen["13"]).toFixed(2)}
-                  </td>
-                  {/* av.13/14/delivery */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements["AVG13/14"]).toFixed(2)}
-                  </td>
-                  {/* av13/14/samples */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(
-                      cwsBatches?.sample?.batches[subBatchIndex]["AVG13/14"]
-                    ).toFixed(2)}
-                  </td>
-                  {/* variation 13/14 */}
-                  <td
-                    style={{
-                      padding: "10px 15px",
-                      borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                      width: "6rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "5rem",
-                        background: processingTheme.neutral,
-                        padding: "6px 10px",
-                        borderRadius: "8px",
-                        color: processingTheme.primary,
-                        fontWeight: "600",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {Number(elements?.totals?.v1314 ?? 0).toFixed(2)}{" "}
-                    </div>
-                  </td>
+              {/* CATEGORY DATA ROWS */}
+              {isCategoryExpanded &&
+                categoryItems.map(
+                  ({ cwsBatches, elements, rowIndex, subBatchIndex }) => {
+                    lows += 1;
+                    return (
+                      <tr
+                        key={`${category}-${lows}`}
+                        style={{
+                          transition: "all 0.3s ease",
+                          borderBottom: `1px solid ${processingTheme.tableBorder}`,
+                          backgroundColor: "rgba(0,128,128,0.02)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = `linear-gradient(135deg, ${processingTheme.tableHover} 0%, ${processingTheme.neutral} 100%)`;
+                          e.currentTarget.style.transform = "translateY(-1px)";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 12px rgba(0, 128, 128, 0.1)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background =
+                            "rgba(0,128,128,0.02)";
+                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                      >
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            paddingLeft: "30px", // Indent to show hierarchy
+                            fontWeight: "600",
+                            color: processingTheme.primary,
+                          }}
+                        >
+                          {lows}
+                        </td>
 
-                  {/* b12 */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements?.screen["B/12"] ?? 0).toFixed(2)}
-                  </td>
-                  {/* defects (%) */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements?.defect ?? 0).toFixed(2)}
-                  </td>
-                  {/* avlg/delivery */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements["AVGLG"]).toFixed(2)}
-                  </td>
-                  {/* av.lg samples */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(
-                      cwsBatches?.sample?.batches[subBatchIndex]["AVGLG"]
-                    ).toFixed()}
-                  </td>
-                  {/* variation lg */}
-                  <td
-                    style={{
-                      padding: "10px 15px",
-                      borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                      width: "6rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "5rem",
-                        background: processingTheme.neutral,
-                        padding: "6px 10px",
-                        borderRadius: "8px",
-                        color: processingTheme.primary,
-                        fontWeight: "600",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {Number(elements?.totals?.vlg ?? 0).toFixed(2)}
-                    </div>
-                  </td>
+                        {/* batch number */}
+                        <td
+                          style={{
+                            padding: "10px 15px",
+                            borderBottom: `1px solid ${processingTheme.tableBorder}`,
+                            width: "6rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "10rem",
+                              background: processingTheme.neutral,
+                              padding: "6px 10px",
+                              borderRadius: "8px",
+                              color: processingTheme.primary,
+                              fontWeight: "600",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {`${cwsBatches?.batchNo ?? ""}-${
+                              elements?.gradeKey ?? ""
+                            }`}
+                          </div>
+                        </td>
 
-                  {/* ot delivery (%) */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements?.OTDelivery ?? 0).toFixed(2)}
-                  </td>
-                  {/*  ot sample */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(
-                      cwsBatches?.sample?.batches[subBatchIndex]["OTSample"]
-                    ).toFixed(2)}
-                  </td>
-                  {/* variation ot */}
-                  <td
-                    style={{
-                      padding: "10px 15px",
-                      borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                      width: "6rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "5rem",
-                        background: processingTheme.neutral,
-                        padding: "6px 10px",
-                        borderRadius: "8px",
-                        color: processingTheme.primary,
-                        fontWeight: "600",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {Number(elements?.totals?.vot).toFixed(2)}
-                    </div>
-                  </td>
+                        {/* transported */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {cwsBatches?.delivery?.transportedKgs[
+                            elements?.gradeKey ?? ""
+                          ] ?? "-"}
+                        </td>
 
-                  {/* pp score /delivery */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(elements?.ppScore ?? 0).toFixed(2)}
-                  </td>
-                  {/* pp score/samples */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                      textAlign: "center",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {Number(
-                      cwsBatches?.sample?.batches[subBatchIndex]?.ppScore ?? 0
-                    ).toFixed()}
-                  </td>
-                  {/* variation pp score */}
-                  <td
-                    style={{
-                      padding: "10px 15px",
-                      borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                      width: "6rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "5rem",
-                        background: processingTheme.neutral,
-                        padding: "6px 10px",
-                        borderRadius: "8px",
-                        color: processingTheme.primary,
-                        fontWeight: "600",
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {Number(elements?.totals?.vppscore ?? 0).toFixed()}
-                    </div>
-                  </td>
+                        {/* received */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {cwsBatches?.delivery?.deliveryKgs[
+                            elements?.category?.toLowerCase() ?? ""
+                          ] ?? "-"}
+                        </td>
 
-                  {/* category */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                    }}
-                  >
-                    {elements?.newCategory ?? "-"}
-                  </td>
-                  {/* sample storage  */}
-                  <td
-                    style={{
-                      padding: "12px 15px",
-                    }}
-                  >
-                    {elements?.sampleStorage?.name ?? "-"}
-                  </td>
-                </tr>
-              </>
-            );
-          })
-        )}
+                        {/* variation */}
+                        <td
+                          style={{
+                            padding: "10px 10px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                            fontWeight: "500",
+                          }}
+                        >
+                          {cwsBatches?.delivery?.variationKgs[
+                            elements?.gradeKey
+                          ] ?? "-"}
+                        </td>
+
+                        {/* 16+ */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements?.screen["16+"] ?? 0)?.toFixed(2)}
+                        </td>
+
+                        {/* 15 */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements?.screen["15"] ?? 0).toFixed(2)}
+                        </td>
+
+                        {/* av.15+/delivery */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements["AVG15+"] ?? 0)?.toFixed(2)}
+                        </td>
+
+                        {/* av.15+ samples */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(
+                            cwsBatches?.sample?.batches[subBatchIndex]["AVG15+"]
+                          ).toFixed(2)}
+                        </td>
+
+                        {/* variation 15+ */}
+                        <td
+                          style={{
+                            padding: "10px 15px",
+                            borderBottom: `1px solid ${processingTheme.tableBorder}`,
+                            width: "6rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "5rem",
+                              background: processingTheme.neutral,
+                              padding: "6px 10px",
+                              borderRadius: "8px",
+                              color: processingTheme.primary,
+                              fontWeight: "600",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {Number(elements?.totals?.v15plus ?? 0)?.toFixed(2)}
+                          </div>
+                        </td>
+
+                        {/* 14 */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements?.screen["14"]).toFixed(2)}
+                        </td>
+
+                        {/* 13 */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements?.screen["13"]).toFixed(2)}
+                        </td>
+
+                        {/* av.13/14/delivery */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements["AVG13/14"]).toFixed(2)}
+                        </td>
+
+                        {/* av13/14/samples */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(
+                            cwsBatches?.sample?.batches[subBatchIndex][
+                              "AVG13/14"
+                            ]
+                          ).toFixed(2)}
+                        </td>
+
+                        {/* variation 13/14 */}
+                        <td
+                          style={{
+                            padding: "10px 15px",
+                            borderBottom: `1px solid ${processingTheme.tableBorder}`,
+                            width: "6rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "5rem",
+                              background: processingTheme.neutral,
+                              padding: "6px 10px",
+                              borderRadius: "8px",
+                              color: processingTheme.primary,
+                              fontWeight: "600",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {Number(elements?.totals?.v1314 ?? 0).toFixed(2)}
+                          </div>
+                        </td>
+
+                        {/* b12 */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements?.screen["B/12"] ?? 0).toFixed(2)}
+                        </td>
+
+                        {/* defects (%) */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements?.defect ?? 0).toFixed(2)}
+                        </td>
+
+                        {/* avlg/delivery */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements["AVGLG"]).toFixed(2)}
+                        </td>
+
+                        {/* av.lg samples */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(
+                            cwsBatches?.sample?.batches[subBatchIndex]["AVGLG"]
+                          ).toFixed()}
+                        </td>
+
+                        {/* variation lg */}
+                        <td
+                          style={{
+                            padding: "10px 15px",
+                            borderBottom: `1px solid ${processingTheme.tableBorder}`,
+                            width: "6rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "5rem",
+                              background: processingTheme.neutral,
+                              padding: "6px 10px",
+                              borderRadius: "8px",
+                              color: processingTheme.primary,
+                              fontWeight: "600",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {Number(elements?.totals?.vlg ?? 0).toFixed(2)}
+                          </div>
+                        </td>
+
+                        {/* ot delivery (%) */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements?.OTDelivery ?? 0).toFixed(2)}
+                        </td>
+
+                        {/* ot sample */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(
+                            cwsBatches?.sample?.batches[subBatchIndex][
+                              "OTSample"
+                            ]
+                          ).toFixed(2)}
+                        </td>
+
+                        {/* variation ot */}
+                        <td
+                          style={{
+                            padding: "10px 15px",
+                            borderBottom: `1px solid ${processingTheme.tableBorder}`,
+                            width: "6rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "5rem",
+                              background: processingTheme.neutral,
+                              padding: "6px 10px",
+                              borderRadius: "8px",
+                              color: processingTheme.primary,
+                              fontWeight: "600",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {Number(elements?.totals?.vot).toFixed(2)}
+                          </div>
+                        </td>
+
+                        {/* pp score /delivery */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(elements?.ppScore ?? 0).toFixed(2)}
+                        </td>
+
+                        {/* pp score/samples */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                            textAlign: "center",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {Number(
+                            cwsBatches?.sample?.batches[subBatchIndex]
+                              ?.ppScore ?? 0
+                          ).toFixed()}
+                        </td>
+
+                        {/* variation pp score */}
+                        <td
+                          style={{
+                            padding: "10px 15px",
+                            borderBottom: `1px solid ${processingTheme.tableBorder}`,
+                            width: "6rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "5rem",
+                              background: processingTheme.neutral,
+                              padding: "6px 10px",
+                              borderRadius: "8px",
+                              color: processingTheme.primary,
+                              fontWeight: "600",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {Number(elements?.totals?.vppscore ?? 0).toFixed()}
+                          </div>
+                        </td>
+
+                        {/* sample storage */}
+                        <td
+                          style={{
+                            padding: "12px 15px",
+                          }}
+                        >
+                          {elements?.sampleStorage?.name ?? "-"}
+                        </td>
+                      </tr>
+                    );
+                  }
+                )}
+            </React.Fragment>
+          );
+        })}
     </>
   );
 };
