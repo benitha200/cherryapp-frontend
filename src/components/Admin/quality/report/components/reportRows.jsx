@@ -39,7 +39,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
     );
   }
 
-  // Enhanced totals styling with gradient
   function styleTotals() {
     return {
       background: processingTheme.neutral,
@@ -66,7 +65,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
     }
   };
 
-  // Toggle category expansion
   const toggleCategory = (stationName, category) => {
     const categoryKey = `${stationName.toLowerCase()}-${category}`;
     const newExpanded = new Set(expandedCategories);
@@ -78,7 +76,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
     setExpandedCategories(newExpanded);
   };
 
-  // Group data by category for a specific station
   const getGroupedDataByCategory = () => {
     const groupedByCategory = {};
 
@@ -106,7 +103,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
 
   return (
     <>
-      {/* TOTALS ROW */}
       <tr
         onClick={() => handleOpenstation(data?.cws?.name ?? "")}
         style={{

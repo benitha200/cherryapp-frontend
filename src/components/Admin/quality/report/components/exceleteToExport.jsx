@@ -1,201 +1,88 @@
 export const exportToExcel = (data) => {
   const dateStr = new Date().toISOString().split("T")[0];
-  const fileName = `Coffee_Quality_Processing_${dateStr}.xls`;
+  const fileName = `Coffee_Quality_Report_${dateStr}.csv`;
 
-  let htmlContent = `
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            table { 
-                border-collapse: collapse; 
-                width: 100%; 
-                font-family: Arial, sans-serif;
-            }
-            th, td { 
-                border: 1px solid #ddd; 
-                padding: 8px; 
-                text-align: center; 
-                font-size: 12px;
-            }
-            th { 
-                background-color: #f2f2f2; 
-                font-weight: bold;
-                color: #333;
-            }
-            .delivery-header {
-                background-color: #E8F5E8; /* Light green for delivery columns */
-            }
-            .sample-header {
-                background-color: #E8F0FF; /* Light blue for sample columns */
-            }
-            .variation-header {
-                background-color: #FFF0E8; /* Light orange for variation columns */
-            }
-            .info-header {
-                background-color: #F0F0F0; /* Light gray for info columns */
-            }
-            .numeric-cell {
-                font-family: 'Courier New', monospace;
-                text-align: right;
-            }
-        </style>
-    </head>
-    <body>
-        <table>
-            <thead>
-                <!-- Main header row with grouped columns -->
-                <tr>
-                    <th rowspan="2" class="info-header">CWS</th>
-                    <th rowspan="2" class="info-header">Batch No</th>
-                    <th colspan="1" class="info-header">Weight Information</th>
-                    <th colspan="5" class="delivery-header">Screen +15</th>
-                    <th colspan="5" class="sample-header">Sample Comparison</th>
-                    <th colspan="2" class="delivery-header"> B12 & defect</th>
-                    <th colspan="3" class="sample-header">Low grads</th>
-                    <th colspan="3" class="variation-header">OT variation</th>
-                    <th colspan="3" class="delivery-header">PP score</th>
-                    <th colspan="2" class="info-header">Category</th>
-                </tr>
-                <!-- Sub-header row -->
-                <tr>
-                    <th class="info-header">Transported</th>
-                    <th class="delivery-header">16+</th>
-                    <th class="delivery-header">15</th>
-                    <th class="delivery-header">AVG 15+</th>
-                    <th class="sample-header">AVG 15+ (S)</th>
-                    <th class="variation-header">Var 15+</th>
-                    <th class="delivery-header">14</th>
-                    <th class="delivery-header">13</th>
-                    <th class="delivery-header">AVG 13/14</th>
-                    <th class="sample-header">AVG 13/14 (S)</th>
-                    <th class="variation-header">Var 13/14</th>
-                    <th class="delivery-header">B/12</th>
-                    <th class="delivery-header">Defects %</th>
-                    <th class="delivery-header">AVG LG</th>
-                    <th class="sample-header">AVG LG (S)</th>
-                    <th class="variation-header">Var LG</th>
-                    <th class="delivery-header">OT Delivery</th>
-                    <th class="sample-header">OT Sample</th>
-                    <th class="variation-header">Var OT</th>
-                    <th class="delivery-header">PP Score</th>
-                    <th class="sample-header">PP Score (S)</th>
-                    <th class="variation-header">Var PP</th>
-                    <th class="info-header">Category</th>
-                    <th class="info-header">Storage</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${
-                  data
-                    ?.map(
-                      (v) =>
-                        v.batches
-                          .map(
-                            (cwsBatches) =>
-                              cwsBatches?.delivery?.batches
-                                ?.map(
-                                  (elements, subBatchIndex) =>
-                                    `<tr>
-                        <td>${v?.cws?.name || "N/A"}</td>
-                        <td>${cwsBatches?.batchNo ?? ""}-${
-                                      elements?.gradeKey ?? ""
-                                    }</td>
-                        <td class="numeric-cell">${
-                          cwsBatches?.delivery?.transportedKgs[
-                            elements?.gradeKey ?? ""
-                          ] ?? "-"
-                        }</td>
-                        
-                        <td class="numeric-cell">${Number(
-                          elements?.screen?.["16+"] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.screen?.["15"] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.["AVG15+"] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          cwsBatches?.sample?.batches?.[subBatchIndex]?.[
-                            "AVG15+"
-                          ] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.totals?.v15plus ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.screen?.["14"] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.screen?.["13"] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.["AVG13/14"] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          cwsBatches?.sample?.batches?.[subBatchIndex]?.[
-                            "AVG13/14"
-                          ] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.totals?.v1314 ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.screen?.["B/12"] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.defect ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.["AVGLG"] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          cwsBatches?.sample?.batches?.[subBatchIndex]?.[
-                            "AVGLG"
-                          ] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.totals?.vlg ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.OTDelivery ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          cwsBatches?.sample?.batches?.[subBatchIndex]?.[
-                            "OTSample"
-                          ] ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.totals?.vot ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.ppScore ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          cwsBatches?.sample?.batches?.[subBatchIndex]
-                            ?.ppScore ?? 0
-                        ).toFixed(2)}</td>
-                        <td class="numeric-cell">${Number(
-                          elements?.totals?.vppscore ?? 0
-                        ).toFixed(2)}</td>
-                        <td>${elements?.newCategory ?? "-"}</td>
-                        <td>${elements?.sampleStorage?.name ?? "-"}</td>
-                    </tr>`
-                                )
-                                ?.join("") ?? ""
-                          )
-                          ?.join("") ?? ""
-                    )
-                    ?.join("") ?? ""
-                }
-            </tbody>
-        </table>
-    </body>
-</html>
-`;
+  const headers = [
+    "CWS",
+    "Batch No",
+    "Transported",
+    "16+",
+    "15",
+    "AVG 15+",
+    "AVG 15+ (S)",
+    "Var 15+",
+    "14",
+    "13",
+    "AVG 13/14",
+    "AVG 13/14 (S)",
+    "Var 13/14",
+    "B/12",
+    "Defects %",
+    "AVG LG",
+    "AVG LG (S)",
+    "Var LG",
+    "OT Delivery",
+    "OT Sample",
+    "Var OT",
+    "PP Score",
+    "PP Score (S)",
+    "Var PP",
+    "Category",
+    "Storage",
+  ];
 
-  const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel" });
+  const rows = [];
+  data?.forEach((v) => {
+    v.batches.forEach((cwsBatches) => {
+      cwsBatches?.delivery?.batches?.forEach((elements, subBatchIndex) => {
+        const row = [
+          v?.cws?.name || "N/A",
+          `${cwsBatches?.batchNo ?? ""}-${elements?.gradeKey ?? ""}`,
+          cwsBatches?.delivery?.transportedKgs[elements?.gradeKey ?? ""] ?? "-",
+          Number(elements?.screen?.["16+"] ?? 0).toFixed(2),
+          Number(elements?.screen?.["15"] ?? 0).toFixed(2),
+          Number(elements?.["AVG15+"] ?? 0).toFixed(2),
+          Number(
+            cwsBatches?.sample?.batches?.[subBatchIndex]?.["AVG15+"] ?? 0
+          ).toFixed(2),
+          Number(elements?.totals?.v15plus ?? 0).toFixed(2),
+          Number(elements?.screen?.["14"] ?? 0).toFixed(2),
+          Number(elements?.screen?.["13"] ?? 0).toFixed(2),
+          Number(elements?.["AVG13/14"] ?? 0).toFixed(2),
+          Number(
+            cwsBatches?.sample?.batches?.[subBatchIndex]?.["AVG13/14"] ?? 0
+          ).toFixed(2),
+          Number(elements?.totals?.v1314 ?? 0).toFixed(2),
+          Number(elements?.screen?.["B/12"] ?? 0).toFixed(2),
+          Number(elements?.defect ?? 0).toFixed(2),
+          Number(elements?.["AVGLG"] ?? 0).toFixed(2),
+          Number(
+            cwsBatches?.sample?.batches?.[subBatchIndex]?.["AVGLG"] ?? 0
+          ).toFixed(2),
+          Number(elements?.totals?.vlg ?? 0).toFixed(2),
+          Number(elements?.OTDelivery ?? 0).toFixed(2),
+          Number(
+            cwsBatches?.sample?.batches?.[subBatchIndex]?.["OTSample"] ?? 0
+          ).toFixed(2),
+          Number(elements?.totals?.vot ?? 0).toFixed(2),
+          Number(elements?.ppScore ?? 0).toFixed(2),
+          Number(
+            cwsBatches?.sample?.batches?.[subBatchIndex]?.ppScore ?? 0
+          ).toFixed(2),
+          Number(elements?.totals?.vppscore ?? 0).toFixed(2),
+          elements?.newCategory ?? "-",
+          elements?.sampleStorage?.name ?? "-",
+        ];
+        rows.push(row);
+      });
+    });
+  });
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map((field) => `"${field}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -203,8 +90,7 @@ export const exportToExcel = (data) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-
   URL.revokeObjectURL(url);
 
-  console.log(`Excel file "${fileName}" has been downloaded successfully!`);
+  console.log(`CSV file "${fileName}" has been downloaded successfully!`);
 };
