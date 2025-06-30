@@ -27,10 +27,10 @@ export const DashboardCardWithPercentages = ({ title, value, mainValue, totalDel
                     </h6>
 
                     {/* Main value */}
-                    <p className="h6 mb-2 fw-bold">{value}</p>
+                    <p className="h6 mb-2 fw-bold">{percentageOfHighGrade} % </p>
 
                     {/* Percentage breakdowns */}
-                    <div className="d-flex flex-column gap-1" style={{ fontSize: "0.7rem" }}>
+                    {/* <div className="d-flex flex-column gap-1" style={{ fontSize: "0.7rem" }}>
                         <div className="d-flex justify-content-between align-items-center">
                             <span className="text-muted">% of Total Delivered:</span>
                             <span
@@ -59,7 +59,7 @@ export const DashboardCardWithPercentages = ({ title, value, mainValue, totalDel
                                 {percentageOfHighGrade}%
                             </span>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
                 {iconClass && (
                     <div className="d-flex justify-content-end mt-2">
