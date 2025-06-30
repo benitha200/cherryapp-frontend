@@ -28,66 +28,67 @@ export const DeliveredWithBreakdown = ({ title, totalValue, deliveredKgs, iconCl
 
     return (
         <div className="card shadow-sm hover-shadow transition h-100">
-            <div className="card-body d-flex flex-column justify-content-between" style={{ minHeight: "100px" }}>
+            <div className="card-body d-flex flex-column justify-content-between p-2" style={{ minHeight: "60px" }}>
                 <div style={{ width: "100%" }}>
-                    <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div className="d-flex justify-content-between align-items-center mb-1">
                         <h6
                             className="text-muted small mb-0"
                             style={{
-                                minHeight: "32px",
+                                minHeight: "18px",
                                 width: "100%",
                                 whiteSpace: "normal",
                                 overflow: "hidden",
                                 display: "-webkit-box",
                                 WebkitLineClamp: 2,
                                 WebkitBoxOrient: "vertical",
-                                lineHeight: "1.2",
+                                lineHeight: "1.1",
+                                fontSize: "0.75rem"
                             }}
                             title={title}
                         >
                             {title}
                         </h6>
                         <button
-                            className="btn btn-link p-0 ms-2"
+                            className="btn btn-link p-0 ms-1"
                             onClick={toggleBreakdown}
                             style={{ border: 'none', background: 'none' }}
                             title={showBreakdown ? 'Hide breakdown' : 'Show breakdown'}
                         >
                             <i
                                 className={`bi ${showBreakdown ? 'bi-chevron-up' : 'bi-chevron-down'} text-primary`}
-                                style={{ fontSize: "0.8rem" }}
+                                style={{ fontSize: "1rem" }}
                             ></i>
                         </button>
                     </div>
 
-                    <p className="h6 mb-2 fw-bold">{formatNumberWithCommas(totalValue)} kgs</p>
+                    <p className="h6 mb-1 fw-bold" style={{ fontSize: "1rem" }}>{formatNumberWithCommas(totalValue)} kgs</p>
 
                     <div className={`collapse ${showBreakdown ? 'show' : ''}`}>
-                        <div className="d-flex flex-wrap gap-1" style={{ fontSize: "0.7rem", lineHeight: "1.3" }}>
+                        <div className="d-flex flex-wrap gap-1" style={{ fontSize: "1rem", lineHeight: "1.2" }}>
                             {deliveryData.map(({ grade, value, color }) => (
                                 <span
                                     key={grade}
-                                    className="badge rounded-pill px-2 py-1"
+                                    className="badge rounded-pill px-1 py-0"
                                     style={{
                                         backgroundColor: `${color}20`,
                                         color: color,
                                         border: `1px solid ${color}40`,
                                         fontWeight: "600",
-                                        fontSize: "0.65rem"
+                                        fontSize: "0.8rem"
                                     }}
                                 >
-                                    {grade}: {formatNumberWithCommas(value)}  kgs
+                                    {grade}: {formatNumberWithCommas(value)} kgs
                                 </span>
                             ))}
                         </div>
                     </div>
 
-                    {/* Add spacer when collapsed to maintain consistent height */}
-                    {!showBreakdown && <div style={{ minHeight: "40px" }}></div>}
+                    {/* Add minimal spacer when collapsed to maintain consistent height */}
+                    {!showBreakdown && <div style={{ minHeight: "12px" }}></div>}
                 </div>
                 {iconClass && (
-                    <div className="d-flex justify-content-end mt-2">
-                        <i className={`${iconClass} text-primary`} style={{ fontSize: "1.2rem" }}></i>
+                    <div className="d-flex justify-content-end mt-1">
+                        <i className={`${iconClass} text-primary`} style={{ fontSize: "1rem" }}></i>
                     </div>
                 )}
             </div>
