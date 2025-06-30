@@ -69,6 +69,7 @@ export const QualityReportTable = () => {
               totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
               totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
               iconClass=""
+              type="avg15Plus"
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
@@ -81,6 +82,7 @@ export const QualityReportTable = () => {
               totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
               totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
               iconClass=""
+              type="avg1314"
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
@@ -93,6 +95,7 @@ export const QualityReportTable = () => {
               totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
               totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
               iconClass=""
+              type="avgLowGrade"
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
@@ -105,6 +108,7 @@ export const QualityReportTable = () => {
               totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
               totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
               iconClass=""
+              type="avgOT"
             />
           </div>
         </div>

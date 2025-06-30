@@ -28,7 +28,7 @@ export const DeliveredWithBreakdown = ({ title, totalValue, deliveredKgs, iconCl
 
     return (
         <div className="card shadow-sm hover-shadow transition h-100">
-            <div className="card-body d-flex flex-column justify-content-between" style={{ minHeight: "140px" }}>
+            <div className="card-body d-flex flex-column justify-content-between" style={{ minHeight: "100px" }}>
                 <div style={{ width: "100%" }}>
                     <div className="d-flex justify-content-between align-items-center mb-2">
                         <h6

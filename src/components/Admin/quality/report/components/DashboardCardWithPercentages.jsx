@@ -1,13 +1,21 @@
 import PropTypes from 'prop-types';
 
-export const DashboardCardWithPercentages = ({ title, value, mainValue, totalDelivered, totalHighGrade, iconClass }) => {
-    // Calculate percentages
-    const percentageOfTotalDelivered = totalDelivered > 0 ? ((mainValue / totalDelivered) * 100).toFixed(1) : 0;
-    const percentageOfHighGrade = totalHighGrade > 0 ? ((mainValue / totalHighGrade) * 100).toFixed(1) : 0;
+export const DashboardCardWithPercentages = ({ title, value, mainValue, totalDelivered, totalHighGrade, iconClass, type }) => {
+    const percentageOfTotalDelivered = totalDelivered > 0 ? ((mainValue / totalDelivered) * 100).toFixed(2) : 0;
+
+    let percentageOfHighGrade = 0;
+    if (totalHighGrade > 0) {
+        if (type === "avgOT") {
+            percentageOfHighGrade = (((mainValue / totalHighGrade) * 100) / 3).toFixed(2);
+
+        } else {
+            percentageOfHighGrade = ((mainValue / totalHighGrade) * 100).toFixed(2);
+        }
+    }
 
     return (
         <div className="card shadow-sm hover-shadow transition h-100">
-            <div className="card-body d-flex flex-column justify-content-between" style={{ minHeight: "140px" }}>
+            <div className="card-body d-flex flex-column justify-content-between" style={{ minHeight: "100px" }}>
                 <div style={{ width: "100%" }}>
                     <h6
                         className="text-muted small mb-2"
@@ -26,10 +34,8 @@ export const DashboardCardWithPercentages = ({ title, value, mainValue, totalDel
                         {title}
                     </h6>
 
-                    {/* Main value */}
-                    <p className="h6 mb-2 fw-bold">{percentageOfHighGrade} % </p>
+                    <p className="h6 mb-2 fw-bold">{percentageOfHighGrade}</p>
 
-                    {/* Percentage breakdowns */}
                     {/* <div className="d-flex flex-column gap-1" style={{ fontSize: "0.7rem" }}>
                         <div className="d-flex justify-content-between align-items-center">
                             <span className="text-muted">% of Total Delivered:</span>
@@ -77,5 +83,6 @@ DashboardCardWithPercentages.propTypes = {
     mainValue: PropTypes.number.isRequired,
     totalDelivered: PropTypes.number.isRequired,
     totalHighGrade: PropTypes.number.isRequired,
-    iconClass: PropTypes.string
+    iconClass: PropTypes.string,
+    type: PropTypes.string.isRequired
 };
