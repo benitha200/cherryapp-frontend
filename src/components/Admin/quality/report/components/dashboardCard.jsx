@@ -6,8 +6,8 @@ const theme = {
   text: "#34495E",
 };
 export const DashboardCard = ({ title, value, iconClass }) => (
-  <div className="card shadow-sm hover-shadow transition">
-    <div className="card-body d-flex justify-content-between align-items-center">
+  <div className="card shadow-sm hover-shadow transition h-100">
+    <div className="card-body d-flex flex-column justify-content-between" style={{ minHeight: "140px" }}>
       <div style={{ width: "100%" }}>
         <h6
           className="text-muted small mb-2"
@@ -25,8 +25,14 @@ export const DashboardCard = ({ title, value, iconClass }) => (
         >
           {title}
         </h6>
-        <p className="h6 mb-0 fw-bold">{value}</p>
+        <p className="h6 mb-0 fw-bold">{value} Kgs </p>
+        <div style={{ minHeight: "60px" }}></div>
       </div>
+      {iconClass && (
+        <div className="d-flex justify-content-end">
+          <i className={`${iconClass} text-primary`} style={{ fontSize: "1.2rem" }}></i>
+        </div>
+      )}
     </div>
   </div>
 );

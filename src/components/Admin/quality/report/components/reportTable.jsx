@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { columns } from "./reportColums";
-import { Button, Card, Col, Form, InputGroup } from "react-bootstrap";
+import { Button, Col, Form, InputGroup } from "react-bootstrap";
 import { GetReport } from "../action";
 import { Skeleton } from "./skeleton";
 import { Error } from "../../components/responses";
 import { ReprotTable } from "./reportRows";
 import { DashboardCard } from "./dashboardCard";
+import { DeliveredWithBreakdown } from "./DeliveredWithBreakdown";
+import { DashboardCardWithPercentages } from "./DashboardCardWithPercentages";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
 import { exportToExcel } from "./exceleteToExport";
 
@@ -39,59 +41,70 @@ export const QualityReportTable = () => {
   ) : (
     !isPending && data && (
       <div>
-        <div className="row g-4 mb-4">
-          <div className="col-12 col-md-2">
+        <div className="row g-3 mb-4">
+          <div className="col-12 col-lg-2 col-md-4">
             <DashboardCard
-              title="Total Parch Processed (kg)"
+              title="Total Transported "
               value={formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0
               )}
-              iconClass="bi-basket-fill"
+              iconClass=""
             />
           </div>
-          <div className="col-12 col-md-2">
-            <DashboardCard
-              title="Total Parch Delivered (kg)"
-              value={formatNumberWithCommas(
-                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
-              )}
-              iconClass="bi-bus-front"
+          <div className="col-12 col-lg-2 col-md-4">
+            <DeliveredWithBreakdown
+              title="Total Delivered "
+              totalValue={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
+              deliveredKgs={data?.data?.grandTotals?.DeliveredKgs ?? {}}
+              iconClass=""
             />
-          </div>{" "}
-          <div className="col-12 col-md-2">
-            <DashboardCard
-              title="Total Average 15+ Delivered (kg)"
+          </div>
+          <div className="col-12 col-lg-2 col-md-4">
+            <DashboardCardWithPercentages
+              title=" Average 15+ Delivered"
               value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotAvg15PlusDelivery ?? 0
-              )}%`}
-              iconClass="bi-basket-fill"
+              )} kgs`}
+              mainValue={data?.data?.grandTotals?.GrandtotAvg15PlusDelivery ?? 0}
+              totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
+              totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
+              iconClass=""
             />
           </div>
-          <div className="col-12 col-md-2">
-            <DashboardCard
-              title="Total Average 13/14 Delivered (kg)"
+          <div className="col-12 col-lg-2 col-md-4">
+            <DashboardCardWithPercentages
+              title="Average 13/14 Delivered"
               value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotAvg1314Delivery ?? 0
-              )}%`}
-              iconClass="bi-basket-fill"
+              )} kgs`}
+              mainValue={data?.data?.grandTotals?.GrandtotAvg1314Delivery ?? 0}
+              totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
+              totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
+              iconClass=""
             />
           </div>
-          <div className="col-12 col-md-2">
-            <DashboardCard
-              title="Total Average Lowgrade Delivered (kg)"
+          <div className="col-12 col-lg-2 col-md-4">
+            <DashboardCardWithPercentages
+              title=" Average Lowgrade Delivered"
               value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotAVLGDelivery ?? 0
-              )}%`}
-              iconClass="bi-basket-fill"
+              )} kgs`}
+              mainValue={data?.data?.grandTotals?.GrandtotAVLGDelivery ?? 0}
+              totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
+              totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
+              iconClass=""
             />
           </div>
-          <div className="col-12 col-md-2">
-            <DashboardCard
-              title="Total Average OT Delivered (kg)"
+          <div className="col-12 col-lg-2 col-md-4">
+            <DashboardCardWithPercentages
+              title="Total Average OT Delivered"
               value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotOTDelivery ?? 0
-              )}%`}
-              iconClass="bi-highlights"
+              )} kgs`}
+              mainValue={data?.data?.grandTotals?.GrandtotOTDelivery ?? 0}
+              totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
+              totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
+              iconClass=""
             />
           </div>
         </div>
@@ -188,10 +201,10 @@ export const QualityReportTable = () => {
                   (!searchQuery
                     ? data?.data?.report
                     : data?.data?.report?.filter((element) =>
-                        element?.cws?.name
-                          ?.toLowerCase()
-                          ?.includes(searchQuery.toLowerCase())
-                      )
+                      element?.cws?.name
+                        ?.toLowerCase()
+                        ?.includes(searchQuery.toLowerCase())
+                    )
                   ).map((element) => (
                     <ReprotTable
                       data={element ?? []}
