@@ -99,3 +99,20 @@ export const updateDelivaryById = async ({ id, payload }) => {
     return error;
   }
 };
+
+export const getAllTrucksWithDetailedBatches = async () => {
+  const loggedinuser = loggedInUser();
+  try {
+    const res = await axios.get(
+      `${API_URL}/quality-delivery/get-all-trucks-with-detailed-batches`,
+      {
+        headers: {
+          Authorization: `Bearer ${loggedinuser?.token}`,
+        },
+      }
+    );
+    return res?.data;
+  } catch (error) {
+    return error;
+  }
+};
