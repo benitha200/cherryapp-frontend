@@ -1,32 +1,39 @@
-const theme = {
-  primary: "#008080", // Sucafina teal
-  secondary: "#4FB3B3", // Lighter teal
-  accent: "#D95032", // Complementary orange for contrast
-  neutral: "#E6F3F3", // Very light teal for backgrounds
-  text: "#34495E",
-};
+import PropTypes from 'prop-types';
+
 export const DashboardCard = ({ title, value, iconClass }) => (
-  <div className="card shadow-sm hover-shadow transition">
-    <div className="card-body d-flex justify-content-between align-items-center">
+  <div className="card shadow-sm hover-shadow transition h-100">
+    <div className="card-body d-flex flex-column justify-content-between p-2" style={{ minHeight: "60px" }}>
       <div style={{ width: "100%" }}>
         <h6
-          className="text-muted small mb-2"
+          className="text-muted small mb-1"
           style={{
-            minHeight: "32px",
+            minHeight: "18px",
             width: "100%",
             whiteSpace: "normal",
             overflow: "hidden",
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
-            lineHeight: "1.2",
+            lineHeight: "1.1",
+            fontSize: "0.75rem"
           }}
           title={title}
         >
           {title}
         </h6>
-        <p className="h6 mb-0 fw-bold">{value}</p>
+        <p className="h6 mb-0 fw-bold" style={{ fontSize: "1rem" }}>{value} Kgs </p>
       </div>
+      {iconClass && (
+        <div className="d-flex justify-content-end mt-1">
+          <i className={`${iconClass} text-primary`} style={{ fontSize: "1rem" }}></i>
+        </div>
+      )}
     </div>
   </div>
 );
+
+DashboardCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  iconClass: PropTypes.string
+};
