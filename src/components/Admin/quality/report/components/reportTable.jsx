@@ -10,6 +10,7 @@ import { DeliveredWithBreakdown } from "./DeliveredWithBreakdown";
 import { DashboardCardWithPercentages } from "./DashboardCardWithPercentages";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
 import { exportToExcel } from "./exceleteToExport";
+import { exportToExcelWithDateAndTrack } from "./exportToExceleByDateAndTrack";
 
 export const QualityReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -32,10 +33,13 @@ export const QualityReportTable = () => {
     tableBorder: "#D1E0E0",
     emptyStateBackground: "#F5FAFA",
   };
-  function doit() {
+  function details() {
     exportToExcel(data?.data?.report ?? []);
   }
 
+  function exportExceleWithTrackCategoryAndDate() {
+    exportToExcelWithDateAndTrack(data?.data?.report ?? []);
+  }
   return isPending ? (
     <Skeleton />
   ) : (
@@ -65,9 +69,15 @@ export const QualityReportTable = () => {
               value={`${formatNumberWithCommas(
                 data?.data?.grandTotals?.GrandtotAvg15PlusDelivery ?? 0
               )} kgs`}
-              mainValue={data?.data?.grandTotals?.GrandtotAvg15PlusDelivery ?? 0}
-              totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
-              totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
+              mainValue={
+                data?.data?.grandTotals?.GrandtotAvg15PlusDelivery ?? 0
+              }
+              totalDelivered={
+                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
+              }
+              totalHighGrade={
+                data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0
+              }
               iconClass=""
               type="avg15Plus"
             />
@@ -79,8 +89,12 @@ export const QualityReportTable = () => {
                 data?.data?.grandTotals?.GrandtotAvg1314Delivery ?? 0
               )} kgs`}
               mainValue={data?.data?.grandTotals?.GrandtotAvg1314Delivery ?? 0}
-              totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
-              totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
+              totalDelivered={
+                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
+              }
+              totalHighGrade={
+                data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0
+              }
               iconClass=""
               type="avg1314"
             />
@@ -92,8 +106,12 @@ export const QualityReportTable = () => {
                 data?.data?.grandTotals?.GrandtotAVLGDelivery ?? 0
               )} kgs`}
               mainValue={data?.data?.grandTotals?.GrandtotAVLGDelivery ?? 0}
-              totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
-              totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
+              totalDelivered={
+                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
+              }
+              totalHighGrade={
+                data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0
+              }
               iconClass=""
               type="avgLowGrade"
             />
@@ -105,8 +123,12 @@ export const QualityReportTable = () => {
                 data?.data?.grandTotals?.GrandtotOTDelivery ?? 0
               )} kgs`}
               mainValue={data?.data?.grandTotals?.GrandtotOTDelivery ?? 0}
-              totalDelivered={data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0}
-              totalHighGrade={data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0}
+              totalDelivered={
+                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
+              }
+              totalHighGrade={
+                data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0
+              }
               iconClass=""
               type="avgOT"
             />
@@ -118,14 +140,25 @@ export const QualityReportTable = () => {
             <div className="d-flex justify-content-between align-items-center mb-1">
               <h4 className="mb-0">Station Quality report</h4>
               <div className=" d-flex">
-                <Col style={{ marginLeft: "8rem" }}>
+                <Col style={{ width: "16rem" }}>
                   <div className="d-flex">
                     <Button
                       variant="outline-success"
                       className="me-2"
-                      onClick={() => doit()}
+                      onClick={() => details()}
                     >
-                      <i className="bi bi-download me-1"></i> Download
+                      <i className="bi bi-download "></i> Download Details
+                    </Button>
+                  </div>
+                </Col>
+                <Col style={{ width: "12rem" }}>
+                  <div className="d-flex">
+                    <Button
+                      variant="outline-success"
+                      className="me-2"
+                      onClick={() => exportExceleWithTrackCategoryAndDate()}
+                    >
+                      <i className="bi bi-download me-1"></i> Downlaad Summary
                     </Button>
                   </div>
                 </Col>
@@ -205,10 +238,10 @@ export const QualityReportTable = () => {
                   (!searchQuery
                     ? data?.data?.report
                     : data?.data?.report?.filter((element) =>
-                      element?.cws?.name
-                        ?.toLowerCase()
-                        ?.includes(searchQuery.toLowerCase())
-                    )
+                        element?.cws?.name
+                          ?.toLowerCase()
+                          ?.includes(searchQuery.toLowerCase())
+                      )
                   ).map((element) => (
                     <ReprotTable
                       data={element ?? []}

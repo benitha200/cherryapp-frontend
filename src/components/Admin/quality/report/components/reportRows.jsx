@@ -227,18 +227,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "12px" }}
                 >
-                  {/* <span
-                    style={{
-                      fontWeight: "700",
-                      fontSize: "1.1rem",
-                      background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                    }}
-                  >
-                    {category.split(" - ")[0]}
-                  </span> */}
                   <span
                     style={{
                       width: " 14rem",
@@ -252,18 +240,6 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
                     {category.split(" - ")[0]}/{category.split(" - ")[2]}/{" "}
                     {categoryItems[0]?.elements?.transfer?.truckNumber ?? "-"}
                   </span>
-                  {/* <span
-                    style={{
-                      width: " 7rem",
-                      padding: "4px 12px",
-                      borderRadius: "12px",
-                      fontSize: "0.85rem",
-                      fontWeight: "500",
-                      boxShadow: "0 2px 4px rgba(0, 128, 128, 0.2)",
-                    }}
-                  >
-                    {categoryItems[0]?.elements?.transfer?.truckNumber ?? "-"}
-                  </span> */}
                 </div>
               </td>
             </tr>
