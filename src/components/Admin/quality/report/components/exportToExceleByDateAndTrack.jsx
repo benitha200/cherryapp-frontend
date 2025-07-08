@@ -4,12 +4,12 @@ export const exportToExcelWithDateAndTrack = (data) => {
 
   const headers = [
     "Row Labels",
-    "Sum of Transported",
+    "Transported",
     "Average of AVG 15+",
     "Average of AVG 15+ (S)",
     "Average of Var 15+",
-    "Sum of AVG 13/14",
-    "Sum of AVG 13/14 (S)",
+    "AVG 13/14",
+    "AVG 13/14 (S)",
     "Average of Var 13/14",
     "Average of AVG LG",
     "Average of AVG LG (S)",
