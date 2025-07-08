@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  getAllTrucksWithDetailedBatches,
   getDelivaries,
   getDelivaryById,
   updateDelivaryById,
@@ -61,4 +62,17 @@ export const GetSampleStorage = () => {
     queryFn: async () => await sampleStorage(),
   });
   return { sampleStoragePeding, sampleStorageError, sampleStoragedata };
+};
+
+export const useTrackWithDetailedBatches = () => {
+  const {
+    isPending: isTrackLoading,
+    error: trackError,
+    data: trackData,
+  } = useQuery({
+    queryKey: ["trackWithDetailedBatches"],
+    queryFn: async () => await getAllTrucksWithDetailedBatches(),
+  });
+
+  return { isTrackLoading, trackError, trackData };
 };
