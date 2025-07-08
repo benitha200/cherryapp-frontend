@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
-import { Card, Button, Col, Form } from "react-bootstrap";
+import { Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 import { Pagination } from "../../../../../sharedCompoents/paginations";
-import { SelectionBox } from "../../../../../sharedCompoents/selection";
-import { GetAllDelivaries, UpdateDelivary } from "../actions";
+import {
+  GetAllDelivaries,
+  UpdateDelivary,
+  useTrackWithDetailedBatches,
+} from "../actions";
 import { GenericModel } from "../../../../../sharedCompoents/genericModel";
 import { QuantityReceived } from "./quantityReceived";
 import { ProcessedBatches } from "./proccesedBatches";
-import { Error, Success } from "../../components/responses";
+import { Error } from "../../components/responses";
 import { DeliveryTableSkeleton } from "./skeleton";
 import { formatDate } from "../../../../../utils/formatDate";
+import { exportDeliveryExcelFile } from "./excelDownloadableFile";
 
 export const DerivalyTable = () => {
   // State declarations
@@ -59,10 +63,17 @@ export const DerivalyTable = () => {
   // logs
   // data query
   const { getAllPending, getAllError, allDelivaries } = GetAllDelivaries(1, 10);
+  const { trackData, trackError, isTrackLoading } =
+    useTrackWithDetailedBatches();
   const handleopenModel = () => {
     setOpenModle(!openModle);
   };
 
+  const downloadExcelFile = () => {
+    if (!trackError) {
+      exportDeliveryExcelFile(trackData);
+    }
+  };
   const onUpdateSuccess = () => {
     onSave ? "" : handleopenModel();
     onSave
@@ -245,12 +256,6 @@ export const DerivalyTable = () => {
   }
   return (
     <div className="container-fluid">
-      {/* <SelectionBox
-        selectionOPtions={stations}
-        disable={isUpdating}
-        handleSelection={setSelectedStation}
-        placeHolder={"Select_by_stations"}
-      /> */}
       <Card className="mb-4">
         <ReusableTable
           data={allTransportInfo}
@@ -267,6 +272,9 @@ export const DerivalyTable = () => {
           selectionOPtions={stations}
           handleSelection={setSelectedStation}
           placeholder="Select_by_stations"
+          isQualityDelivery={true}
+          ifQualityDeliveryDataIsitLoading={isTrackLoading}
+          ifQualityDeliveryDataDownloadExcele={downloadExcelFile}
         >
           <Pagination
             currentPage={currentPage}
@@ -286,16 +294,7 @@ export const DerivalyTable = () => {
         confirmButtonText="Complete"
         cancelButtonText="Cancel"
         modalSize="xl"
-        onConfirmDisalbe={
-          activatedBatchesData.length == 0
-          //  &&Object.values(categories).filter(
-          //   (element) =>
-          //     element !== null &&
-          //     element !== 0 &&
-          //     element !== undefined &&
-          //     element !== ""
-          // ).length <= 1
-        }
+        onConfirmDisalbe={activatedBatchesData.length == 0}
       >
         {updatingError && (
           <Error

@@ -1,11 +1,13 @@
 export const exportToExcel = (data) => {
   const dateStr = new Date().toISOString().split("T")[0];
-  const fileName = `Coffee_Quality_Report_${dateStr}.csv`;
+  const fileName = `Quality_Report_Details_${dateStr}.csv`;
 
   const headers = [
     "CWS",
     "Batch No",
     "Transported",
+    "Truck",
+    "Date",
     "16+",
     "15",
     "AVG 15+",
@@ -39,6 +41,8 @@ export const exportToExcel = (data) => {
           v?.cws?.name || "N/A",
           `${cwsBatches?.batchNo ?? ""}-${elements?.gradeKey ?? ""}`,
           cwsBatches?.delivery?.transportedKgs[elements?.gradeKey ?? ""] ?? "-",
+          elements?.transfer?.truckNumber ?? "",
+          new Date(elements?.createdAt ?? "").toISOString().slice(0, 10),
           Number(elements?.screen?.["16+"] ?? 0).toFixed(2),
           Number(elements?.screen?.["15"] ?? 0).toFixed(2),
           Number(elements?.["AVG15+"] ?? 0).toFixed(2),
