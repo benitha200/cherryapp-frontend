@@ -1,14 +1,14 @@
 export const exportDeliveryExcelFile = (data) => {
   const dateStr = new Date().toISOString().split("T")[0];
-  const fileName = `Quality_Delivery_Rerpot_${dateStr}.csv`;
+  const fileName = `Quality_Delivery_details_Rerpot_${dateStr}.csv`;
 
   const headers = [
     "CWS",
+    "Track",
+    "Transfer Group Id",
     "Batch No",
     "Grade",
     "Transported (kg)",
-    "Track",
-    "Transfer Group Id",
     "Date",
     "16+",
     "15",
@@ -17,7 +17,8 @@ export const exportDeliveryExcelFile = (data) => {
     "B/12",
     "Defects %",
     "PP Score",
-    "Category",
+    "Sample Category",
+    "Delivery category",
     "Storage",
     "CWS Moisture",
     "Lab Moisture",
@@ -32,11 +33,11 @@ export const exportDeliveryExcelFile = (data) => {
       batch.mainbatch?.forEach((item) => {
         const row = [
           truck?.cws?.name || "N/A",
+          truck?.truckNumber || "N/A",
+          truck?.transportGroupId || "N/A",
           batch?.batchNo || "N/A",
           item?.gradeKey || "N/A",
           truck?.totalOutputKgs?.[item?.gradeKey] || 0,
-          truck?.truckNumber || "N/A",
-          truck?.transportGroupId || "N/A",
           truck?.transferDate || "N/A",
           item?.screen?.["16+"] || "-",
           item?.screen?.["15"] || "-",
@@ -46,6 +47,7 @@ export const exportDeliveryExcelFile = (data) => {
           Number(item?.defect || 0).toFixed(2),
           Number(item?.ppScore || 0).toFixed(2),
           item?.category || "-",
+          item?.newCategory || "-",
           item?.sampleStorage?.name || "-",
           Number(item?.cwsMoisture || 0).toFixed(1),
           Number(item?.labMoisture || 0).toFixed(1),
@@ -59,11 +61,11 @@ export const exportDeliveryExcelFile = (data) => {
         Object.keys(lowGrade.outputKgs).forEach((gradeKey) => {
           const row = [
             truck?.cws?.name || "N/A",
+            truck?.truckNumber || "N/A",
+            truck?.transportGroupId || "N/A",
             lowGrade?.batchNo || "N/A",
             gradeKey,
             lowGrade?.outputKgs?.[gradeKey] || 0,
-            truck?.truckNumber || "N/A",
-            truck?.transportGroupId || "N/A",
             truck?.transferDate || "N/A",
             "-", // 16+
             "-", // 15
@@ -73,6 +75,7 @@ export const exportDeliveryExcelFile = (data) => {
             "-", // Defects %
             "-", // PP Score
             `LOW_GRADE_${gradeKey}`, // Category
+            "-", // New category
             "-", // Storage
             "-", // CWS Moisture
             "-", // Lab Moisture

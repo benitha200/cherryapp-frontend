@@ -64,9 +64,11 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
     data.batches?.forEach((cwsBatches, rowIndex) => {
       cwsBatches?.delivery?.batches?.forEach((elements, subBatchIndex) => {
         const category = elements?.newCategory || "Uncategorized";
-        const createdDate = elements?.createdAt;
+        const createdDate = elements?.transfer?.transferDate;
         const transferId = elements?.transfer?.truckNumber
-          ? new Date(elements.createdAt).toISOString().split("T")[0]
+          ? new Date(elements?.transfer?.transferDate)
+              .toISOString()
+              .split("T")[0]
           : "No Date";
         const groupKey = `${category} - ${createdDate} - ${transferId}`;
 

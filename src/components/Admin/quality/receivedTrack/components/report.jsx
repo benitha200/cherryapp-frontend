@@ -15,6 +15,7 @@ import { Error } from "../../components/responses";
 import { DeliveryTableSkeleton } from "./skeleton";
 import { formatDate } from "../../../../../utils/formatDate";
 import { exportDeliveryExcelFile } from "./excelDownloadableFile";
+import { excelFileDownloadableSummary } from "./excelDownloadableSummary";
 
 export const DerivalyTable = () => {
   // State declarations
@@ -69,11 +70,18 @@ export const DerivalyTable = () => {
     setOpenModle(!openModle);
   };
 
-  const downloadExcelFile = () => {
+  const downloadExcelFileDetails = () => {
     if (!trackError) {
       exportDeliveryExcelFile(trackData);
     }
   };
+
+  const downloadExcelFileSummary = () => {
+    if (!trackError) {
+      excelFileDownloadableSummary(trackData);
+    }
+  };
+
   const onUpdateSuccess = () => {
     onSave ? "" : handleopenModel();
     onSave
@@ -274,7 +282,8 @@ export const DerivalyTable = () => {
           placeholder="Select_by_stations"
           isQualityDelivery={true}
           ifQualityDeliveryDataIsitLoading={isTrackLoading}
-          ifQualityDeliveryDataDownloadExcele={downloadExcelFile}
+          ifQualityDeliveryDataDownloadExcele={downloadExcelFileDetails}
+          ifQualityDeliveryDataDownloadSummaryExcele={downloadExcelFileSummary}
         >
           <Pagination
             currentPage={currentPage}
