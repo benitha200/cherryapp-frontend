@@ -870,7 +870,7 @@ const Transport = () => {
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `coffee_transfers_${new Date().toISOString().slice(0, 10)}.csv`
+      `coffee_transfers_report${new Date().toISOString().slice(0, 10)}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -882,27 +882,25 @@ const Transport = () => {
       "Date",
       "Washing Station",
       "Truck Plate No",
+      "Transfer Group Id",
       "Parch KGs",
-      "Total Purchase Cherry",
       "Batch No",
       "Grade Group",
       "Status",
     ];
-
     const rows = data.map((record) => {
       const totalKgs = Object.values(record.outputKgs || {}).reduce(
         (sum, kg) => sum + parseFloat(kg || 0),
         0
       );
       const washingStation = record.baggingOff?.processing?.cws?.name || "N/A";
-      const totalPurchaseCherry = "N/A";
 
       return [
         new Date(record.transferDate).toLocaleDateString(),
         washingStation,
         record.truckNumber,
+        record.transportGroupId,
         totalKgs.toFixed(2),
-        totalPurchaseCherry,
         record.batchNo,
         record.gradeGroup,
         record.status,

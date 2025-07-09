@@ -158,7 +158,7 @@ export const QualityReportTable = () => {
                       className="me-2"
                       onClick={() => exportExceleWithTrackCategoryAndDate()}
                     >
-                      <i className="bi bi-download me-1"></i> Downlaad Summary
+                      <i className="bi bi-download me-1"></i> Download Summary
                     </Button>
                   </div>
                 </Col>

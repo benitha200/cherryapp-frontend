@@ -1,4 +1,4 @@
-import { Form, Row, Col, Card, InputGroup } from "react-bootstrap";
+import { Form, Col, Card, InputGroup, Button } from "react-bootstrap";
 import { SelectionBox } from "./selection";
 
 const processingTheme = {
@@ -31,6 +31,10 @@ const ReusableTable = ({
   selectionOPtions = [],
   handleSelection = () => null,
   placeholder = "",
+  isQualityDelivery = false,
+  ifQualityDeliveryDataIsitLoading = true,
+  ifQualityDeliveryDataDownloadExcele = () => null,
+  ifQualityDeliveryDataDownloadSummaryExcele = () => null,
 }) => {
   if (isLoading) {
     return (
@@ -46,10 +50,11 @@ const ReusableTable = ({
     <div>
       <div className="">
         <Card.Body>
-          <div className="d-flex justify-content-between align-items-center">
-            {/* Search box on right */}
-            <div style={{ display: "flex", gap: 6 }}>
-              <div style={{ width: "250px" }}>
+          <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+            {/* Search and selection controls */}
+            <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-lg-auto">
+              {/* Search box */}
+              <div className="flex-grow-1" style={{ maxWidth: "250px" }}>
                 <InputGroup>
                   <InputGroup.Text>
                     <i className="bi bi-search"></i>
@@ -62,10 +67,12 @@ const ReusableTable = ({
                   />
                 </InputGroup>
               </div>
+
+              {/* selection box */}
               {enableSelectionBox && (
-                <div style={{ width: "550px" }}>
+                <div className="flex-grow-1" style={{ maxWidth: "550px" }}>
                   <SelectionBox
-                    selectionOPtions={selectionOPtions}
+                    selectionOPtions={[...new Set(selectionOPtions)]}
                     disable={isLoading}
                     handleSelection={handleSelection}
                     placeHolder={placeholder}
@@ -74,21 +81,53 @@ const ReusableTable = ({
               )}
             </div>
 
-            {/* Items per page select on left */}
-            <div style={{ width: "5rem" }}>
-              <Form.Select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  onPageSizeChange(e.target.value);
-                }}
-                disabled={isLoading}
-              >
-                {pageSizeOption.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </Form.Select>
+            {/* right side controls */}
+            <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
+              {/* download button */}
+              {isQualityDelivery && (
+                <div className="d-flex" style={{ width: "12rem" }}>
+                  <Button
+                    variant="outline-success"
+                    disabled={ifQualityDeliveryDataIsitLoading}
+                    onClick={() => ifQualityDeliveryDataDownloadExcele()}
+                  >
+                    <i className="bi bi-download"></i>
+                    <span className="d-none d-sm-inline ms-1">
+                      Download Details
+                    </span>
+                  </Button>
+                </div>
+              )}
+              {isQualityDelivery && (
+                <div className="d-flex" style={{ width: "13rem" }}>
+                  <Button
+                    variant="outline-success"
+                    disabled={ifQualityDeliveryDataIsitLoading}
+                    onClick={() => ifQualityDeliveryDataDownloadSummaryExcele()}
+                  >
+                    <i className="bi bi-download"></i>
+                    <span className="d-none d-sm-inline ms-1">
+                      Download summary
+                    </span>
+                  </Button>
+                </div>
+              )}
+              {/* items per page select */}
+              <div style={{ width: "5rem" }}>
+                <Form.Select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    onPageSizeChange(e.target.value);
+                  }}
+                  disabled={isLoading}
+                >
+                  {pageSizeOption.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </Form.Select>
+              </div>
             </div>
           </div>
         </Card.Body>
