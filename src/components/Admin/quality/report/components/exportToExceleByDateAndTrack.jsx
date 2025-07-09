@@ -4,7 +4,8 @@ export const exportToExcelWithDateAndTrack = (data) => {
 
   const headers = [
     "Row Labels",
-    "Transported",
+    "Transported Kgs",
+    "Delivered Kgs",
     "WCA of AVG 15+",
     "Average of AVG 15+ (S)",
     // "Average of Var 15+",
@@ -28,11 +29,13 @@ export const exportToExcelWithDateAndTrack = (data) => {
       cwsBatches?.delivery?.batches?.forEach((elements, subBatchIndex) => {
         const category = elements?.newCategory || "Uncategorized";
         const truckNumber = elements?.transfer?.truckNumber || "No-Truck";
-        const createdDate = elements?.createdAt
-          ? new Date(elements.createdAt).toISOString().split("T")[0]
+        const createdDate = elements?.transfer?.transferDate
+          ? new Date(elements?.transfer?.transferDate)
+              .toISOString()
+              .split("T")[0]
           : "No-Date";
 
-        const groupKey = `${category} - ${createdDate} - ${truckNumber}`;
+        const groupKey = `${category}--${createdDate}--${truckNumber}`;
 
         if (!grouped[groupKey]) grouped[groupKey] = [];
         grouped[groupKey].push({
@@ -48,6 +51,7 @@ export const exportToExcelWithDateAndTrack = (data) => {
   const rows = [];
   let grandTotals = {
     transported: 0,
+    delivered: 0,
     avg15plus: [],
     avg15plusS: [],
     // var15plus: [],
@@ -73,6 +77,7 @@ export const exportToExcelWithDateAndTrack = (data) => {
 
       let categoryTotals = {
         transported: 0,
+        delivered: 0,
         avg15plus: [],
         avg15plusS: [],
         // var15plus: [],
@@ -94,6 +99,13 @@ export const exportToExcelWithDateAndTrack = (data) => {
         const transported = Number(
           cwsBatches?.delivery?.transportedKgs?.[elements?.gradeKey] || 0
         );
+        const deliverdKgs = Number(
+          Object.values(cwsBatches?.delivery?.deliveryKgs).reduce(
+            (acc, value) => acc + value,
+            0
+          )
+        );
+
         const avg15plus = Number(elements?.["AVG15+"] || 0) * transported;
         const avg15plusS = Number(
           cwsBatches?.sample?.batches?.[subBatchIndex]?.["AVG15+"] || 0
@@ -120,6 +132,8 @@ export const exportToExcelWithDateAndTrack = (data) => {
         );
         // const varPP = Number(elements?.totals?.vppscore || 0);
         categoryTotals.transported += transported;
+        categoryTotals.delivered += deliverdKgs;
+
         if (avg15plus !== 0) categoryTotals.avg15plus.push(avg15plus);
         if (avg15plusS !== 0) categoryTotals.avg15plusS.push(avg15plusS);
         // if (var15plus !== 0) categoryTotals.var15plus.push(var15plus);
@@ -152,6 +166,7 @@ export const exportToExcelWithDateAndTrack = (data) => {
       const row = [
         rowLabel,
         `"${formatTransported(categoryTotals.transported)}"`,
+        `"${formatTransported(categoryTotals.delivered)}"`,
         (
           calcSum(categoryTotals.avg15plus).toFixed(1) /
           Number(categoryTotals?.transported)
@@ -207,6 +222,7 @@ export const exportToExcelWithDateAndTrack = (data) => {
 
   const calcAverage = (arr) =>
     arr?.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr?.length : 0;
+  const calcSum = (arr) => arr.reduce((a, b) => a + b, 0);
 
   // blank row
   rows.push([
@@ -231,25 +247,20 @@ export const exportToExcelWithDateAndTrack = (data) => {
 
   const grandTotalRow = [
     "Grand Total",
-    `"${grandTotals.transported.toLocaleString()}"`,
-    calcAverage(grandTotals.avg15plus).toFixed(10),
-    calcAverage(grandTotals.avg15plusS).toFixed(8),
-    calcAverage(grandTotals.var15plus).toFixed(8),
-    grandTotals.avg1314.toFixed(1),
+    `"${grandTotals?.transported?.toLocaleString()}"`,
+    (calcSum(grandTotals.avg15plus) / grandTotals.transported).toFixed(1),
+    calcAverage(grandTotals.avg15plusS).toFixed(1),
+    (grandTotals.avg1314 / grandTotals.transported).toFixed(1),
     grandTotals.avg1314S.toFixed(0),
-    calcAverage(grandTotals.var1314).toFixed(9),
-    calcAverage(grandTotals.avgLG).toFixed(9),
-    calcAverage(grandTotals.avgLGS).toFixed(8),
-    calcAverage(grandTotals.varLG).toFixed(9),
-    calcAverage(grandTotals.otDelivery).toFixed(8),
-    calcAverage(grandTotals.otSample).toFixed(7),
-    calcAverage(grandTotals.varOT).toFixed(8),
-    calcAverage(grandTotals.ppScore).toFixed(8),
-    calcAverage(grandTotals.ppScoreS).toFixed(9),
-    calcAverage(grandTotals.varPP).toFixed(9),
+    (calcSum(grandTotals.avgLG) / grandTotals.transported).toFixed(1),
+    calcAverage(grandTotals.avgLGS).toFixed(1),
+    (calcSum(grandTotals.otDelivery) / grandTotals.transported).toFixed(1),
+    calcAverage(grandTotals.otSample).toFixed(1),
+    (calcSum(grandTotals.ppScore) / grandTotals.transported).toFixed(1),
+    calcAverage(grandTotals.ppScoreS).toFixed(1),
   ];
 
-  rows.push(grandTotalRow);
+  // rows.push(grandTotalRow);
 
   const csvContent = [headers, ...rows]
     .map((row) =>

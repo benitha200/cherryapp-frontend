@@ -34,6 +34,7 @@ const ReusableTable = ({
   isQualityDelivery = false,
   ifQualityDeliveryDataIsitLoading = true,
   ifQualityDeliveryDataDownloadExcele = () => null,
+  ifQualityDeliveryDataDownloadSummaryExcele = () => null,
 }) => {
   if (isLoading) {
     return (
@@ -84,14 +85,30 @@ const ReusableTable = ({
             <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
               {/* download button */}
               {isQualityDelivery && (
-                <div className="d-flex" style={{ width: "8rem" }}>
+                <div className="d-flex" style={{ width: "12rem" }}>
                   <Button
                     variant="outline-success"
                     disabled={ifQualityDeliveryDataIsitLoading}
                     onClick={() => ifQualityDeliveryDataDownloadExcele()}
                   >
                     <i className="bi bi-download"></i>
-                    <span className="d-none d-sm-inline ms-1">Download</span>
+                    <span className="d-none d-sm-inline ms-1">
+                      Download Details
+                    </span>
+                  </Button>
+                </div>
+              )}
+              {isQualityDelivery && (
+                <div className="d-flex" style={{ width: "13rem" }}>
+                  <Button
+                    variant="outline-success"
+                    disabled={ifQualityDeliveryDataIsitLoading}
+                    onClick={() => ifQualityDeliveryDataDownloadSummaryExcele()}
+                  >
+                    <i className="bi bi-download"></i>
+                    <span className="d-none d-sm-inline ms-1">
+                      Download summary
+                    </span>
                   </Button>
                 </div>
               )}
