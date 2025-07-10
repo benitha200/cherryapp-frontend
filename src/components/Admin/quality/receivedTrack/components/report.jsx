@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Card, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 import { Pagination } from "../../../../../sharedCompoents/paginations";
 import {
@@ -19,7 +18,6 @@ import { excelFileDownloadableSummary } from "./excelDownloadableSummary";
 
 export const DerivalyTable = () => {
   // State declarations
-  const navigate = useNavigate();
   const [openModle, setOpenModle] = useState(false);
   const [selectedId, setSelectedId] = useState({
     trackId: null,
