@@ -327,9 +327,10 @@ const PurchaseByStation = () => {
                 style={{
                   borderColor: theme.primary,
                   color: theme.primary,
-                  backgroundColor: "white",
                   gap: "1rem",
-                  width: "40vw",
+                  width: "fit",
+                  maxWidth: "40vw",
+                  // background: "white",
                   padding: ".5rem",
                   borderRadius: "0.5rem",
                   transformOrigin: "left center",

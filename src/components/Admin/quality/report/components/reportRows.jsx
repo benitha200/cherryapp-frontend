@@ -64,12 +64,12 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
     data.batches?.forEach((cwsBatches, rowIndex) => {
       cwsBatches?.delivery?.batches?.forEach((elements, subBatchIndex) => {
         const category = elements?.newCategory || "Uncategorized";
-        const createdDate = elements?.transfer?.transferDate;
-        const transferId = elements?.transfer?.truckNumber
+        const createdDate = elements?.transfer?.transferDate
           ? new Date(elements?.transfer?.transferDate)
               .toISOString()
               .split("T")[0]
           : "No Date";
+        const transferId = elements?.transfer?.truckNumber || "No Truck";
         const groupKey = `${category} - ${createdDate} - ${transferId}`;
 
         if (!grouped[groupKey]) grouped[groupKey] = [];
@@ -239,7 +239,7 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
                       boxShadow: "0 2px 4px rgba(0, 128, 128, 0.2)",
                     }}
                   >
-                    {category.split(" - ")[0]}/{category.split(" - ")[2]}/{" "}
+                    {category.split(" - ")[0]}/{category.split(" - ")[1]}/{" "}
                     {categoryItems[0]?.elements?.transfer?.truckNumber ?? "-"}
                   </span>
                 </div>
