@@ -3,9 +3,10 @@ export const exportToExcelWithDateAndTrack = (data) => {
   const fileName = `Quality_Report_Summary_${dateStr}.csv`;
 
   const headers = [
-    "Row Labels",
+    "Track",
     "Transported Kgs",
     "Delivered Kgs",
+    "Row Labels",
     "WCA of AVG 15+",
     "Average of AVG 15+ (S)",
     // "Average of Var 15+",
@@ -35,7 +36,7 @@ export const exportToExcelWithDateAndTrack = (data) => {
               .split("T")[0]
           : "No-Date";
 
-        const groupKey = `${category}--${createdDate}--${truckNumber}`;
+        const groupKey = `${category}-${createdDate}-${truckNumber}`;
 
         if (!grouped[groupKey]) grouped[groupKey] = [];
         grouped[groupKey].push({
@@ -164,9 +165,10 @@ export const exportToExcelWithDateAndTrack = (data) => {
       };
 
       const row = [
-        rowLabel,
+        rowLabel?.split("-")[4],
         `"${formatTransported(categoryTotals.transported)}"`,
         `"${formatTransported(categoryTotals.delivered)}"`,
+        rowLabel,
         (
           calcSum(categoryTotals.avg15plus).toFixed(1) /
           Number(categoryTotals?.transported)
