@@ -165,7 +165,7 @@ export const exportToExcelWithDateAndTrack = (data) => {
       };
 
       const row = [
-        rowLabel?.split("-")[4],
+        rowLabel?.split("-")[rowLabel?.split("-").length - 1],
         `"${formatTransported(categoryTotals.transported)}"`,
         `"${formatTransported(categoryTotals.delivered)}"`,
         rowLabel,
