@@ -47,8 +47,8 @@ import QualityReport from "./components/Admin/quality/report/index.jsx";
 import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
 import RequireAuth from "./components/guard.jsx";
 import GeneralReport from "./components/Admin/Reports/GeneralReport/index.jsx";
-import DeliveryReport from "./components/Admin/Reports/Deliver report/index.jsx";
-import QualityAnalysisReport from "./components/Admin/Reports/QualityAnalysis/index.jsx";
+import DeliveryReport from "./components/Admin/Reports/deliveryNewReport/index.jsx";
+import QualityAnalysisReport from "./components/Admin/Reports/QualityAnalysisNEw/index.jsx";
 
 const AppContent = () => {
   const location = useLocation();
