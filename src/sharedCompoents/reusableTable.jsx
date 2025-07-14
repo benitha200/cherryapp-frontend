@@ -32,6 +32,7 @@ const ReusableTable = ({
   handleSelection = () => null,
   placeholder = "",
   isQualityDelivery = false,
+  downloadSummary = true,
   ifQualityDeliveryDataIsitLoading = true,
   ifQualityDeliveryDataDownloadExcele = () => null,
   ifQualityDeliveryDataDownloadSummaryExcele = () => null,
@@ -98,7 +99,7 @@ const ReusableTable = ({
                   </Button>
                 </div>
               )}
-              {isQualityDelivery && (
+              {isQualityDelivery && downloadSummary && (
                 <div className="d-flex" style={{ width: "13rem" }}>
                   <Button
                     variant="outline-success"

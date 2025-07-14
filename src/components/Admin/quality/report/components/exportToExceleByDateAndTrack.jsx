@@ -4,6 +4,7 @@ export const exportToExcelWithDateAndTrack = (data) => {
 
   const headers = [
     "Track",
+    "Transport group Id",
     "Transported Kgs",
     "Delivered Kgs",
     "Row Labels",
@@ -30,13 +31,14 @@ export const exportToExcelWithDateAndTrack = (data) => {
       cwsBatches?.delivery?.batches?.forEach((elements, subBatchIndex) => {
         const category = elements?.newCategory || "Uncategorized";
         const truckNumber = elements?.transfer?.truckNumber || "No-Truck";
+        const truckGroupId = elements?.transfer?.transportGroupId || "No-Truck";
         const createdDate = elements?.transfer?.transferDate
           ? new Date(elements?.transfer?.transferDate)
               .toISOString()
               .split("T")[0]
           : "No-Date";
 
-        const groupKey = `${category}-${createdDate}-${truckNumber}`;
+        const groupKey = `${category}-${createdDate}-${truckNumber}-${truckGroupId}`;
 
         if (!grouped[groupKey]) grouped[groupKey] = [];
         grouped[groupKey].push({
@@ -163,12 +165,13 @@ export const exportToExcelWithDateAndTrack = (data) => {
         if (num === 0) return "0";
         return num.toLocaleString();
       };
-
+      const spx = rowLabel.split("-");
       const row = [
-        rowLabel?.split("-")[rowLabel?.split("-").length - 1],
+        rowLabel?.split("-")[spx.length - 2],
+        rowLabel?.split("-")[spx.length - 1],
         `"${formatTransported(categoryTotals.transported)}"`,
         `"${formatTransported(categoryTotals.delivered)}"`,
-        rowLabel,
+        rowLabel.split("-").slice(0, spx.length - 1),
         (
           calcSum(categoryTotals.avg15plus).toFixed(1) /
           Number(categoryTotals?.transported)
@@ -222,48 +225,6 @@ export const exportToExcelWithDateAndTrack = (data) => {
     });
   });
 
-  const calcAverage = (arr) =>
-    arr?.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr?.length : 0;
-  const calcSum = (arr) => arr.reduce((a, b) => a + b, 0);
-
-  // blank row
-  rows.push([
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
-
-  const grandTotalRow = [
-    "Grand Total",
-    `"${grandTotals?.transported?.toLocaleString()}"`,
-    (calcSum(grandTotals.avg15plus) / grandTotals.transported).toFixed(1),
-    calcAverage(grandTotals.avg15plusS).toFixed(1),
-    (grandTotals.avg1314 / grandTotals.transported).toFixed(1),
-    grandTotals.avg1314S.toFixed(0),
-    (calcSum(grandTotals.avgLG) / grandTotals.transported).toFixed(1),
-    calcAverage(grandTotals.avgLGS).toFixed(1),
-    (calcSum(grandTotals.otDelivery) / grandTotals.transported).toFixed(1),
-    calcAverage(grandTotals.otSample).toFixed(1),
-    (calcSum(grandTotals.ppScore) / grandTotals.transported).toFixed(1),
-    calcAverage(grandTotals.ppScoreS).toFixed(1),
-  ];
-
-  // rows.push(grandTotalRow);
-
   const csvContent = [headers, ...rows]
     .map((row) =>
       row
@@ -277,7 +238,7 @@ export const exportToExcelWithDateAndTrack = (data) => {
           }
           return `"${field}"`;
         })
-        .join(",")
+        .join("-")
     )
     .join("\n");
 
