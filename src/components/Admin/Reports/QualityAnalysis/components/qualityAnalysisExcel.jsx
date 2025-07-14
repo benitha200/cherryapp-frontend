@@ -3,6 +3,7 @@ export const exportQualityReportCSV = (data) => {
   const fileName = `Quality_Report_${dateStr}.csv`;
 
   const headers = [
+    "CWs",
     "Track",
     "Transport Group ID",
     "Transported Kgs",

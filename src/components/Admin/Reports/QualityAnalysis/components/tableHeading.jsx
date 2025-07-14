@@ -1,4 +1,13 @@
 export const Columns = [
+  // {
+  //   field: "track",
+  //   header: "CWS",
+  //   render: (item) => (
+  //     <div className={`${item?.isGrandTotal ? "font-bold" : ""}`}>
+  //       {item?.track}
+  //     </div>
+  //   ),
+  // },
   {
     field: "track",
     header: "Track",
