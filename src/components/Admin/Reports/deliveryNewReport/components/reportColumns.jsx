@@ -4,6 +4,7 @@ export const columns = [
     header: "CWS",
   },
   { field: "driverPhone", header: "Transported (kg)" },
+  { field: "driverPhone", header: "In Transit (kg)" },
   { field: "driverPhone", header: "Delivered (kg)" },
   { field: "driverPhone", header: "Variation (kg)" },
   // { field: "driverPhone", header: "16+" },

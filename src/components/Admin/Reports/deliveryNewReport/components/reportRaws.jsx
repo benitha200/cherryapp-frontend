@@ -1,5 +1,4 @@
-import { Button } from "react-bootstrap";
-import React, { useState } from "react";
+import { useState } from "react";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
 
 const theme = {
@@ -34,7 +33,7 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
     fontWeight: "600",
     cursor: "pointer",
     padding: "15px 12px",
-    textAlign: "center",
+    // textAlign: "center",
     transition: "all 0.3s ease",
   };
 
@@ -89,6 +88,7 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
         </td>
         {[
           data?.cws?.totalTransportedKgs,
+          0,
           data?.cws?.totalDeliveredKgs,
           data?.cws?.totalVariationKgs,
           // data?.cws?.tot16plus,

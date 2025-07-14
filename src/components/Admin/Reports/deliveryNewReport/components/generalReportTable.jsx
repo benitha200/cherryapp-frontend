@@ -64,6 +64,13 @@ export const GeneralReportTable = () => {
 
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCard
+              title="Total In Transit "
+              value={formatNumberWithCommas(0)}
+              iconClass=""
+            />
+          </div>
+          <div className="col-12 col-lg-2 col-md-4">
+            <DashboardCard
               title="Total Variation "
               value={formatNumberWithCommas(
                 (data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0) -
@@ -85,6 +92,7 @@ export const GeneralReportTable = () => {
               type="avg15Plus"
             />
           </div>
+
           {/* <div className="col-12 col-lg-2 col-md-4">
             <DashboardCardWithPercentages
               title=" Average 15+ Delivered"
