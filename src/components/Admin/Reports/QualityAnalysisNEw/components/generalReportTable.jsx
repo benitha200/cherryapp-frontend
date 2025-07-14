@@ -10,6 +10,7 @@ import { DashboardCard } from "./dashboardCard";
 import { DeliveredWithBreakdown } from "./DeliveredWithBreakdown";
 import { DashboardCardWithPercentages } from "./DashboardCardWithPercentages";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
+import DeliveryReportSkeleton from "./skeleton";
 
 export const GeneralReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -38,7 +39,7 @@ export const GeneralReportTable = () => {
   }
 
   return isPending ? (
-    <div>Loading ...</div>
+    <DeliveryReportSkeleton />
   ) : (
     !isPending && data && (
       <div>
