@@ -47,6 +47,8 @@ import QualityReport from "./components/Admin/quality/report/index.jsx";
 import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
 import RequireAuth from "./components/guard.jsx";
 import GeneralReport from "./components/Admin/Reports/GeneralReport/index.jsx";
+import DeliveryReport from "./components/Admin/Reports/Deliver report/index.jsx";
+import QualityAnalysisReport from "./components/Admin/Reports/QualityAnalysis/index.jsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -148,6 +150,11 @@ const AppContent = () => {
 
                 <Route path="/quality-delivery" element={<DeliveryTracks />} />
                 <Route path="/general-report" element={<GeneralReport />} />
+                <Route path="/delivery-report" element={<DeliveryReport />} />
+                <Route
+                  path="/quality-analysis-report"
+                  element={<QualityAnalysisReport />}
+                />
               </Route>
               {/* GUARANTEE CWS MANAGER ONLY */}
               <Route
