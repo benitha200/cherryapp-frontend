@@ -13,6 +13,7 @@ import {
   Col,
   Nav,
   Tab,
+  Spinner,
 } from "react-bootstrap";
 import API_URL from "../constants/Constants";
 import toast from "react-hot-toast";
@@ -59,6 +60,7 @@ const Transfer = () => {
   // New state for low grade batch grouping
   const [lowGradeGrouping, setLowGradeGrouping] = useState({});
   const [combinedLowGradeBags, setCombinedLowGradeBags] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Flatten batch records into grade-specific items
   const flattenBatchRecords = () => {
@@ -160,11 +162,11 @@ const Transfer = () => {
     setSelectedGradeItems(
       isSelected
         ? flattenBatchRecords()
-            .slice(
-              (currentPage - 1 ?? 0) * batchesPerPage,
-              (batchesPerPage ?? 10) * currentPage ?? 1
-            )
-            .map((item) => item.combinedGradeKey)
+          .slice(
+            (currentPage - 1 ?? 0) * batchesPerPage,
+            (batchesPerPage ?? 10) * currentPage ?? 1
+          )
+          .map((item) => item.combinedGradeKey)
         : []
     );
   };
@@ -298,6 +300,8 @@ const Transfer = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       // Generate a unique transportGroupId first
 
@@ -395,12 +399,12 @@ const Transfer = () => {
                   numberOfBags: 0,
                   cupProfile: isHighGrade
                     ? gradeQualityDetails[batchGradeKey]?.cupProfile ||
-                      CUP_PROFILES[0]
+                    CUP_PROFILES[0]
                     : undefined,
                   moistureContent: isHighGrade
                     ? parseFloat(
-                        gradeQualityDetails[batchGradeKey]?.moistureContent || 0
-                      )
+                      gradeQualityDetails[batchGradeKey]?.moistureContent || 0
+                    )
                     : undefined,
                 };
               }
@@ -513,6 +517,7 @@ const Transfer = () => {
         setActiveGradeTab(null);
         setLowGradeGrouping({});
         setCombinedLowGradeBags({});
+        setIsSubmitting(false);
       }
 
       // Show success message with transport group ID for reference
@@ -522,10 +527,10 @@ const Transfer = () => {
     } catch (error) {
       console.error("Transfer error:", error);
       toast.error(
-        `Failed to complete transfer: ${
-          error.response?.data?.error || error.message
+        `Failed to complete transfer: ${error.response?.data?.error || error.message
         }`
       );
+      setIsSubmitting(false);
     }
   };
 
@@ -676,8 +681,8 @@ const Transfer = () => {
     const filtered = flattenBatchRecords().filter((item) =>
       searchTerm
         ? item.displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.processingType.toLowerCase().includes(searchTerm.toLowerCase())
+        item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.processingType.toLowerCase().includes(searchTerm.toLowerCase())
         : true
     );
 
@@ -955,10 +960,10 @@ const Transfer = () => {
                                 </Badge>
                                 <span className="fw-bold">
                                   {getItemsGroupedByGradeAndBatch()
-                                    [grade].reduce(
-                                      (sum, item) => sum + item.kgValue,
-                                      0
-                                    )
+                                  [grade].reduce(
+                                    (sum, item) => sum + item.kgValue,
+                                    0
+                                  )
                                     .toFixed(2)}{" "}
                                   kg
                                 </span>
@@ -1200,7 +1205,7 @@ const Transfer = () => {
                                                           key={profile}
                                                           value={
                                                             profile !=
-                                                            "Select Cup Profile"
+                                                              "Select Cup Profile"
                                                               ? profile
                                                               : ""
                                                           }
@@ -1340,8 +1345,19 @@ const Transfer = () => {
                 backgroundColor: processingTheme.primary,
                 borderColor: processingTheme.primary,
               }}
-              disabled={getSelectedGradeItems().length === 0}
+              disabled={getSelectedGradeItems().length === 0 || isSubmitting}
             >
+              {isSubmitting && (
+                <span className="me-2 align-middle">
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                </span>
+              )}
               Confirm Transfer
             </Button>
           </Modal.Footer>
@@ -1379,7 +1395,7 @@ const Transfer = () => {
                   // className='m-4'
                   checked={
                     selectedGradeItems.length ===
-                      flattenBatchRecords().length &&
+                    flattenBatchRecords().length &&
                     flattenBatchRecords().length > 0
                   }
                   onChange={(e) => handleSelectAllGradeItems(e.target.checked)}
@@ -1415,10 +1431,10 @@ const Transfer = () => {
                           title="Select All"
                           checked={
                             selectedGradeItems.length ===
-                              flattenBatchRecords().slice(
-                                (currentPage - 1) * (batchesPerPage ?? 1),
-                                (batchesPerPage ?? 1) * currentPage ?? 1
-                              ).length && flattenBatchRecords().length > 0
+                            flattenBatchRecords().slice(
+                              (currentPage - 1) * (batchesPerPage ?? 1),
+                              (batchesPerPage ?? 1) * currentPage ?? 1
+                            ).length && flattenBatchRecords().length > 0
                           }
                           onChange={(e) =>
                             handleSelectFirstPageGradeItems(e.target.checked)
@@ -1440,8 +1456,8 @@ const Transfer = () => {
                           backgroundColor: isGradeItemSelected(item.gradeKey)
                             ? `${processingTheme.neutral}`
                             : item.isHighGrade
-                            ? "rgba(0, 128, 128, 0.05)"
-                            : "transparent",
+                              ? "rgba(0, 128, 128, 0.05)"
+                              : "transparent",
                           borderLeft: item.isHighGrade
                             ? `4px solid ${processingTheme.primary}`
                             : "none",
@@ -1530,54 +1546,24 @@ const Transfer = () => {
                   </Form.Select>
                 </div>
                 <ul className="pagination mb-0">
-                  <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => paginate(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button className="page-link" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
                       Previous
                     </button>
                   </li>
-                  {Array.from({
-                    length: Math.ceil(
-                      flattenBatchRecords().length / batchesPerPage
-                    ),
-                  }).map((_, index) => (
-                    <li
-                      key={index}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
-                    >
+                  {[...Array(Math.ceil(flattenBatchRecords().length / batchesPerPage)).keys()].map(number => (
+                    <li key={number + 1} className={`page-item ${currentPage === number + 1 ? 'active' : ''}`}>
                       <button
                         className="page-link"
-                        onClick={() => paginate(index + 1)}
+                        onClick={() => paginate(number + 1)}
+                        style={currentPage === number + 1 ? { backgroundColor: processingTheme.primary, borderColor: processingTheme.primary } : {}}
                       >
-                        {index + 1}
+                        {number + 1}
                       </button>
                     </li>
                   ))}
-                  <li
-                    className={`page-item ${
-                      currentPage ===
-                      Math.ceil(flattenBatchRecords().length / batchesPerPage)
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => paginate(currentPage + 1)}
-                      disabled={
-                        currentPage ===
-                        Math.ceil(flattenBatchRecords().length / batchesPerPage)
-                      }
-                    >
+                  <li className={`page-item ${currentPage === Math.ceil(flattenBatchRecords().length / batchesPerPage) ? 'disabled' : ''}`}>
+                    <button className="page-link" onClick={() => paginate(currentPage + 1)}>
                       Next
                     </button>
                   </li>
@@ -1641,6 +1627,7 @@ export default Transfer;
 //   // New state for low grade batch grouping
 //   const [lowGradeGrouping, setLowGradeGrouping] = useState({});
 //   const [combinedLowGradeBags, setCombinedLowGradeBags] = useState({});
+//   const [isSubmitting, setIsSubmitting] = useState(false);
 
 //   // Flatten batch records into grade-specific items
 //   const flattenBatchRecords = () => {
@@ -1852,6 +1839,8 @@ export default Transfer;
 //       return;
 //     }
 
+//     setIsSubmitting(true);
+
 //     try {
 //       // Generate a unique transportGroupId first
 //       // const transportGroupResponse = await axios.post(`${API_URL}/transfer/generate-group-id`);
@@ -1918,701 +1907,16 @@ export default Transfer;
 //               const batchGradeKey = `${batchId}-${grade}`;
 
 //               gradeDetails[originalRecord.grade] = {
-//                 numberOfBags: parseInt(gradeQualityDetails[batchGradeKey]?.numberOfBags || 0),
-//                 ...(isHighGrade ? {
-//                   cupProfile: gradeQualityDetails[batchGradeKey]?.cupProfile || CUP_PROFILES[0],
-//                   moistureContent: parseFloat(gradeQualityDetails[batchGradeKey]?.moistureContent || 0)
-//                 } : {})
-//               };
-
-//               const outputKgs = {};
-//               outputKgs[originalRecord.grade] = originalRecord.kgValue;
-
-//               transferPromises.push(
-//                 axios.post(`${API_URL}/transfer`, {
-//                   baggingOffId: originalRecord.recordId,
-//                   batchNo: originalRecord.batchKey,
-//                   gradeGroup: isHighGrade ? 'HIGH' : 'LOW',
-//                   outputKgs: outputKgs,
-//                   gradeDetails: gradeDetails,
-//                   isGroupedTransfer: false,
-//                   transportGroupId: transportGroupId, // Pass the consistent transportGroupId
-//                   truckNumber: transportDetails.truckNumber,
-//                   driverName: transportDetails.driverName,
-//                   driverPhone: transportDetails.driverPhone,
-//                   notes: transportDetails.notes
-//                 }).then(response => {
-//                   completedTransfers.push(response.data);
-//                   return response;
-//                 })
-//               );
-//             });
-//           });
-//         }
-//       });
-
-//       // Wait for all transfers to complete
-//       await Promise.all(transferPromises);
-
-//       // Refresh untransferred records
-//       await fetchUntransferredRecords();
-//       // Refresh transfer history to include the new transfers
-//       await fetchTransferHistory();
-
-//       // Reset form and selections
-//       setSelectedGradeItems([]);
-//       setGradeQualityDetails({});
-//       setTransportDetails({
-//         truckNumber: '',
-//         driverName: '',
-//         driverPhone: '',
-//         notes: ''
-//       });
-//       setLowGradeBags('');
-//       setSelectedLowGrade(null);
-//       setShowTransferModal(false);
-//       setValidated(false);
-//       setActiveGradeTab(null);
-//       setLowGradeGrouping({});
-//       setCombinedLowGradeBags({});
-
-//       // Show success message with transport group ID for reference
-//       // alert(`Transfer completed successfully!\nTransport Group ID: ${transportGroupId}`);
-//     } catch (error) {
-//       console.error('Transfer error:', error);
-//       alert(`Failed to complete transfer: ${error.response?.data?.error || error.message}`);
-//     }
-//   }
-
-//   const handleQualityDetailsChange = (batchId, grade, field, value) => {
-//     const batchGradeKey = `${batchId}-${grade}`;
-//     setGradeQualityDetails(prev => ({
-//       ...prev,
-//       [batchGradeKey]: {
-//         ...(prev[batchGradeKey] || {}),
-//         [field]: value
-//       }
-//     }));
-//   };
-
-//   const handleTransportDetailsChange = (e) => {
-//     const { name, value } = e.target;
-//     setTransportDetails(prev => ({ ...prev, [name]: value }));
-//   };
-
-//   const fetchUntransferredRecords = async () => {
-//     try {
-//       const response = await axios.get(`${API_URL}/bagging-off/cws/${userInfo.cwsId}`);
-//       const transfersResponse = await axios.get(`${API_URL}/transfer/cws/${userInfo.cwsId}`);
-//       const allTransfers = transfersResponse.data || [];
-
-//       const transfersByBaggingOff = {};
-//       allTransfers.forEach(transfer => {
-//         if (!transfersByBaggingOff[transfer.baggingOffId]) {
-//           transfersByBaggingOff[transfer.baggingOffId] = [];
-//         }
-//         transfersByBaggingOff[transfer.baggingOffId].push(transfer);
-//       });
-
-//       const processedRecords = (response.data || []).map(record => {
-//         const recordTransfers = transfersByBaggingOff[record.id] || [];
-//         const transferredGrades = {};
-//         recordTransfers.forEach(transfer => {
-//           if (transfer.outputKgs) {
-//             Object.keys(transfer.outputKgs).forEach(grade => {
-//               transferredGrades[grade] = true;
-//             });
-//           }
-//         });
-
-//         return {
-//           ...record,
-//           transferredGrades,
-//           hasTransferredGrades: Object.keys(transferredGrades).length > 0,
-//           hasUntransferredGrades: record.outputKgs && Object.keys(record.outputKgs).some(grade =>
-//             !transferredGrades[grade] && parseFloat(record.outputKgs[grade] || 0) > 0
-//           )
-//         };
-//       });
-
-//       const untransferred = processedRecords.filter(record => record.hasUntransferredGrades);
-//       const grouped = untransferred.reduce((acc, record) => {
-//         if (record.batchNo) {
-//           const baseBatchNo = record.batchNo.replace(/[A-Za-z-]\d*$/, '');
-//           if (!acc[baseBatchNo]) {
-//             acc[baseBatchNo] = [];
-//           }
-//           acc[baseBatchNo].push(record);
-//         }
-//         return acc;
-//       }, {});
-
-//       setGroupedRecords(grouped);
-//       setLoading(false);
-//     } catch (error) {
-//       console.error("Error fetching records:", error);
-//       setError(`Error fetching untransferred records: ${error.message}`);
-//       setLoading(false);
-//     }
-//   };
-
-//   // This function is referenced but never defined in the original code
-//   // Adding a stub implementation
-//   const fetchTransferHistory = async () => {
-//     // Stub implementation
-//     console.log("Fetching transfer history");
-//     // In a real implementation, you would make an API call here
-//   };
-
-//   useEffect(() => {
-//     fetchUntransferredRecords();
-//   }, []);
-
-//   const getPaginatedBatches = () => {
-//     const filtered = flattenBatchRecords().filter(item =>
-//       searchTerm ? item.displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         item.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         item.processingType.toLowerCase().includes(searchTerm.toLowerCase()) : true
-//     );
-
-//     const indexOfLastBatch = currentPage * batchesPerPage;
-//     const indexOfFirstBatch = indexOfLastBatch - batchesPerPage;
-//     return filtered.slice(indexOfFirstBatch, indexOfLastBatch);
-//   };
-
-//   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-//   // Calculate total KGs for a grade group
-//   const calculateGradeGroupTotal = (grade) => {
-//     const items = getItemsGroupedByGradeAndBatch()[grade] || [];
-//     return items.reduce((sum, item) => sum + item.kgValue, 0);
-//   };
-
-//   return (
-//     <div className="container-fluid py-4">
-//       <Modal show={showTransferModal} onHide={() => setShowTransferModal(false)} size="lg">
-//         <Form noValidate validated={validated} onSubmit={handleTransferConfirm}>
-//           <Modal.Header closeButton style={{ backgroundColor: processingTheme.neutral }}>
-//             <Modal.Title>Transfer Parchment</Modal.Title>
-//           </Modal.Header>
-//           <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-//             {getSelectedGradeItems().length === 0 ? (
-//               <Alert variant="warning">No grade items selected for transfer</Alert>
-//             ) : (
-//               <>
-//                 <div className="table-responsive">
-//                   <table className="table table-hover">
-//                     <thead>
-//                       <tr>
-//                         <th>Batch & Grade</th>
-//                         <th>Processing</th>
-//                         <th>Weight (kg)</th>
-//                         <th>Actions</th>
-//                       </tr>
-//                     </thead>
-//                     <tbody>
-//                       {getSelectedGradeItems()
-//                         .sort((a, b) => {
-//                           const gradeOrder = ['A0', 'A1', 'A2', 'A3', 'B1', 'B2'];
-//                           const gradeAIndex = gradeOrder.indexOf(a.grade);
-//                           const gradeBIndex = gradeOrder.indexOf(b.grade);
-//                           if (gradeAIndex !== gradeBIndex) return gradeAIndex - gradeBIndex;
-
-//                           const dateA = extractDateFromBatch(a.batchNo);
-//                           const dateB = extractDateFromBatch(b.batchNo);
-//                           if (dateA.month !== dateB.month) return dateA.month - dateB.month;
-//                           if (dateA.day !== dateB.day) return dateA.day - dateB.day;
-
-//                           return a.batchNo.localeCompare(b.batchNo);
-//                         })
-//                         .map((item) => (
-//                           <tr key={item.id}
-//                             style={{
-//                               backgroundColor: item.isHighGrade ? 'rgba(0, 128, 128, 0.05)' : 'transparent',
-//                               borderLeft: item.isHighGrade ? `4px solid ${processingTheme.primary}` : 'none'
-//                             }}
-//                           >
-//                             <td>
-//                               <div className="d-flex align-items-center">
-//                                 <div>
-//                                   <div className="fw-bold">
-//                                     {item.displayId} {item.isHighGrade && <span style={{ color: processingTheme.primary }}>★</span>}
-//                                   </div>
-//                                   <Badge
-//                                     bg={item.isHighGrade ? "success" : "info"}
-//                                     className="me-1"
-//                                   >
-//                                     {item.isHighGrade ? "High Grade" : "Low Grade"}
-//                                   </Badge>
-//                                 </div>
-//                               </div>
-//                             </td>
-//                             <td>{item.processingType}</td>
-//                             <td>{item.kgValue.toFixed(2)} kg</td>
-//                             <td>
-//                               <Button
-//                                 size="sm"
-//                                 variant="outline-danger"
-//                                 onClick={() => handleGradeItemSelection(item.gradeKey, false)}
-//                               >
-//                                 Remove
-//                               </Button>
-//                             </td>
-//                           </tr>
-//                         ))}
-//                     </tbody>
-//                   </table>
-//                 </div>
-
-//                 {/* Quality Details - Tabbed interface */}
-//                 <Card className="mt-3">
-//                   <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-//                     <span className="h5" style={{ color: processingTheme.primary }}>Details</span>
-//                   </Card.Header>
-//                   <Card.Body>
-//                     <Tab.Container activeKey={activeGradeTab} onSelect={(k) => setActiveGradeTab(k)}>
-//                       <Nav variant="tabs" className="mb-3">
-//                         {Object.keys(getItemsGroupedByGradeAndBatch()).map(grade => (
-//                           <Nav.Item key={grade}>
-//                             <Nav.Link eventKey={grade}>
-//                               <Badge bg={GRADE_GROUPS.HIGH.includes(grade) ? "success" : "info"} className="me-2">
-//                                 {grade}
-//                               </Badge>
-//                               <span className="fw-bold">{getItemsGroupedByGradeAndBatch()[grade].reduce((sum, item) => sum + item.kgValue, 0).toFixed(2)} kg</span>
-//                             </Nav.Link>
-//                           </Nav.Item>
-//                         ))}
-//                       </Nav>
-//                       <Tab.Content>
-//                         {Object.entries(getItemsGroupedByGradeAndBatch()).map(([grade, items]) => {
-//                           const isLowGrade = GRADE_GROUPS.LOW.includes(grade);
-//                           return (
-//                             <Tab.Pane key={grade} eventKey={grade}>
-//                               <div className="mb-3">
-//                                 <div className="d-flex justify-content-between align-items-center mb-3">
-//                                   <h5>
-//                                     {grade} - {items.reduce((sum, item) => sum + item.kgValue, 0).toFixed(2)} kg
-//                                   </h5>
-
-//                                   {/* Low Grade Grouping Toggle */}
-//                                   {isLowGrade && (
-//                                     <Form.Check
-//                                       type="switch"
-//                                       id={`combine-${grade}`}
-//                                       // label="Combine batches in bag"
-//                                       checked={lowGradeGrouping[grade]?.isGrouped || false}
-//                                       onChange={(e) => handleLowGradeGroupingChange(grade, 'isGrouped', e.target.checked)}
-//                                       className="mb-0"
-//                                       hidden
-//                                     />
-//                                   )}
-//                                 </div>
-
-//                                 {/* Combined Low Grade Bags Input */}
-//                                 {isLowGrade && lowGradeGrouping[grade]?.isGrouped && (
-//                                   <div className="mb-3">
-//                                     <Form.Group controlId={`combined-bags-${grade}`}>
-//                                       <Form.Label>Number of Bags (Combined {grade})</Form.Label>
-//                                       <Form.Control
-//                                         type="number"
-//                                         min="1"
-//                                         required
-//                                         value={combinedLowGradeBags[grade] || ''}
-//                                         onChange={(e) => handleCombinedBagsChange(grade, e.target.value)}
-//                                       />
-//                                       <Form.Control.Feedback type="invalid">
-//                                         Please enter the number of bags.
-//                                       </Form.Control.Feedback>
-//                                     </Form.Group>
-//                                   </div>
-//                                 )}
-
-//                                 {/* Individual Batch Details */}
-//                                 {!isLowGrade || !lowGradeGrouping[grade]?.isGrouped ? (
-//                                   <div className="table-responsive">
-//                                     <table className="table table-sm">
-//                                       <thead>
-//                                         <tr>
-//                                           <th>Batch</th>
-//                                           <th>Weight (kg)</th>
-//                                           <th>Bags</th>
-//                                           {!isLowGrade && (
-//                                             <>
-//                                               <th>Cup Profile</th>
-//                                               <th>Moisture %</th>
-//                                             </>
-//                                           )}
-//                                         </tr>
-//                                       </thead>
-//                                       <tbody>
-//                                         {items.map((item) => (
-//                                           item.records.map((record) => {
-//                                             const batchGradeKey = `${record.recordId}-${grade}`;
-//                                             return (
-//                                               <tr key={record.id}>
-//                                                 <td>{record.batchNo}</td>
-//                                                 <td>{record.kgValue.toFixed(2)} kg</td>
-//                                                 <td style={{ minWidth: '100px' }}>
-//                                                   <Form.Control
-//                                                     type="number"
-//                                                     size="sm"
-//                                                     min="1"
-//                                                     required
-//                                                     value={gradeQualityDetails[batchGradeKey]?.numberOfBags || ''}
-//                                                     onChange={(e) => handleQualityDetailsChange(record.recordId, grade, 'numberOfBags', e.target.value)}
-//                                                   />
-//                                                 </td>
-//                                                 {!isLowGrade && (
-//                                                   <>
-//                                                     <td style={{ minWidth: '120px' }}>
-//                                                       <Form.Select
-//                                                         size="sm"
-//                                                         required
-//                                                         value={gradeQualityDetails[batchGradeKey]?.cupProfile || CUP_PROFILES[0]}
-//                                                         onChange={(e) => handleQualityDetailsChange(record.recordId, grade, 'cupProfile', e.target.value)}
-//                                                       >
-//                                                         {CUP_PROFILES.map(profile => (
-//                                                           <option key={profile} value={profile}>{profile}</option>
-//                                                         ))}
-//                                                       </Form.Select>
-//                                                     </td>
-//                                                     <td style={{ minWidth: '100px' }}>
-//                                                       <Form.Control
-//                                                         type="number"
-//                                                         size="sm"
-//                                                         step="0.01"
-//                                                         min="0"
-//                                                         max="20"
-//                                                         required
-//                                                         value={gradeQualityDetails[batchGradeKey]?.moistureContent || ''}
-//                                                         onChange={(e) => handleQualityDetailsChange(record.recordId, grade, 'moistureContent', e.target.value)}
-//                                                       />
-//                                                     </td>
-//                                                   </>
-//                                                 )}
-//                                               </tr>
-//                                             );
-//                                           })
-//                                         ))}
-//                                       </tbody>
-//                                     </table>
-//                                   </div>
-//                                 ) : (
-//                                   <Alert variant="info">
-//                                     All {grade} batches will be combined into {combinedLowGradeBags[grade] || '0'} bags
-//                                   </Alert>
-//                                 )}
-//                               </div>
-//                             </Tab.Pane>
-//                           );
-//                         })}
-//                       </Tab.Content>
-//                     </Tab.Container>
-//                   </Card.Body>
-//                 </Card>
-
-//                 {/* Transport Details Form */}
-//                 <Card className="mt-3">
-//                   <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-//                     <span className="h5" style={{ color: processingTheme.primary }}>Transport Information</span>
-//                   </Card.Header>
-//                   <Card.Body>
-//                     <Row>
-//                       <Col md={6}>
-//                         <Form.Group className="mb-3" controlId="truckNumber">
-//                           <Form.Label>Truck Number</Form.Label>
-//                           <Form.Control
-//                             type="text"
-//                             required
-//                             name="truckNumber"
-//                             value={transportDetails.truckNumber}
-//                             onChange={handleTransportDetailsChange}
-//                           />
-//                           <Form.Control.Feedback type="invalid">
-//                             Please enter the truck number.
-//                           </Form.Control.Feedback>
-//                         </Form.Group>
-//                       </Col>
-//                       <Col md={6}>
-//                         <Form.Group className="mb-3" controlId="driverName">
-//                           <Form.Label>Driver Name</Form.Label>
-//                           <Form.Control
-//                             type="text"
-//                             required
-//                             name="driverName"
-//                             value={transportDetails.driverName}
-//                             onChange={handleTransportDetailsChange}
-//                           />
-//                           <Form.Control.Feedback type="invalid">
-//                             Please enter the driver's name.
-//                           </Form.Control.Feedback>
-//                         </Form.Group>
-//                       </Col>
-//                     </Row>
-//                     <Row>
-//                       <Col md={6}>
-//                         <Form.Group className="mb-3" controlId="driverPhone">
-//                           <Form.Label>Driver Phone</Form.Label>
-//                           <Form.Control
-//                             type="text"
-//                             required
-//                             name="driverPhone"
-//                             value={transportDetails.driverPhone}
-//                             onChange={handleTransportDetailsChange}
-//                           />
-//                           <Form.Control.Feedback type="invalid">
-//                             Please enter the driver's phone number.
-//                           </Form.Control.Feedback>
-//                         </Form.Group>
-//                       </Col>
-//                       <Col md={6}>
-//                         <Form.Group className="mb-3" controlId="notes">
-//                           <Form.Label>Notes</Form.Label>
-//                           <Form.Control
-//                             as="textarea"
-//                             rows={2}
-//                             name="notes"
-//                             value={transportDetails.notes}
-//                             onChange={handleTransportDetailsChange}
-//                           />
-//                         </Form.Group>
-//                       </Col>
-//                     </Row>
-//                   </Card.Body>
-//                 </Card>
-//               </>
-//             )}
-//           </Modal.Body>
-//           <Modal.Footer>
-//             <Button variant="secondary" onClick={() => setShowTransferModal(false)}>
-//               Cancel
-//             </Button>
-//             <Button
-//               type="submit"
-//               variant="sucafina"
-//               disabled={getSelectedGradeItems().length === 0}
-//               style={{
-//                 backgroundColor: processingTheme.primary,
-//                 borderColor: processingTheme.primary
-//               }}
-//             >
-//               Confirm Transfer
-//             </Button>
-//           </Modal.Footer>
-//         </Form>
-//       </Modal>
-//       <Card className="mb-4">
-//         <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-//           <span className="h5" style={{ color: processingTheme.primary }}>
-//             Transport to HQ
-//           </span>
-//         </Card.Header>
-//         <Card.Body>
-//           <div className="d-flex flex-column flex-md-row justify-content-between">
-//             {/* Left Column - Summary Information */}
-//             <div className="mb-3 mb-md-0">
-//               <h5 className="mb-2">Transport Summary</h5>
-
-//               {/* Basic Stats Row */}
-//               <div className="d-flex flex-wrap gap-4 mb-2">
-//                 <div><strong>Batches:</strong> {new Set(getSelectedGradeItems().map(item => item.batchNo)).size}</div>
-//                 <div><strong>Grades:</strong> {new Set(getSelectedGradeItems().map(item => item.grade)).size}</div>
-//               </div>
-
-//               {/* Grade Breakdown */}
-//               {Object.entries(getGradeTotals()).length > 0 && (
-//                 <div className="mb-3">
-//                   <strong className="d-block mb-1">Grade Breakdown:</strong>
-//                   <div className="d-flex flex-wrap gap-3">
-//                     {Object.entries(getGradeTotals()).map(([grade, total]) => (
-//                       <div key={grade} className="d-flex align-items-center">
-//                         <Badge bg={GRADE_GROUPS.HIGH.includes(grade) ? "success" : "info"} className="me-1">
-//                           {grade}
-//                         </Badge>
-//                         <span>{total.toFixed(2)} kg</span>
-//                       </div>
-//                     ))}
-//                   </div>
-//                 </div>
-//               )}
-
-//               {/* Highlighted Total KGs */}
-//               <div className="p-2 rounded-3" style={{
-//                 backgroundColor: processingTheme.primaryLight || '#e6f2ff',
-//                 border: `1px solid ${processingTheme.primary}`,
-//                 display: 'inline-block'
-//               }}>
-//                 <span className="fs-6 fw-bold" style={{ color: processingTheme.primary }}>
-//                   Total Kgs: {totalSelectedKgs.toFixed(2)} kg
-//                 </span>
-//               </div>
-//             </div>
-
-//             {/* Right Column - Grade Summary and Action Button */}
-//             <div className="d-flex flex-column justify-content-between">
-//               <div className="mb-3">
-//                 <div className="mb-2">
-//                   <strong>High Grades:</strong> {getSelectedGradeItems()
-//                     .filter(item => GRADE_GROUPS.HIGH.includes(item.grade))
-//                     .reduce((sum, item) => sum + item.kgValue, 0)
-//                     .toFixed(2)} kg
-//                 </div>
-//                 <div>
-//                   <strong>Low Grades:</strong> {getSelectedGradeItems()
-//                     .filter(item => GRADE_GROUPS.LOW.includes(item.grade))
-//                     .reduce((sum, item) => sum + item.kgValue, 0)
-//                     .toFixed(2)} kg
-//                 </div>
-//               </div>
-
-//               <Button
-//                 size="md"
-//                 variant="sucafina"
-//                 disabled={getSelectedGradeItems().length === 0}
-//                 onClick={handleTransferClick}
-//                 style={{
-//                   backgroundColor: processingTheme.primary,
-//                   borderColor: processingTheme.primary,
-//                   alignSelf: 'flex-end'
-//                 }}
-//               >
-//                 Transport To HQ
-//               </Button>
-//             </div>
-//           </div>
-//         </Card.Body>
-//       </Card>
-//       {/* Transfer Modal with Tabbed Interface */}
-
-//       {/* Batch Selection Table */}
-//       <Card>
-//         <Card.Header style={{ backgroundColor: processingTheme.neutral }}>
-//           <div className="d-flex justify-content-between align-items-center">
-//             <span className="h5" style={{ color: processingTheme.primary }}>
-//               Available Parchment Batches
-//             </span>
-//             <div className="d-flex align-items-center">
-//               <InputGroup className="me-2" style={{ width: '250px' }}>
-//                 <InputGroup.Text>
-//                   <i className="bi bi-search"></i>
-//                 </InputGroup.Text>
-//                 <Form.Control
-//                   placeholder="Search..."
-//                   value={searchTerm}
-//                   onChange={(e) => setSearchTerm(e.target.value)}
-//                 />
-//               </InputGroup>
-//               <Form.Check
-//                 type="checkbox"
-//                 label="Select All"
-//                 onChange={(e) => handleSelectAllGradeItems(e.target.checked)}
-//                 checked={selectedGradeItems.length === flattenBatchRecords().length && flattenBatchRecords().length > 0}
-//               />
-//             </div>
-//           </div>
-//         </Card.Header>
-//         <Card.Body>
-//           {loading ? (
-//             <Placeholder as="div" animation="glow">
-//               <Placeholder xs={12} style={{ height: '1.5rem', marginBottom: '0.5rem' }} />
-//               <Placeholder xs={12} style={{ height: '1.5rem', marginBottom: '0.5rem' }} />
-//               <Placeholder xs={12} style={{ height: '1.5rem', marginBottom: '0.5rem' }} />
-//             </Placeholder>
-//           ) : error ? (
-//             <Alert variant="danger">{error}</Alert>
-//           ) : (
-//             <>
-//               <div className="table-responsive">
-//                 <table className="table table-hover">
-//                   <thead>
-//                     <tr>
-//                       <th style={{ width: '40px' }}></th>
-//                       <th>Batch & Grade</th>
-//                       <th>Processing</th>
-//                       <th>Weight (kg)</th>
-//                     </tr>
-//                   </thead>
-//                   <tbody>
-//                     {getPaginatedBatches().map((item) => (
-//                       <tr key={item.id}
-//                         onClick={() => handleGradeItemSelection(item.gradeKey, !isGradeItemSelected(item.gradeKey))}
-//                         style={{
-//                           backgroundColor: isGradeItemSelected(item.gradeKey) ? 'rgba(0, 128, 128, 0.05)' : 'transparent',
-//                           cursor: 'pointer'
-//                         }}
-//                       >
-//                         <td>
-//                           <Form.Check
-//                             type="checkbox"
-//                             checked={isGradeItemSelected(item.gradeKey)}
-//                             onChange={(e) => handleGradeItemSelection(item.gradeKey, e.target.checked)}
-//                             onClick={(e) => e.stopPropagation()}
-//                           />
-//                         </td>
-//                         <td>
-//                           <div className="d-flex align-items-center">
-//                             <div>
-//                               <div className="fw-bold">
-//                                 {item.displayId} {item.isHighGrade && <span style={{ color: processingTheme.primary }}>★</span>}
-//                               </div>
-//                               <Badge
-//                                 bg={item.isHighGrade ? "success" : "info"}
-//                                 className="me-1"
-//                               >
-//                                 {item.isHighGrade ? "High Grade" : "Low Grade"}
-//                               </Badge>
-//                               {item.recordCount > 1 && (
-//                                 <Badge bg="secondary" className="me-1">
-//                                   {item.recordCount} batches
-//                                 </Badge>
-//                               )}
-//                             </div>
-//                           </div>
-//                         </td>
-//                         <td>{item.processingType}</td>
-//                         <td>{item.kgValue.toFixed(2)} kg</td>
-//                       </tr>
-//                     ))}
-//                   </tbody>
-//                 </table>
-//               </div>
-
-//               {/* Pagination */}
-//               {flattenBatchRecords().length > batchesPerPage && (
-//                 <nav>
-//                   <ul className="pagination">
-//                     <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-//                       <button className="page-link" onClick={() => paginate(currentPage - 1)}>Previous</button>
-//                     </li>
-//                     {[...Array(Math.ceil(flattenBatchRecords().length / batchesPerPage)).keys()].map(number => (
-//                       <li key={number + 1} className={`page-item ${currentPage === number + 1 ? 'active' : ''}`}>
-//                         <button
-//                           className="page-link"
-//                           onClick={() => paginate(number + 1)}
-//                           style={currentPage === number + 1 ? { backgroundColor: processingTheme.primary, borderColor: processingTheme.primary } : {}}
-//                         >
-//                           {number + 1}
-//                         </button>
-//                       </li>
-//                     ))}
-//                     <li className={`page-item ${currentPage === Math.ceil(flattenBatchRecords().length / batchesPerPage) ? 'disabled' : ''}`}>
-//                       <button className="page-link" onClick={() => paginate(currentPage + 1)}>Next</button>
-//                     </li>
-//                   </ul>
-//                 </nav>
-//               )}
-
-//               {flattenBatchRecords().length === 0 && (
-//                 <Alert variant="info">
-//                   No untransferred batches found. All batches have been transferred or there are no batches available.
-//                 </Alert>
-//               )}
-//             </>
-//           )}
-//         </Card.Body>
-//       </Card>
-//     </div>
-//   );
-// };
-
-// export default Transfer;
+//                 numberOfBags: parseInt(
+//                   gradeQualityDetails[batchGradeKey]?.numberOfBags || 0
+//                 ),
+//                 ...(isHighGrade
+//                   ? {
+//                     cupProfile:
+//                       gradeQualityDetails[batchGradeKey]?.cupProfile ||
+//                       CUP_PROFILES[0],
+//                     moistureContent: parseFloat(
+//                       gradeQualityDetails[batchGradeKey]?.moistureContent || 0
+//                     ),
+//                   }
+//                   : {}),
