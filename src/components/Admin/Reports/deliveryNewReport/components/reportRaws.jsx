@@ -90,7 +90,8 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
           data?.cws?.totalTransportedKgs,
           0,
           data?.cws?.totalDeliveredKgs,
-          data?.cws?.totalVariationKgs,
+          (data?.cws?.totalTransportedKgs ?? 0) -
+            (data?.cws?.totalDeliveredKgs ?? 0),
           // data?.cws?.tot16plus,
           // data?.cws?.tot15,
           // data?.cws?.totAvg15PlusDelivery,
