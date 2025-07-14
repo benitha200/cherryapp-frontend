@@ -220,6 +220,9 @@ export const GeneralReportTable = () => {
                       rowKeyField="batchNo"
                       itemsPerPage={itemsPerPage}
                       emptyStateMessage={"There is no data"}
+                      totalTransportedKgs={
+                        data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0
+                      }
                     />
                   ))
                 )}

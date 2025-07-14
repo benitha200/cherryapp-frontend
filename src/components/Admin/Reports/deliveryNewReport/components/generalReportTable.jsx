@@ -75,6 +75,7 @@ export const GeneralReportTable = () => {
               value={formatNumberWithCommas(
                 (data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0) -
                   (data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0)
+                // also remove in transit
               )}
               iconClass=""
             />

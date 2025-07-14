@@ -10,7 +10,11 @@ const theme = {
   tableBorder: "#D1E0E0",
 };
 
-export const ReprotTable = ({ data = [], isLoading = false }) => {
+export const ReprotTable = ({
+  data = [],
+  isLoading = false,
+  totalTransportedKgs = 1,
+}) => {
   const [selectedStationName, setSelectedStationName] = useState([]);
   let lows = 0;
 
@@ -93,21 +97,21 @@ export const ReprotTable = ({ data = [], isLoading = false }) => {
           data?.cws?.totalVariationKgs,
           // data?.cws?.tot16plus,
           // data?.cws?.tot15,
-          // data?.cws?.totAvg15PlusDelivery,
+          data?.cws?.totAvg15PlusDelivery,
           // data?.cws?.totAvg15PlusSample,
           // data?.cws?.totv15plus,
-          // (data?.cws?.totAvg15PlusDelivery * data?.cws?.totAvg15PlusDelivery) /
-          //   data?.cws?.totAvg15PlusDelivery,
-          "",
+          ((data?.cws?.totAvg15PlusDelivery ?? 0) *
+            (data?.cws?.totalTransportedKgs ?? 0)) /
+            totalTransportedKgs,
           // data?.cws?.tot14,
           // data?.cws?.tot13,
-          // data?.cws?.totAvg1314Delivery,
+          data?.cws?.totAvg1314Delivery,
           // data?.cws?.totAvg1314Sample,
           // data?.cws?.totv1314,
           "",
           // data?.cws?.totB12,
           // data?.cws?.totDefect,
-          // data?.cws?.totAVLGDelivery,
+          data?.cws?.totAVLGDelivery,
           // data?.cws?.totAVLGSample,
           // data?.cws?.totvlg,
           "",

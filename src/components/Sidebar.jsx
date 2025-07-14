@@ -84,11 +84,11 @@ const Sidebar = () => {
       icon: "file-earmark-text",
       text: "Out Turns Report",
     },
-    {
-      path: "quality-report",
-      icon: "file-earmark-text",
-      text: "Quality Report",
-    },
+    // {
+    //   path: "quality-report",
+    //   icon: "file-earmark-text",
+    //   text: "Quality Report",
+    // },
 
     // {
     //   path: "general-report",
