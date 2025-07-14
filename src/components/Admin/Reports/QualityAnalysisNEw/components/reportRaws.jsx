@@ -108,21 +108,24 @@ export const ReprotTable = ({
           data?.cws?.totAvg1314Delivery,
           // data?.cws?.totAvg1314Sample,
           // data?.cws?.totv1314,
-          "",
+          ((data?.cws?.totAvg1314Delivery ?? 0) *
+            (data?.cws?.totalTransportedKgs ?? 0)) /
+            totalTransportedKgs,
+
           // data?.cws?.totB12,
           // data?.cws?.totDefect,
           data?.cws?.totAVLGDelivery,
           // data?.cws?.totAVLGSample,
           // data?.cws?.totvlg,
-          "",
+          ((data?.cws?.totAVLGDelivery ?? 0) *
+            (data?.cws?.totalTransportedKgs ?? 0)) /
+            totalTransportedKgs,
           // data?.cws?.totOTDelivery,
           // data?.cws?.totOTSample,
           // data?.cws?.totvOT,
           // data?.cws?.avgPPScoreDelivery,
           // data?.cws?.avgPPScoreSample,
-          "",
           // data?.cws?.totvppscore,
-          "",
         ].map((val, idx) => (
           <td key={idx} style={cellStyle}>
             {val === "" ? "" : formatNum(val)}
