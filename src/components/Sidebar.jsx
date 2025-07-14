@@ -95,6 +95,17 @@ const Sidebar = () => {
     //   icon: "file-earmark-text",
     //   text: "Genral Report",
     // },
+
+    {
+      path: "delivery-report",
+      icon: "file-earmark-text",
+      text: "Delivery Report",
+    },
+    {
+      path: "quality-analysis-report",
+      icon: "file-earmark-text",
+      text: "Quality Analysis Report",
+    },
   ];
 
   // Settings menu items for admin
