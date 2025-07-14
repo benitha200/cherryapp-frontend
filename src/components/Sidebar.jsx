@@ -84,17 +84,28 @@ const Sidebar = () => {
       icon: "file-earmark-text",
       text: "Out Turns Report",
     },
-    {
-      path: "quality-report",
-      icon: "file-earmark-text",
-      text: "Quality Report",
-    },
+    // {
+    //   path: "quality-report",
+    //   icon: "file-earmark-text",
+    //   text: "Quality Report",
+    // },
 
     // {
     //   path: "general-report",
     //   icon: "file-earmark-text",
     //   text: "Genral Report",
     // },
+
+    {
+      path: "delivery-report",
+      icon: "file-earmark-text",
+      text: "Delivery Report",
+    },
+    {
+      path: "quality-analysis-report",
+      icon: "file-earmark-text",
+      text: "Quality Analysis Report",
+    },
   ];
 
   // Settings menu items for admin
