@@ -19,3 +19,22 @@ export const report = async () => {
     return error;
   }
 };
+
+
+export const deliveryReportDadta = async () => {
+  const loggedinuser = loggedInUser();
+  try {
+    const res = await axios.get(
+      `${API_URL}/quality-delivery/cws-summary-with-transit/`,
+
+      {
+        headers: {
+          Authorization: `Bearer ${loggedinuser?.token}`,
+        },
+      }
+    );
+    return res?.data;
+  } catch (error) {
+    return error;
+  }
+};

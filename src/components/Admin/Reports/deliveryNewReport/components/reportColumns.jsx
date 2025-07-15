@@ -1,12 +1,37 @@
+import { render } from "react-dom";
+
 export const columns = [
   {
-    field: "batchNumber",
+    field: "cws_name",
     header: "CWS",
   },
-  { field: "driverPhone", header: "Transported (kg)" },
-  { field: "driverPhone", header: "In Transit (kg)" },
-  { field: "driverPhone", header: "Delivered (kg)" },
-  { field: "driverPhone", header: "Variation (kg)" },
+  {
+    field: "total_kgs",
+    header: "Transported (kg)",
+  },
+  {
+    field: "transitKgs",
+    header: "In Transit (kg)",
+  },
+  {
+    field: "transitTruckTotal",
+    header: "In Transit TrucksNo",
+  },
+  {
+    field: "transitTruckTotal",
+    header: "In Transit Trucks",
+    render: (rowData) => {
+      return rowData.transitTruck?.join(",") || "N/A";
+    },
+  },
+  {
+    field: "total_delivered",
+    header: "Delivered (kg)",
+  },
+  {
+    field: "variation",
+    header: "Variation (kg)",
+  },
   // { field: "driverPhone", header: "16+" },
   // { field: "driverPhone", header: "15.00" },
   // { field: "driverPhone", header: "AV.15+/Delivery" },

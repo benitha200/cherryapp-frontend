@@ -11,11 +11,15 @@ import { DeliveredWithBreakdown } from "./DeliveredWithBreakdown";
 import { DashboardCardWithPercentages } from "./DashboardCardWithPercentages";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
 import DeliveryReportSkeleton from "./deliverySkeleton";
+import { GetReportData } from "../../../quality/report/action";
+import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 
 export const GeneralReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const { isPending, error, data } = GetReport();
+  const { deliveryPending, deliverydata } = GetReportData()
+
   if (error) {
     // return <Error error={error?.message ?? "Failed to fetch report Data."} />;
   }
@@ -75,7 +79,7 @@ export const GeneralReportTable = () => {
               title="Total Variation "
               value={formatNumberWithCommas(
                 (data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0) -
-                  (data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0)
+                (data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0)
                 // also remove in transit
               )}
               iconClass=""
@@ -183,7 +187,7 @@ export const GeneralReportTable = () => {
               </div>
             </div>
           </div>
-          <div
+          {/* <div
             className="table-responsive"
             style={{ height: "60vh", overflowY: "auto" }}
           >
@@ -228,10 +232,10 @@ export const GeneralReportTable = () => {
                   (!searchQuery
                     ? data?.data?.report
                     : data?.data?.report?.filter((element) =>
-                        element?.cws?.name
-                          ?.toLowerCase()
-                          ?.includes(searchQuery.toLowerCase())
-                      )
+                      element?.cws?.name
+                        ?.toLowerCase()
+                        ?.includes(searchQuery.toLowerCase())
+                    )
                   ).map((element) => (
                     <ReprotTable
                       data={element ?? []}
@@ -248,7 +252,11 @@ export const GeneralReportTable = () => {
                 )}
               </tbody>
             </table>
-          </div>
+          </div> */}
+
+
+          <ReusableTable columns={columns} data={deliverydata?.data}>
+          </ReusableTable>
         </div>
       </div>
     )

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { columns } from "./reportColums";
 import { Button, Col, Form, InputGroup } from "react-bootstrap";
-import { GetReport } from "../action";
+import { GetReport, GetReportData } from "../action";
 import { Skeleton } from "./skeleton";
 import { Error } from "../../components/responses";
 import { ReprotTable } from "./reportRows";
@@ -16,6 +16,7 @@ export const QualityReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const { isPending, error, data } = GetReport();
+  const { deliverydata, deliveryPending } = GetReportData()
   if (error) {
     return <Error error={error?.message ?? "Failed to fetch report Data."} />;
   }
@@ -238,10 +239,10 @@ export const QualityReportTable = () => {
                   (!searchQuery
                     ? data?.data?.report
                     : data?.data?.report?.filter((element) =>
-                        element?.cws?.name
-                          ?.toLowerCase()
-                          ?.includes(searchQuery.toLowerCase())
-                      )
+                      element?.cws?.name
+                        ?.toLowerCase()
+                        ?.includes(searchQuery.toLowerCase())
+                    )
                   ).map((element) => (
                     <ReprotTable
                       data={element ?? []}
