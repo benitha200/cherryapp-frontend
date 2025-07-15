@@ -149,12 +149,6 @@ const AppContent = () => {
                 <Route path="/users" element={<Users />} />
 
                 <Route path="/quality-delivery" element={<DeliveryTracks />} />
-                <Route path="/general-report" element={<GeneralReport />} />
-                <Route path="/delivery-report" element={<DeliveryReport />} />
-                <Route
-                  path="/quality-analysis-report"
-                  element={<QualityAnalysisReport />}
-                />
               </Route>
               {/* GUARANTEE CWS MANAGER ONLY */}
               <Route
@@ -224,6 +218,12 @@ const AppContent = () => {
                   element={<BaggingOffReport />}
                 />
                 <Route path="/quality-report" element={<QualityReport />} />
+                <Route path="/general-report" element={<GeneralReport />} />
+                <Route path="/delivery-report" element={<DeliveryReport />} />
+                <Route
+                  path="/quality-analysis-report"
+                  element={<QualityAnalysisReport />}
+                />
               </Route>
               {/* GUARANTEE GROUPE OF CWS MANAGAGER ADMIN QUALITY AND SUPPER ADMIN */}
               <Route

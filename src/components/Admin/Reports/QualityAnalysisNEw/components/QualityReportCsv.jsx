@@ -1,6 +1,6 @@
 export const exportQualityReportCSV = (data) => {
   const dateStr = new Date().toISOString().split("T")[0];
-  const fileName = `Quality_Report_${dateStr}.csv`;
+  const fileName = `Quality_Analysis_Report_${dateStr}.csv`;
 
   const headers = [
     "Track",
