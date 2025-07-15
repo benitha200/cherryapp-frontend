@@ -4,7 +4,7 @@ import { GeneralReportTable } from "./components/generalReportTable";
 export default function () {
   return (
     <>
-      <ReportsHeading>Delivery report</ReportsHeading>
+      <ReportsHeading>Quality Analysis Report</ReportsHeading>
       <GeneralReportTable />
     </>
   );

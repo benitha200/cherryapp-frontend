@@ -1,6 +1,6 @@
 export const deliveryReportExcel = (data) => {
   const dateStr = new Date().toISOString().split("T")[0];
-  const fileName = `Quality_Report_${dateStr}.csv`;
+  const fileName = `Delivery_Report_${dateStr}.csv`;
 
   const headers = [
     "CWS",
