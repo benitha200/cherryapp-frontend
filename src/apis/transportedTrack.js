@@ -2,12 +2,11 @@ import axios from "axios";
 import API_URL from "../constants/Constants";
 import { loggedInUser } from "../utils/loggedInUser";
 
-export const report = async () => {
+export const transportedTruck = async () => {
   const loggedinuser = loggedInUser();
   try {
     const res = await axios.get(
-      `${API_URL}/quality-delivery/testing-delivery-report/`,
-
+      `${API_URL}/stock/transported-trucks/`,
       {
         headers: {
           Authorization: `Bearer ${loggedinuser?.token}`,
@@ -21,20 +20,17 @@ export const report = async () => {
 };
 
 
-export const deliveryReportDadta = async () => {
-  const loggedinuser = loggedInUser();
+export const createStockDeliveryRecord = async (payload) => {
+  console.log("Payload in createStockDeliveryRecord::::::::::::::", payload);
+      const loggedinuser = loggedInUser();
   try {
-    const res = await axios.get(
-      `${API_URL}/quality-delivery/cws-summary-with-transit/`,
-
-      {
+    const res = await axios.post(`${API_URL}/stock/stock-delivery`, payload,{
         headers: {
           Authorization: `Bearer ${loggedinuser?.token}`,
         },
-      }
-    );
+      });
     return res?.data;
   } catch (error) {
-    return error;
+    throw new Error("Invalid username or password");
   }
 };
