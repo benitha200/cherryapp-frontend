@@ -129,7 +129,7 @@ const CollapsibleCWSTable = () => {
     <Card className="shadow-sm">
         <Card.Header className="bg-opacity-10" style={{ backgroundColor: theme.neutral }}>
           <Card.Title className="mb-0 text-dark d-flex align-items-center">
-            <CSVExport columns={columns} data={data?.data} filename='Deliver-report-file' variant='green'/>
+            <CSVExport columns={columns} data={data?.data} filename='Deliver-report-file' />
           </Card.Title>
         </Card.Header>
 
