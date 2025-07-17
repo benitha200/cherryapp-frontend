@@ -47,8 +47,11 @@ import QualityReport from "./components/Admin/quality/report/index.jsx";
 import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
 import RequireAuth from "./components/guard.jsx";
 import GeneralReport from "./components/Admin/Reports/GeneralReport/index.jsx";
-import DeliveryReport from "./components/Admin/Reports/deliveryNewReport/index.jsx";
+import DeliveryReport from "./components/Admin/Reports/deliveryReportNewNew/index.jsx";
 import QualityAnalysisReport from "./components/Admin/Reports/QualityAnalysisNEw/index.jsx";
+import { TransportedTrucks } from "./components/received/index.jsx";
+import SampleElement from "./components/Admin/Reports/deliveryReportNewNew/index.jsx";
+
 
 const AppContent = () => {
   const location = useLocation();
@@ -108,6 +111,7 @@ const AppContent = () => {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/my-account" element={<MyAccount />} />
+              <Route path="/sample" element={< SampleElement/>} />
               <Route
                 path="/"
                 element={
@@ -209,6 +213,7 @@ const AppContent = () => {
 
                 <Route path="/transport" element={<Transport />} />
                 <Route path="/stock" element={<StockManagement />} />
+                <Route path="/received" element={<TransportedTrucks />} />
                 <Route
                   path="/cherry-purchase-report"
                   element={<CherryPurchaseReportDetailed />}

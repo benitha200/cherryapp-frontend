@@ -13,17 +13,17 @@ export const columns = [
     field: "transitKgs",
     header: "In Transit (kg)",
   },
-  {
-    field: "transitTruckTotal",
-    header: "In Transit TrucksNo",
-  },
-  {
-    field: "transitTruckTotal",
-    header: "In Transit Trucks",
-    render: (rowData) => {
-      return rowData.transitTruck?.join(",") || "N/A";
-    },
-  },
+  // {
+  //   field: "transitTruckTotal",
+  //   header: "In Transit TrucksNo",
+  // },
+  // {
+  //   field: "transitTruckTotal",
+  //   header: "In Transit Trucks",
+  //   render: (rowData) => {
+  //     return rowData.transitTruck?.join(",") || "N/A";
+  //   },
+  // },
   {
     field: "total_delivered",
     header: "Delivered (kg)",
