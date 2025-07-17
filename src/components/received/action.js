@@ -50,6 +50,7 @@ export const CreateStockDelivery = (onupdateSuccess) => {
       queryClient.invalidateQueries({ queryKey: ["TransportedTruck"] });
       onupdateSuccess();
     },
+    
     onError: (error) => {
       toast.error(error.message ?? "Failed to update the ");
     },
