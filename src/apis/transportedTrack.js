@@ -21,7 +21,6 @@ export const transportedTruck = async () => {
 
 
 export const createStockDeliveryRecord = async (payload) => {
-  console.log("Payload in createStockDeliveryRecord::::::::::::::", payload);
       const loggedinuser = loggedInUser();
   try {
     const res = await axios.post(`${API_URL}/stock/stock-delivery`, payload,{
@@ -31,6 +30,6 @@ export const createStockDeliveryRecord = async (payload) => {
       });
     return res?.data;
   } catch (error) {
-    throw new Error("Invalid username or password");
+    throw new Error(error?.response?.data?.message || "Failed to create stock delivery record");
   }
 };

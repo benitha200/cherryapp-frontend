@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createStockDeliveryRecord, transportedTruck } from "../../apis/transportedTrack";
+import toast from "react-hot-toast";
 export const GetTranspotedTruck = () => {
   const { isPending, error, data } = useQuery({
     queryKey: ["TransportedTruck"],
@@ -50,7 +51,7 @@ export const CreateStockDelivery = (onupdateSuccess) => {
       onupdateSuccess();
     },
     onError: (error) => {
-      toast.error(error?.message ?? "Failed to update the ");
+      toast.error(error.message ?? "Failed to update the ");
     },
   });
 
