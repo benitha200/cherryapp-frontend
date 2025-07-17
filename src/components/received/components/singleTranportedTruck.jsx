@@ -92,7 +92,7 @@ export const SingleTransportedTruck = ({
               <Row className="mb-4">
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label><strong>Transport Date</strong></Form.Label>
+                    <Form.Label><strong>Number of bags</strong></Form.Label>
                     <Form.Control
                       type="number"
                       onChange={(e) =>
