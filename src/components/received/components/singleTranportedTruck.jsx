@@ -88,33 +88,8 @@ export const SingleTransportedTruck = ({
 
               <hr />
 
-              {/* Date Fields Section */}
-              <Row className="mb-4">
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label><strong>Number of bags</strong></Form.Label>
-                    <Form.Control
-                      type="number"
-                      onChange={(e) =>
-                        handleCategoryChange('dates', 'transportDate', e.target.value)
-                      }
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group>
-                    <Form.Label><strong>Arrival Date</strong></Form.Label>
-                    <Form.Control
-                      type="date"
-                      onChange={(e) =>
-                        handleCategoryChange('dates', 'deliveryDate', e.target.value)
-                      }
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
+             
 
-              {/* Category Analysis Section */}
               <Row>
                 <Col md={12}>
                   <h5 className="mb-3 ">Category Analysis</h5>
@@ -126,43 +101,6 @@ export const SingleTransportedTruck = ({
                   </Row>
                 </Col>
               </Row>
-
-              {/* Summary Section */}
-              {/* <Row className="mt-4">
-                <Col md={12}>
-                  <Card className="bg-light border-0">
-                    <Card.Body>
-                      <h6 className="text-muted mb-3">Summary</h6>
-                      <Row>
-                        <Col md={3}>
-                          <div className="text-center">
-                            <div className="h4 text-success mb-1">-</div>
-                            <small className="text-muted">Total Delivered</small>
-                          </div>
-                        </Col>
-                        <Col md={3}>
-                          <div className="text-center">
-                            <div className="h4 text-warning mb-1">-</div>
-                            <small className="text-muted">Total WRN</small>
-                          </div>
-                        </Col>
-                        <Col md={3}>
-                          <div className="text-center">
-                            <div className="h4 text-danger mb-1">-</div>
-                            <small className="text-muted">Total Rejected</small>
-                          </div>
-                        </Col>
-                        <Col md={3}>
-                          <div className="text-center">
-                            <div className="h4 text-info mb-1">-</div>
-                            <small className="text-muted">Categories</small>
-                          </div>
-                        </Col>
-                      </Row>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row> */}
             </Card.Body>
           </Card>
         </Col>
