@@ -2,9 +2,10 @@ import { Button } from "react-bootstrap";
 import ReusableTable from "../../../sharedCompoents/reusableTable"
 import { CreateStockDelivery, GetTranspotedTruck } from "../action";
 import { SingleTransportedTruck } from "./singleTranportedTruck";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { GenericModel } from "../../../sharedCompoents/genericModel";
+import { Pagination } from "../../../sharedCompoents/paginations";
 
 export const TransportedTruckTable = () => {
   const [isModelOpen, setIsModelOpen] = useState(false);
@@ -13,7 +14,8 @@ export const TransportedTruckTable = () => {
     transferDate: ""
   });
   const [categories, setCategories] = useState([]);
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedTransportInfo, setSelectedTransportInfo] = useState({
     cws: "",
     trackPlatNumber: "",
@@ -22,28 +24,69 @@ export const TransportedTruckTable = () => {
     driverPhone: "",
     truck: "",
   });
-const handleopenModel = () => {
+
+  // Enhanced search function that handles case-insensitive and space-insensitive search
+  const normalizeString = (str) => {
+    if (!str) return "";
+    return str.toString().toLowerCase().replace(/\s+/g, "");
+  };
+
+  const searchInObject = (obj, searchTerm) => {
+    const normalizedSearch = normalizeString(searchTerm);
+    
+    if (!normalizedSearch) return true;
+    
+    const searchableFields = [
+      'cwsName',
+      'plateNumbers', 
+      'transferDate',
+      'totalQuantity',
+      'totalBags',
+      'transportGroupId',
+      'driverNames',
+      'driverPhones'
+    ];
+    
+    return searchableFields.some(field => {
+      const fieldValue = obj[field];
+      const normalizedValue = normalizeString(fieldValue);
+      return normalizedValue.includes(normalizedSearch);
+    });
+  };
+
+  const handleopenModel = () => {
     setIsModelOpen(!isModelOpen);
     
     if (isModelOpen) {
       setCategoryInputData({});
     }
   };
+
   const onupdateSuccess = () => {
     toast.success("Data Created successfully");
     handleopenModel();
   }
+
   const [categoryInputData, setCategoryInputData] = useState({});
 
   const { isPending, error, data } = GetTranspotedTruck();
   const { mutate, creatingError, isCreatingpending } = CreateStockDelivery(onupdateSuccess);
+
+  const filteredData = useMemo(() => {
+    if (!data?.data) return [];
+    
+    if (!searchQuery.trim()) {
+      return data.data;
+    }
+    
+    return data.data.filter(item => searchInObject(item, searchQuery));
+  }, [data?.data, searchQuery]);
+
   useEffect(() => {
     if (Object.keys(categoryInputData).length > 0) {
       console.log("Category Input Data Changed:", categoryInputData);
     }
   }, [categoryInputData]);
-
-  
 
   const handleCompleteAction = () => {
     const totalBags = categoryInputData?.dates?.transportDate;
@@ -75,7 +118,6 @@ const handleopenModel = () => {
         apiData.push(apiObject);
       }
     });
-
 
     if (apiData.length === 0) {
       toast.error("Please fill in at least one category with delivery data");
@@ -156,19 +198,28 @@ const handleopenModel = () => {
   return (
     <>
       <ReusableTable 
-        data={data?.data ?? []} 
+        data={filteredData} 
         columns={columns} 
         pageSizeOptions={[5, 10, 20]} 
         pageSize={5} 
         rowsPerPageOptions={[5, 10, 20]}
-      />
+        emptyStateMessage={
+          searchQuery.trim() 
+            ? `No transported trucks found matching "${searchQuery}"`
+            : "There are no transported trucks available."
+        }
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      >
+        <Pagination currentPage={currentPage} totalPages={10} itemsPerPage={5} onPageChange={setCurrentPage}/>
+      </ReusableTable>
       
       <GenericModel
         isOpen={isModelOpen}
         onClose={handleopenModel}
         onConfirm={handleCompleteAction}
         isLoading={isCreatingpending}
-        title="Transported Truck"
+        title="Received Truck"
         confirmButtonText="Complete"
         cancelButtonText="Cancel"
         modalSize="xl"

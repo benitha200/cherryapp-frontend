@@ -103,7 +103,7 @@ export const SingleTransportedTruck = ({
                 </Col>
                 <Col md={6}>
                   <Form.Group>
-                    <Form.Label><strong>Delivery Date</strong></Form.Label>
+                    <Form.Label><strong>Arrival Date</strong></Form.Label>
                     <Form.Control
                       type="date"
                       onChange={(e) =>
