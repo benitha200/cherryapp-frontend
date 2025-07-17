@@ -9,23 +9,51 @@ export const GetTranspotedTruck = () => {
 };
 
 
-export const CreateStockDelivery = () => {
+export const CreateStockDelivery = (onupdateSuccess) => {
   const queryClient = useQueryClient();
+
+  const desiredKeyOrder = [
+    "transferDate",
+    "arrivalDate",
+    "transportGroupId",
+    "category",
+    "deliveryKgs",
+    "numberOfBags",
+    "WRN",
+  ];
+
+  const reorderKeys = (obj) => {
+    const ordered = {};
+    for (const key of desiredKeyOrder) {
+      if (key in obj) {
+        ordered[key] = obj[key];
+      }
+    }
+    return ordered;
+  };
+
   const {
     error: creatingError,
     isPending: isCreatingpending,
     mutate,
   } = useMutation({
     mutationFn: (formData) => {
-      return createStockDeliveryRecord(formData?.lenght >1 ? formData : formData[0]);
+      const normalizedData = Array.isArray(formData) ? formData : [formData];
+      const reordered = normalizedData.map(reorderKeys);
+
+      const payload = reordered.length > 1 ? reordered : reordered[0];
+
+      return createStockDeliveryRecord(payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["Derivary"] });
+      queryClient.invalidateQueries({ queryKey: ["TransportedTruck"] });
       onupdateSuccess();
     },
     onError: (error) => {
       toast.error(error?.message ?? "Failed to update the ");
     },
   });
+
   return { creatingError, isCreatingpending, mutate };
 };
+

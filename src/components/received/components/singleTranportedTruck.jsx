@@ -94,7 +94,7 @@ export const SingleTransportedTruck = ({
                   <Form.Group>
                     <Form.Label><strong>Transport Date</strong></Form.Label>
                     <Form.Control
-                      type="date"
+                      type="number"
                       onChange={(e) =>
                         handleCategoryChange('dates', 'transportDate', e.target.value)
                       }

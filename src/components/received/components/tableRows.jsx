@@ -22,30 +22,34 @@ export const TransportedTruckTable = () => {
     driverPhone: "",
     truck: "",
   });
-
-  const [categoryInputData, setCategoryInputData] = useState({});
-
-  const { isPending, error, data } = GetTranspotedTruck();
-  const { mutate, creatingError, isCreatingpending } = CreateStockDelivery();
-  useEffect(() => {
-    if (Object.keys(categoryInputData).length > 0) {
-      console.log("Category Input Data Changed:", categoryInputData);
-    }
-  }, [categoryInputData]);
-
-  const handleopenModel = () => {
+const handleopenModel = () => {
     setIsModelOpen(!isModelOpen);
     
     if (isModelOpen) {
       setCategoryInputData({});
     }
   };
+  const onupdateSuccess = () => {
+    toast.success("Data Created successfully");
+    handleopenModel();
+  }
+  const [categoryInputData, setCategoryInputData] = useState({});
+
+  const { isPending, error, data } = GetTranspotedTruck();
+  const { mutate, creatingError, isCreatingpending } = CreateStockDelivery(onupdateSuccess);
+  useEffect(() => {
+    if (Object.keys(categoryInputData).length > 0) {
+      console.log("Category Input Data Changed:", categoryInputData);
+    }
+  }, [categoryInputData]);
+
+  
 
   const handleCompleteAction = () => {
-    const transportDate = categoryInputData?.dates?.transportDate;
+    const totalBags = categoryInputData?.dates?.transportDate;
     const deliveryDate = categoryInputData?.dates?.deliveryDate;
     
-    if (!transportDate || !deliveryDate) {
+    if (!totalBags || !deliveryDate) {
       toast?.error("Please fill in both Transport Date and Delivery Date");
       return;
     }
@@ -59,18 +63,19 @@ export const TransportedTruckTable = () => {
       
       if (categoryData && (categoryData.delivered || categoryData.wrn)) {
         const apiObject = {
-          transferDate: transportDate,
+          transferDate: selectedId?.transferDate,
           arrivalDate: deliveryDate,
           transportGroupId: selectedId.transportGroupId,
           category: categoryKey,
           deliveryKgs: parseFloat(categoryData.delivered || 0),
-          numberOfBags: 10, // Assuming a fixed number of bags for simplicity
+          numberOfBags: Number(totalBags),
           WRN: categoryData.wrn || ""
         };
         
         apiData.push(apiObject);
       }
     });
+
 
     if (apiData.length === 0) {
       toast.error("Please fill in at least one category with delivery data");
@@ -79,15 +84,7 @@ export const TransportedTruckTable = () => {
 
     console.log("API Data to send:", apiData);
     
-    mutate(apiData, {
-      onSuccess: (response) => {
-        toast.success("Data sent successfully");
-        handleopenModel();
-      },
-      onError: (error) => {
-        toast.error("Error sending data please try again");
-      }
-    });
+    mutate(apiData);
   };
 
   const columns = [
