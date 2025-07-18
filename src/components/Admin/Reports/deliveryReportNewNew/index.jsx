@@ -4,6 +4,7 @@ export default function DeliveryReportNewNew (){
   return (
     <div>
       <ReportsHeading>Delivery Report</ReportsHeading>
+      
       <CollapsibleCWSTable/>
     </div>
   );

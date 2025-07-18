@@ -14,6 +14,7 @@ import {
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { GetDeliveryReportNew } from '../action';
 import TableSkeletonLoader from './skeleton';
+import { DeliveryReportSummary } from './repordData';
 const theme = {
   primary: "#008080", // Sucafina teal
   secondary: "#4FB3B3", // Lighter teal
@@ -105,6 +106,8 @@ const CollapsibleCWSTable = () => {
   );
 
   return (
+    <div>
+    <DeliveryReportSummary data={data?.grandTotal}/>
     <Container fluid className="p-4">
       <Card className="shadow-sm">
         <Card.Header className="bg-opacity-10" style={{ backgroundColor: theme.secondary }}>
@@ -189,7 +192,6 @@ const CollapsibleCWSTable = () => {
                               <td>
                                 <div className="ps-4">
                                   <div className="text-dark">{index +1}</div>
-                                  {/* <small className="text-muted">ID: {index +1}</small> */}
                                 </div>
                               </td>
                               <td>{child.transportGroupId}</td>
@@ -239,6 +241,8 @@ const CollapsibleCWSTable = () => {
         )}
       </Card>
     </Container>
+     </div>
+
   );
 };
 
