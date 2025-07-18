@@ -93,6 +93,7 @@ export const SingleTransportedTruckdisplay = ({
                     <span className="badge bg-warning text-dark">{data?.data?.driverNames??''}</span>
                   </div>
                 </Col>
+                
                 <Col xs="auto">
                   <div className="d-flex align-items-center">
                     <strong className="me-2">Truck:</strong>
