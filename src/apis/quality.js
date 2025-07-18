@@ -90,7 +90,6 @@ export const getQualityBatchesInTesting = async (page, limit) => {
 
 export const updateQualityInformation = async (payload) => {
   const loggedinuser = loggedInUser();
-  console.log(payload);
 
   const new_payload = payload?.map((element) => {
     const keys =
@@ -166,7 +165,6 @@ export const updateQualityInformation = async (payload) => {
 
 export const updateQualityInformationOnDelivary = async (payload) => {
   const loggedinuser = loggedInUser();
-  console.log(";;;;;;;;payload", payload);
   const new_payload = payload?.map((element) => {
     return [
       {
@@ -206,7 +204,6 @@ export const updateQualityInformationOnDelivary = async (payload) => {
     ];
   });
 
-  console.log("new payload::::::::::::", new_payload?.flat(1));
 
   try {
     const res = await axios.put(

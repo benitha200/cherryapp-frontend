@@ -41,7 +41,6 @@ export const getDelivaryById = async (id) => {
 export const updateDelivaryById = async ({ id, payload }) => {
   const sv = [];
   payload?.activatedBatchesData?.map((element) => {
-    console.log(payload);
 
     if (!isNaN(element?.transferId["A1"])) {
       sv.push({

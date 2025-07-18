@@ -556,9 +556,6 @@ const ShortSummary = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    console.log(
-      `Formatted CSV file "${fileName}" has been downloaded successfully!`
-    );
   };
   return (
     <div className="container-fluid">
