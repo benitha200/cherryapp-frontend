@@ -38,7 +38,7 @@ export const SingleTransportedTruck = ({
           </Form.Group>
           
           <Form.Group className="mb-2">
-            <Form.Label className="small">WRN (Kg)</Form.Label>
+            <Form.Label className="small">WRN </Form.Label>
             <Form.Control
               type="number"
               placeholder="0"
