@@ -211,7 +211,7 @@ export const TransportedTruckTable = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       >
-        <Pagination currentPage={currentPage} totalPages={10} itemsPerPage={5} onPageChange={setCurrentPage}/>
+        <Pagination currentPage={currentPage} totalPages={1} itemsPerPage={5} onPageChange={setCurrentPage}/>
       </ReusableTable>
       
       <GenericModel

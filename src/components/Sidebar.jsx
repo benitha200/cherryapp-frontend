@@ -69,7 +69,7 @@ const Sidebar = () => {
 
   const qualityItemsAdmin = [
     { path: "/quality-all", icon: "capsule", text: "Sample" },
-    { path: "/quality-delivery", icon: "box", text: "Delivery" },
+    // { path: "/quality-delivery", icon: "box", text: "Delivery" },
   ];
 
   // Reports menu items
@@ -98,12 +98,12 @@ const Sidebar = () => {
 
     {
       path: "delivery-report",
-      icon: "file-earmark-text",
+      icon: "archive",
       text: "Delivery Report",
     },
     {
       path: "quality-analysis-report",
-      icon: "file-earmark-text",
+      icon: "graph-up-arrow",
       text: "Quality Analysis Report",
     },
   ];
@@ -129,9 +129,10 @@ const Sidebar = () => {
       { path: "/purchase-by-station", icon: "cash", text: "Purchases" },
       { path: "/processing-all", icon: "hourglass-split", text: "Processing" },
       { path: "/stock", icon: "house", text: "Stock" },
-      { path: "/received", icon: "truck", text: "Received" },
       { path: "/wet-transfer-admin", icon: "truck", text: "Wet Transfer" },
       { path: "/transport", icon: "truck", text: "Transport" },
+      { path: "/received", icon: "box", text: "Delivery" },
+
       // Report dropdown will be added separately
     ];
   } else if (
@@ -154,8 +155,19 @@ const Sidebar = () => {
       { path: "/processing-all", icon: "hourglass-split", text: "Processing" },
       { path: "/transport", icon: "truck", text: "Transport" },
       { path: "/stock", icon: "house", text: "Stock" },
+      { path: "/received", icon: "box", text: "Delivery" },
+
     ];
-  } else if (user.role === "QUALITY") {
+  } 
+   else if (user.role === "PRODUCTION") {
+    menuItems = [
+      ...menuItems,
+      { path: "/received", icon: "box", text: "Delivery" },
+
+    ];
+  } 
+  
+  else if (user.role === "QUALITY") {
     menuItems = [
       ...menuItems,
       {
