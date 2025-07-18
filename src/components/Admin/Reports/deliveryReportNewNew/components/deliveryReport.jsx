@@ -15,14 +15,13 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { GetDeliveryReportNew } from '../action';
 import TableSkeletonLoader from './skeleton';
 import { DeliveryReportSummary } from './repordData';
+import CSVExport from '../../../../../sharedCompoents/csvfile';
 const theme = {
   primary: "#008080", // Sucafina teal
   secondary: "#4FB3B3", // Lighter teal
-  accent: "#D95032", // Complementary orange
-  neutral: "#E6F3F3", // Very light teal
-  tableHover: "#F8FAFA", // Ultra light teal for table hover
-  yellow: "#D4AF37",
-  green: "#D3D3D3",
+  accent: "#D95032", // Complementary orange for contrast
+  neutral: "#E6F3F3", // Very light teal for backgrounds
+  text: "#34495E",
 };
 const CollapsibleCWSTable = () => {
   const [expandedRows, setExpandedRows] = useState(new Set());
@@ -94,6 +93,18 @@ const CollapsibleCWSTable = () => {
     return num.toLocaleString();
   };
 
+  const columns = [
+    { field: 'cwsName', header: 'CWS Station' },
+    { field: 'transportGroupId', header: 'Transport Group ID' },
+    { field: 'transferDate', header: 'Transfer Date', reder: (data) => formatDate(data.transferDate) },
+    {  header: 'Arrival Date', reder:(data)=> formatDate(data.arrivalDate) },
+    { field: 'transportedKgs', header: 'Transported (KG)' },
+    { field: 'deliveredKgs', header: 'Delivered (KG)' },
+    { field: 'inTransitKgs', header: 'In Transit (KG)' },
+    { field: 'inTransitTrucks', header: 'In Transit Trucks' },
+    { field: 'inTransitTruckNo', header: 'Truck No' },
+    { field: 'variation', header: 'Variation' }
+    ];
   
 
   const ErrorAlert = ({ error }) => (
@@ -107,12 +118,18 @@ const CollapsibleCWSTable = () => {
 
   return (
     <div>
+        {
+        !error&&!isPending && (
+            <div className="p-4">
+
     <DeliveryReportSummary data={data?.grandTotal}/>
-    <Container fluid className="p-4">
-      <Card className="shadow-sm">
-        <Card.Header className="bg-opacity-10" style={{ backgroundColor: theme.secondary }}>
+            </div>
+        )}
+      <Container fluid className="p-4">
+    <Card className="shadow-sm">
+        <Card.Header className="bg-opacity-10" style={{ backgroundColor: theme.neutral }}>
           <Card.Title className="mb-0 text-dark d-flex align-items-center">
-            Transport Distribution by CWS
+            <CSVExport columns={columns} data={data?.data} filename='Deliver-report-file' variant='green'/>
           </Card.Title>
         </Card.Header>
 

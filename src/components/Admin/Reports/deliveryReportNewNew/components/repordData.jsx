@@ -2,7 +2,7 @@ import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithCom
 import { DashboardCard } from "./card";
 export const DeliveryReportSummary = ({data}) => {
 
- return <div className="row g-3 mb-4">
+ return <div className="row g-3 mb-2 ">
     <div className="col-12 col-lg-2 col-md-4">
       <DashboardCard
         title="Total Transported"
