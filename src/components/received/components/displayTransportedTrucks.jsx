@@ -4,7 +4,6 @@ import { GetTransportedTracyBytransferGroupIdAndDate } from "../action";
 export const SingleTransportedTruckdisplay = ({
   selectedTransportInfo,
 }) => {
-  console.log("Selected Transport Info:::::::::::::::", selectedTransportInfo);
   const { transportGroupId, transferDate } = selectedTransportInfo;
   const { isPending, error, data } = GetTransportedTracyBytransferGroupIdAndDate(transportGroupId, transferDate);
   
@@ -79,25 +78,25 @@ export const SingleTransportedTruckdisplay = ({
                 <Col xs="auto">
                   <div className="d-flex align-items-center">
                     <strong className="me-2">Station:</strong>
-                    <span>{selectedTransportInfo?.cws}</span>
+                    <span>{data?.data?.cwsName??''}</span>
                   </div>
                 </Col>
                 <Col xs="auto">
                   <div className="d-flex align-items-center">
                     <strong className="me-2">Quantity:</strong>
-                    <span className="badge bg-success">{selectedTransportInfo?.quantity}</span>
+                    <span className="badge bg-success">{data?.data?.totalQuantity??''}</span>
                   </div>
                 </Col>
                 <Col xs="auto">
                   <div className="d-flex align-items-center">
                     <strong className="me-2">Driver:</strong>
-                    <span className="badge bg-warning text-dark">{selectedTransportInfo?.driver}</span>
+                    <span className="badge bg-warning text-dark">{data?.data?.driverNames??''}</span>
                   </div>
                 </Col>
                 <Col xs="auto">
                   <div className="d-flex align-items-center">
                     <strong className="me-2">Truck:</strong>
-                    <span className="badge bg-secondary">{selectedTransportInfo?.trackPlatNumber}</span>
+                    <span className="badge bg-secondary">{data?.data?.plateNumbers??''}</span>
                   </div>
                 </Col>
               </Row>
