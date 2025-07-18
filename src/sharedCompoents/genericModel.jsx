@@ -25,6 +25,7 @@ export const GenericModel = ({
   cancelButtonText = "Cancel",
   modalSize = "lg",
   onConfirmDisalbe = false,
+  submitButton=true,
 }) => {
   return (
     <Modal show={isOpen} onHide={onClose} size={modalSize}>
@@ -44,13 +45,13 @@ export const GenericModel = ({
           <Button variant="secondary" onClick={onClose} disabled={isLoading}>
             {cancelButtonText}
           </Button>
-          <Button
+        {submitButton&&  <Button
             variant="success"
             onClick={onConfirm}
             disabled={isLoading || onConfirmDisalbe}
           >
             {confirmButtonText}
-          </Button>
+          </Button>}
         </>
       </Modal.Footer>
     </Modal>

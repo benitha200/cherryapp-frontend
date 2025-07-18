@@ -213,7 +213,6 @@ const AppContent = () => {
 
                 <Route path="/transport" element={<Transport />} />
                 <Route path="/stock" element={<StockManagement />} />
-                <Route path="/received" element={<TransportedTrucks />} />
                 <Route
                   path="/cherry-purchase-report"
                   element={<CherryPurchaseReportDetailed />}
@@ -224,11 +223,27 @@ const AppContent = () => {
                 />
                 <Route path="/quality-report" element={<QualityReport />} />
                 <Route path="/general-report" element={<GeneralReport />} />
-                <Route path="/delivery-report" element={<DeliveryReport />} />
                 <Route
                   path="/quality-analysis-report"
                   element={<QualityAnalysisReport />}
                 />
+              </Route>
+               <Route
+                path="/"
+                element={
+                  <RequireAuth
+                    allowedRoles={[
+                      "PRODUCTION",
+                      "OPERATIONS",
+                      "ADMIN",
+                      "SUPER_ADMIN",
+                    ]}
+                  />
+                }
+              >
+                <Route path="/received" element={<TransportedTrucks />} />
+                <Route path="/delivery-report" element={<DeliveryReport />} />
+
               </Route>
               {/* GUARANTEE GROUPE OF CWS MANAGAGER ADMIN QUALITY AND SUPPER ADMIN */}
               <Route

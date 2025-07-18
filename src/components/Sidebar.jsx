@@ -163,6 +163,11 @@ const Sidebar = () => {
     menuItems = [
       ...menuItems,
       { path: "/received", icon: "box", text: "Delivery" },
+      {
+      path: "delivery-report",
+      icon: "archive",
+      text: "Delivery Report",
+    },
 
     ];
   } 

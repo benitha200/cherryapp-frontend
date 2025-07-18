@@ -33,3 +33,22 @@ export const createStockDeliveryRecord = async (payload) => {
     throw new Error(error?.response?.data?.message || "Failed to create stock delivery record");
   }
 };
+
+
+
+export const getTransportedTrackById = async (transportGroupId, transferDate) => {
+  const loggedinuser = loggedInUser();
+  try {
+    const res = await axios.get(
+      `${API_URL}/stock/transported-trucks/${transportGroupId}/${transferDate}`,
+      {
+        headers: {
+          Authorization: `Bearer ${loggedinuser?.token}`,
+        },
+      }
+    );
+    return res?.data;
+  } catch (error) {
+    return error;
+  }
+};

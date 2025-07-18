@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { GenericModel } from "../../../sharedCompoents/genericModel";
 import { Pagination } from "../../../sharedCompoents/paginations";
+import { SingleTransportedTruckdisplay } from "./displayTransportedTrucks";
 
 export const TransportedTruckTable = () => {
   const [isModelOpen, setIsModelOpen] = useState(false);
@@ -68,6 +69,10 @@ export const TransportedTruckTable = () => {
   }
 
   const [categoryInputData, setCategoryInputData] = useState({});
+  const [ submitted, setSubmitted] = useState({
+    submitted: false,
+    data: []
+  });
 
   const { isPending, error, data } = GetTranspotedTruck();
   const { mutate, creatingError, isCreatingpending } = CreateStockDelivery(onupdateSuccess);
@@ -89,14 +94,7 @@ export const TransportedTruckTable = () => {
   }, [categoryInputData]);
 
   const handleCompleteAction = () => {
-    const totalBags = categoryInputData?.dates?.transportDate;
-    const deliveryDate = categoryInputData?.dates?.deliveryDate;
-    
-    if (!totalBags || !deliveryDate) {
-      toast?.error("Please fill in both Transport Date and Delivery Date");
-      return;
-    }
-
+  
     const apiData = [];
     
     Object.keys(categoryInputData).forEach(categoryKey => {
@@ -107,11 +105,10 @@ export const TransportedTruckTable = () => {
       if (categoryData && (categoryData.delivered || categoryData.wrn)) {
         const apiObject = {
           transferDate: selectedId?.transferDate,
-          arrivalDate: deliveryDate,
+          arrivalDate: new Date(),
           transportGroupId: selectedId.transportGroupId,
           category: categoryKey,
           deliveryKgs: parseFloat(categoryData.delivered || 0),
-          numberOfBags: Number(totalBags),
           WRN: categoryData.wrn || ""
         };
         
@@ -167,7 +164,8 @@ export const TransportedTruckTable = () => {
       header: "Actions",
       render: (item) => (
         <Button
-          variant="success"
+          variant={item?.status === 'RECEIVED' ? "warning": "success"}
+          // disabled={item?.status === "RECEIVED"}
           onClick={() => {
             handleopenModel();
             setSelectedId({
@@ -184,6 +182,17 @@ export const TransportedTruckTable = () => {
 
             setCategories(item?.cupProfiles || []);
             setCategoryInputData({});
+            if(item?.status === "RECEIVED") {
+              setSubmitted({
+                submitted: true,
+                data:{ transportGroupId: item?.transportGroupId, transferDate: item?.transferDate,  }
+              });
+            }else {
+              setSubmitted({
+                submitted: false,
+                data: []
+              });
+            }
           }}
         >
           <i className="bi bi-pencil-square"></i>{" "}
@@ -215,7 +224,7 @@ export const TransportedTruckTable = () => {
       </ReusableTable>
       
       <GenericModel
-        isOpen={isModelOpen}
+        isOpen={isModelOpen && !submitted.submitted}
         onClose={handleopenModel}
         onConfirm={handleCompleteAction}
         isLoading={isCreatingpending}
@@ -224,10 +233,7 @@ export const TransportedTruckTable = () => {
         cancelButtonText="Cancel"
         modalSize="xl"
         onConfirmDisalbe={
-          (Object.keys(categoryInputData).length ===0) ||
-          !categoryInputData?.dates?.transportDate ||
-          !categoryInputData?.dates?.deliveryDate
-          
+          (Object.keys(categoryInputData).length ===0)
         }
       >
         <SingleTransportedTruck 
@@ -236,6 +242,20 @@ export const TransportedTruckTable = () => {
           setInfo={setCategoryInputData}
         />
       </GenericModel>
+      <GenericModel
+        isOpen={isModelOpen && submitted.submitted}
+        title="received Truck"
+        onClose={handleopenModel}
+        onConfirm={()=>null}
+        isLoading={isCreatingpending}
+        confirmButtonText="Complete"
+        cancelButtonText="Cancel"
+        modalSize="xl"
+        submitButton = {false}
+        >
+        
+< SingleTransportedTruckdisplay selectedTransportInfo={submitted?.data}/>
+        </GenericModel>
     </>
   );
 };
