@@ -176,7 +176,6 @@ const AppContent = () => {
                       "CWS_MANAGER",
                       "ADMIN",
                       "SUPER_ADMIN",
-                      ,
                       "QUALITY",
                     ]}
                   />
