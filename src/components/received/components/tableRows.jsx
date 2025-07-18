@@ -26,7 +26,6 @@ export const TransportedTruckTable = () => {
     truck: "",
   });
 
-  // Enhanced search function that handles case-insensitive and space-insensitive search
   const normalizeString = (str) => {
     if (!str) return "";
     return str.toString().toLowerCase().replace(/\s+/g, "");
@@ -94,18 +93,21 @@ export const TransportedTruckTable = () => {
   }, [categoryInputData]);
 
   const handleCompleteAction = () => {
-  
     const apiData = [];
     
+    const arrivalDate = categoryInputData.arrivalDate ? 
+      new Date(categoryInputData.arrivalDate) : 
+      new Date();
+    
     Object.keys(categoryInputData).forEach(categoryKey => {
-      if (categoryKey === 'dates') return;
+      if (categoryKey === 'arrivalDate') return;
       
       const categoryData = categoryInputData[categoryKey];
       
       if (categoryData && (categoryData.delivered || categoryData.wrn)) {
         const apiObject = {
           transferDate: selectedId?.transferDate,
-          arrivalDate: new Date(),
+          arrivalDate: arrivalDate,
           transportGroupId: selectedId.transportGroupId,
           category: categoryKey,
           deliveryKgs: parseFloat(categoryData.delivered || 0),
@@ -165,7 +167,6 @@ export const TransportedTruckTable = () => {
       render: (item) => (
         <Button
           variant={item?.status === 'RECEIVED' ? "warning": "success"}
-          // disabled={item?.status === "RECEIVED"}
           onClick={() => {
             handleopenModel();
             setSelectedId({
@@ -233,7 +234,8 @@ export const TransportedTruckTable = () => {
         cancelButtonText="Cancel"
         modalSize="xl"
         onConfirmDisalbe={
-          (Object.keys(categoryInputData).length ===0)
+          (Object.keys(categoryInputData).length === 0 || 
+           Object.keys(categoryInputData).every(key => key === 'arrivalDate'))
         }
       >
         <SingleTransportedTruck 
