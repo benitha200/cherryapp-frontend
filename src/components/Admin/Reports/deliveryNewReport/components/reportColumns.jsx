@@ -1,5 +1,3 @@
-import { render } from "react-dom";
-
 export const columns = [
   {
     field: "cws_name",
