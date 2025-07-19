@@ -19,7 +19,6 @@ const RequireAuth = ({ allowedRoles }) => {
   }
   
   if (!allowedRoles?.includes(data?.role)) {
-    console.log("RequireAuth data:", data);
     return data?.response?.data?.error ? (
       <Navigate to={"/login"} state={{ from: location }} replace />
     ) : (

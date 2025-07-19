@@ -16,6 +16,7 @@ import { GetDeliveryReportNew } from '../action';
 import TableSkeletonLoader from './skeleton';
 import { DeliveryReportSummary } from './repordData';
 import CSVExport from '../../../../../sharedCompoents/csvfile';
+import { formatDate } from '../../../../../utils/formatDate';
 const theme = {
   primary: "#008080", // Sucafina teal
   secondary: "#4FB3B3", // Lighter teal
@@ -84,9 +85,9 @@ const CollapsibleCWSTable = () => {
     setExpandedRows(newExpandedRows);
   };
 
-  const formatDate = (dateString) => {
+  const formatreportDAte = (dateString) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString();
+    return formatDate(dateString);
   };
 
   const formatNumber = (num) => {
@@ -96,8 +97,8 @@ const CollapsibleCWSTable = () => {
   const columns = [
     { field: 'cwsName', header: 'CWS Station' },
     { field: 'transportGroupId', header: 'Transport Group ID' },
-    { field: 'transferDate', header: 'Transfer Date', reder: (data) => formatDate(data.transferDate) },
-    {  header: 'Arrival Date', reder:(data)=> formatDate(data.arrivalDate) },
+    { field: 'transferDate', header: 'Transfer Date', reder: (data) => formatreportDAte(data.transferDate) },
+    {  header: 'Arrival Date', reder:(data)=> formatreportDAte(data.arrivalDate) },
     { field: 'transportedKgs', header: 'Transported (KG)' },
     { field: 'deliveredKgs', header: 'Delivered (KG)' },
     { field: 'inTransitKgs', header: 'In Transit (KG)' },
@@ -129,7 +130,7 @@ const CollapsibleCWSTable = () => {
     <Card className="shadow-sm">
         <Card.Header className="bg-opacity-10" style={{ backgroundColor: theme.neutral }}>
           <Card.Title className="mb-0 text-dark d-flex align-items-center">
-            <CSVExport columns={columns} data={data?.data} filename='Deliver-report-file' />
+            <CSVExport columns={columns} data={data?.data} filename='Delivery-report-file' />
           </Card.Title>
         </Card.Header>
 

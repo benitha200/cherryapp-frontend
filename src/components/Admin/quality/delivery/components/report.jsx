@@ -100,12 +100,6 @@ const DelivarySummary = () => {
   const [activatedBatches, setActivivatedBatches] = useState([]);
   const [activatedBatchesData, setActivatedBatchesData] = useState([]);
 
-  console.log(
-    { activatedBatches },
-    activatedBatchesData,
-    ":::::::::::::::::::::::::::::::"
-  );
-
   const handleCheckboxChange = (batchId, ischecked, processingType) => {
     ischecked == true
       ? setActivivatedBatches((prev) => [...new Set([...prev, batchId])])

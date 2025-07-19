@@ -102,5 +102,4 @@ export const exportDeliveryExcelFile = (data) => {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 
-  console.log(`CSV file "${fileName}" has been downloaded successfully!`);
 };
