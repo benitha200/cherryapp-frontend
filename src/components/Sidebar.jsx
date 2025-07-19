@@ -161,7 +161,6 @@ const Sidebar = () => {
   } 
    else if (user.role === "PRODUCTION") {
     menuItems = [
-      ...menuItems,
       { path: "/received", icon: "box", text: "Delivery" },
       {
       path: "delivery-report",

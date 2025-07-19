@@ -20,7 +20,7 @@ export const UserLogin = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("cws", JSON.stringify(data.cws));
-      const from = location?.state?.from?.pathname || "/";
+      const from = location?.state?.from?.pathname || data?.user?.role?.toUpperCase() ==='PRODUCTION'?"/received":"/";
       navigate(from, { replace: true });
     },
   });

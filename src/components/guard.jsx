@@ -10,7 +10,6 @@ const RequireAuth = ({ allowedRoles }) => {
     queryKey: ["user"],
     queryFn: getMe,
   });
-
   if (isPending) {
     return <LoadingPage />;
   }
@@ -18,8 +17,9 @@ const RequireAuth = ({ allowedRoles }) => {
     localStorage.clear();
     return <Navigate to={"/login"} state={{ from: location }} replace />;
   }
-
+  
   if (!allowedRoles?.includes(data?.role)) {
+    console.log("RequireAuth data:", data);
     return data?.response?.data?.error ? (
       <Navigate to={"/login"} state={{ from: location }} replace />
     ) : (
