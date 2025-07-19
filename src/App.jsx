@@ -169,6 +169,7 @@ const AppContent = () => {
               </Route>
               {/* GUARANTE CWS MANAGER AND ADMIN */}
               <Route
+              
                 path="/"
                 element={
                   <RequireAuth
