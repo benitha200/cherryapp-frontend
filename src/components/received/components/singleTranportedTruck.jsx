@@ -18,6 +18,21 @@ export const SingleTransportedTruck = ({
     }));
   };
 
+  const handleArrivalDateChange = (value) => {
+    setInfo((prev) => ({
+      ...prev,
+      arrivalDate: value,
+    }));
+  };
+
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const renderCategoryInputs = (categoryCode) => (
     <Col md={4} key={categoryCode} className="mb-3">
       <Card className="h-100">
@@ -88,13 +103,24 @@ export const SingleTransportedTruck = ({
 
               <hr />
 
-             
+              <Row className="mb-4">
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label><strong>Arrival Date</strong></Form.Label>
+                    <Form.Control
+                      type="date"
+                      defaultValue={getTodayDate()}
+                      onChange={(e) => handleArrivalDateChange(e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
               <Row>
                 <Col md={12}>
                   <h5 className="mb-3 ">Category Analysis</h5>
                   <Row>
-                    {/* Render all valid categories */}
                     {validKeys.map((category) => 
                       includeInValidKeys(category) && renderCategoryInputs(category)
                     )}
