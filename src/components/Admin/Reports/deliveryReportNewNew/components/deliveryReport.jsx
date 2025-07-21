@@ -26,7 +26,7 @@ const CollapsibleCWSTable = () => {
     const groups = {};
 
     sampleData.forEach((item) => {
-      const key = `${item.cwsId}-${item.cwsName}`;
+      const key = `${item.cwsName}`;
       if (!groups[key]) {
         groups[key] = {
           cwsId: item.cwsId,
