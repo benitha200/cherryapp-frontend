@@ -122,7 +122,7 @@ const CollapsibleCWSTable = () => {
   // Custom styles for sticky header
   const stickyHeaderStyles = {
     position: "sticky",
-    top: 0,
+    top: -1,
     backgroundColor: "#f8f9fa", // Bootstrap's table-light background
     zIndex: 10,
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
