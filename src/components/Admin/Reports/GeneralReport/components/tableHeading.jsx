@@ -1,4 +1,5 @@
 import { Badge } from "react-bootstrap";
+import { formatDate } from "../../../../../utils/formatDate";
 
 const theme = {
   primary: "#008080",
@@ -21,38 +22,55 @@ export const Columns = [
   {
     field: "cherry",
     header: "Batch No",
-    render: (item) => <div style={{ width: "10rem" }}>{item?.cherry}</div>,
+    render: (item) => <div style={{ width: "10rem" }}>{item?.purchaseBatchNo}</div>,
   },
 
   {
     field: "batch",
     header: "Cherry No",
+        render: (item) => <div style={{ width: "10rem" }}>{`${item?.purchaseBatchNo}`}</div>,
+
   },
   {
     field: "quantity",
     header: "purchased quantity",
+        render: (item) => <div style={{ width: "10rem" }}>{item?.purchaseInfo?.totalKgs?? '-'}</div>,
+
   },
-  { field: "price", header: "Price/kg" },
+  { field: "price", header: "Price/kg",
+            render: (item) => <div style={{ width: "10rem" }}>{item?.purchaseInfo?.cherryPrice?? '-'}</div>,
+
+   },
   {
     field: "cws",
     header: "cws",
+    render: (item) => <div style={{ width: "10rem" }}>{item?.purchaseInfo?.cwsName?? '-'}</div>,
+
   },
 
   {
     field: "date",
     header: "Purchase Date",
+    render: (item) => <div style={{ width: "10rem" }}>{formatDate( item?.purchaseInfo?.purchaseDate?? '-')}</div>,
+
   },
   {
     field: "ptype",
     header: "Processing Type",
     render: (item) => (
-      <span style={getProcessingTypeBadgeStyle(item?.ptype)}>
-        {item?.ptype}
+      <span style={getProcessingTypeBadgeStyle(item?.processingInfo[0]?.processingType)}>
+        {item?.processingInfo[0]?.processingType}
       </span>
     ),
   },
-  { field: "wet", header: "Wet Transfer" },
-  { field: "receiver", header: "Receiver CWS" },
+  { field: "wet", header: "Wet Transfer",
+        render: (item) => <div >{ item?.wetTransferInfo?.length >0 ? "true":"false" }</div>,
+
+   },
+  { field: "receiver", header: "Receiver CWS",
+    render: (item) => <div >{ item?.wetTransferInfo?.length >0 ? item?.wetTransferInfo[0]?.destinationCwsName:"-" }</div>,
+
+   },
   {
     field: "totalkgs",
     header: "baggedOf kgs",
@@ -60,6 +78,7 @@ export const Columns = [
   {
     field: "track",
     header: "Track",
+    render: (item)=> <div>{item?.transportInfo[0]?.truckNumber??'-'}</div>
   },
   {
     field: "cup",

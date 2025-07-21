@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { GenericModel } from "../../../sharedCompoents/genericModel";
 import { Pagination } from "../../../sharedCompoents/paginations";
 import { SingleTransportedTruckdisplay } from "./displayTransportedTrucks";
+import TransportedTrackDelivery from "./sekeleton";
 
 export const TransportedTruckTable = () => {
   const [isModelOpen, setIsModelOpen] = useState(false);
@@ -202,7 +203,7 @@ export const TransportedTruckTable = () => {
     }
   ];
 
-  if (isPending) return <div>Loading...</div>;
+  if (isPending) return <TransportedTrackDelivery />;
   if (error) return <div>Error: {error.message}</div>;
 
   return (

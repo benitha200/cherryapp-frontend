@@ -5,9 +5,7 @@ import { useState } from "react";
 import { columns } from "./reportColumns";
 import { Button, Col, Form, InputGroup } from "react-bootstrap";
 import { GetReport } from "../action";
-import { ReprotTable } from "./reportRaws";
 import { DashboardCard } from "./dashboardCard";
-import { DeliveredWithBreakdown } from "./DeliveredWithBreakdown";
 import { DashboardCardWithPercentages } from "./DashboardCardWithPercentages";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
 import DeliveryReportSkeleton from "./deliverySkeleton";
@@ -15,28 +13,13 @@ import { GetReportData } from "../../../quality/report/action";
 import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 
 export const GeneralReportTable = () => {
-  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
   const { isPending, error, data } = GetReport();
-  const { deliveryPending, deliverydata } = GetReportData()
+  const { deliveryPending, deliverydata } = GetReportData();
 
   if (error) {
     // return <Error error={error?.message ?? "Failed to fetch report Data."} />;
   }
-
-  const processingTheme = {
-    primary: "#008080",
-    secondary: "#4FB3B3",
-    accent: "#D95032",
-    neutral: "#E6F3F3",
-    tableHover: "#F8FAFA",
-    directDelivery: "#4FB3B3",
-    centralStation: "#008080",
-    buttonHover: "#006666",
-    tableHeader: "#E0EEEE",
-    tableBorder: "#D1E0E0",
-    emptyStateBackground: "#F5FAFA",
-  };
 
   function exportExceleWithTrackCategoryAndDate() {
     deliveryReportExcel(processQualityReportData(data?.data?.report ?? []));
@@ -79,7 +62,7 @@ export const GeneralReportTable = () => {
               title="Total Variation "
               value={formatNumberWithCommas(
                 (data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0) -
-                (data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0)
+                  (data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0)
                 // also remove in transit
               )}
               iconClass=""
@@ -254,9 +237,10 @@ export const GeneralReportTable = () => {
             </table>
           </div> */}
 
-
-          <ReusableTable columns={columns} data={deliverydata?.data}>
-          </ReusableTable>
+          <ReusableTable
+            columns={columns}
+            data={deliverydata?.data}
+          ></ReusableTable>
         </div>
       </div>
     )

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
@@ -38,7 +38,6 @@ import WetTransferBoth from "./components/Cws/WetTransferBoth.jsx";
 import Transport from "./components/Admin/Transport/Transport.jsx";
 import WetTransferAdmin from "./components/Admin/WetTransfer/WetTransferAdmin.jsx";
 import Quality from "./components/Admin/quality/index.jsx";
-import { SampleForm } from "./components/Admin/quality/sample/index.jsx";
 import OfflineModal from "./sharedCompoents/networkError.jsx";
 import NotFoundPage from "./sharedCompoents/404/404.jsx";
 import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
@@ -50,8 +49,7 @@ import GeneralReport from "./components/Admin/Reports/GeneralReport/index.jsx";
 import DeliveryReport from "./components/Admin/Reports/deliveryReportNewNew/index.jsx";
 import QualityAnalysisReport from "./components/Admin/Reports/QualityAnalysisNEw/index.jsx";
 import { TransportedTrucks } from "./components/received/index.jsx";
-import SampleElement from "./components/Admin/Reports/deliveryReportNewNew/index.jsx";
-
+import SampleElement from "./components/Admin/Reports/GeneralReport/index.jsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -111,7 +109,7 @@ const AppContent = () => {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/my-account" element={<MyAccount />} />
-              <Route path="/sample" element={< SampleElement/>} />
+              <Route path="/sample" element={<SampleElement />} />
               <Route
                 path="/"
                 element={
@@ -169,7 +167,6 @@ const AppContent = () => {
               </Route>
               {/* GUARANTE CWS MANAGER AND ADMIN */}
               <Route
-              
                 path="/"
                 element={
                   <RequireAuth
@@ -228,7 +225,7 @@ const AppContent = () => {
                   element={<QualityAnalysisReport />}
                 />
               </Route>
-               <Route
+              <Route
                 path="/"
                 element={
                   <RequireAuth
@@ -243,7 +240,6 @@ const AppContent = () => {
               >
                 <Route path="/received" element={<TransportedTrucks />} />
                 <Route path="/delivery-report" element={<DeliveryReport />} />
-
               </Route>
               {/* GUARANTEE GROUPE OF CWS MANAGAGER ADMIN QUALITY AND SUPPER ADMIN */}
               <Route

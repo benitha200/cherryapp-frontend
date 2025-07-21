@@ -1,5 +1,4 @@
-import React from 'react';
-import { Modal, Button, Table, Badge } from 'react-bootstrap';
+import { Modal, Button, Table, Badge } from "react-bootstrap";
 
 // DetailModal component to show detailed information when a row is clicked
 const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
@@ -7,13 +6,13 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
   if (!data) return null;
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
   };
 
   const renderBatchDetails = () => {
     const { batchInfo, metrics, baggingOffRecords } = data;
-    
+
     return (
       <>
         <div className="mb-4">
@@ -21,12 +20,14 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
           <Table bordered hover>
             <tbody>
               <tr>
-                <td className="fw-bold" style={{ width: '30%' }}>Batch No</td>
+                <td className="fw-bold" style={{ width: "30%" }}>
+                  Batch No
+                </td>
                 <td>{batchInfo.batchNo}</td>
               </tr>
               <tr>
                 <td className="fw-bold">Related Batches</td>
-                <td>{batchInfo.relatedBatches?.join(', ') || 'None'}</td>
+                <td>{batchInfo.relatedBatches?.join(", ") || "None"}</td>
               </tr>
               <tr>
                 <td className="fw-bold">Station</td>
@@ -47,7 +48,11 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
               <tr>
                 <td className="fw-bold">Status</td>
                 <td>
-                  <Badge bg={batchInfo.status === 'COMPLETED' ? 'success' : 'warning'}>
+                  <Badge
+                    bg={
+                      batchInfo.status === "COMPLETED" ? "success" : "warning"
+                    }
+                  >
                     {batchInfo.status}
                   </Badge>
                 </td>
@@ -62,10 +67,13 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
               </tr>
               <tr>
                 <td className="fw-bold">Outturn</td>
-                <td 
-                  style={{ 
-                    color: batchInfo.outturn >= 20 && batchInfo.outturn <= 25 ? '#008080' : 'red',
-                    fontWeight: 'bold'
+                <td
+                  style={{
+                    color:
+                      batchInfo.outturn >= 20 && batchInfo.outturn <= 25
+                        ? "#008080"
+                        : "red",
+                    fontWeight: "bold",
                   }}
                 >
                   {batchInfo.outturn}%
@@ -137,18 +145,18 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
   };
 
   const renderStationDetails = () => {
-    const { 
-      stationName, 
-      nonNaturalInputKgs, 
-      nonNaturalOutputKgs, 
-      naturalInputKgs, 
-      naturalOutputKgs, 
-      outturn, 
-      processingTypes = {}, 
-      gradeBreakdown = {}, 
-      processingDetails = [] 
+    const {
+      stationName,
+      nonNaturalInputKgs,
+      nonNaturalOutputKgs,
+      naturalInputKgs,
+      naturalOutputKgs,
+      outturn,
+      processingTypes = {},
+      gradeBreakdown = {},
+      processingDetails = [],
     } = data || {};
-    
+
     return (
       <>
         <div className="mb-4">
@@ -156,51 +164,92 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
           <Table bordered hover>
             <tbody>
               <tr>
-                <td className="fw-bold" style={{ width: '30%' }}>Station Name</td>
-                <td><span className='fw-semibold'>{stationName}</span></td>
-              </tr>
-              <tr>
-                <td className="fw-bold">Total Input KGs <br/><span className='text-sucafina fw-semibold'>( Without NATURAL)</span></td>
-                <td>{nonNaturalInputKgs ? nonNaturalInputKgs.toLocaleString() : '0'}</td>
-              </tr>
-              <tr>
-                <td className="fw-bold">Total Output KGs <br/><span className='text-sucafina fw-semibold'>(Without NATURAL)</span></td>
-                <td>{nonNaturalOutputKgs ? nonNaturalOutputKgs.toLocaleString() : '0'}</td>
-              </tr>
-              <tr>
-                <td className="fw-bold">Outturn <br/><span className='text-sucafina fw-semibold'>(Non NAT)</span></td>
-                <td 
-                  style={{ 
-                    color: outturn >= 20 && outturn <= 25 ? '#008080' : 'red',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  {outturn ? `${outturn}%` : '0%'}
+                <td className="fw-bold" style={{ width: "30%" }}>
+                  Station Name
+                </td>
+                <td>
+                  <span className="fw-semibold">{stationName}</span>
                 </td>
               </tr>
               <tr>
-                <td className="fw-bold">Total Input KGs <br/><span className='text-sucafina fw-semibold'>(NATURAL)</span></td>
-                <td>{naturalInputKgs ? naturalInputKgs.toLocaleString() : '0'}</td>
+                <td className="fw-bold">
+                  Total Input KGs <br />
+                  <span className="text-sucafina fw-semibold">
+                    ( Without NATURAL)
+                  </span>
+                </td>
+                <td>
+                  {nonNaturalInputKgs
+                    ? nonNaturalInputKgs.toLocaleString()
+                    : "0"}
+                </td>
               </tr>
               <tr>
-                <td className="fw-bold">Total Output KGs <br/><span className='text-sucafina fw-semibold'>(NATURAL)</span></td>
-                <td>{naturalOutputKgs ? naturalOutputKgs.toLocaleString() : '0'}</td>
+                <td className="fw-bold">
+                  Total Output KGs <br />
+                  <span className="text-sucafina fw-semibold">
+                    (Without NATURAL)
+                  </span>
+                </td>
+                <td>
+                  {nonNaturalOutputKgs
+                    ? nonNaturalOutputKgs.toLocaleString()
+                    : "0"}
+                </td>
               </tr>
               <tr>
-                <td className="fw-bold">Outturn <br/><span className='text-sucafina fw-semibold'>(NAT)</span></td>
-                <td 
-                  style={{ 
-                    color: outturn >= 20 && outturn <= 25 ? '#008080' : 'red',
-                    fontWeight: 'bold'
+                <td className="fw-bold">
+                  Outturn <br />
+                  <span className="text-sucafina fw-semibold">(Non NAT)</span>
+                </td>
+                <td
+                  style={{
+                    color: outturn >= 20 && outturn <= 25 ? "#008080" : "red",
+                    fontWeight: "bold",
                   }}
                 >
-                  {naturalInputKgs === 0 ? "0%" : ((naturalOutputKgs/naturalInputKgs)*100).toFixed(2) + "%"}
+                  {outturn ? `${outturn}%` : "0%"}
+                </td>
+              </tr>
+              <tr>
+                <td className="fw-bold">
+                  Total Input KGs <br />
+                  <span className="text-sucafina fw-semibold">(NATURAL)</span>
+                </td>
+                <td>
+                  {naturalInputKgs ? naturalInputKgs.toLocaleString() : "0"}
+                </td>
+              </tr>
+              <tr>
+                <td className="fw-bold">
+                  Total Output KGs <br />
+                  <span className="text-sucafina fw-semibold">(NATURAL)</span>
+                </td>
+                <td>
+                  {naturalOutputKgs ? naturalOutputKgs.toLocaleString() : "0"}
+                </td>
+              </tr>
+              <tr>
+                <td className="fw-bold">
+                  Outturn <br />
+                  <span className="text-sucafina fw-semibold">(NAT)</span>
+                </td>
+                <td
+                  style={{
+                    color: outturn >= 20 && outturn <= 25 ? "#008080" : "red",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {naturalInputKgs === 0
+                    ? "0%"
+                    : ((naturalOutputKgs / naturalInputKgs) * 100).toFixed(2) +
+                      "%"}
                 </td>
               </tr>
             </tbody>
           </Table>
         </div>
-  
+
         <div className="mb-4">
           <h5> Output By Processing Types</h5>
           <Table bordered hover>
@@ -214,18 +263,22 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
               {Object.entries(processingTypes || {}).map(([type, kgs]) => (
                 <tr key={type}>
                   <td>{type}</td>
-                  <td className="text-end">{typeof kgs === 'number' ? kgs.toLocaleString() : kgs}</td>
+                  <td className="text-end">
+                    {typeof kgs === "number" ? kgs.toLocaleString() : kgs}
+                  </td>
                 </tr>
               ))}
               {Object.keys(processingTypes || {}).length === 0 && (
                 <tr>
-                  <td colSpan="2" className="text-center text-muted">No processing types available</td>
+                  <td colSpan="2" className="text-center text-muted">
+                    No processing types available
+                  </td>
                 </tr>
               )}
             </tbody>
           </Table>
         </div>
-  
+
         <div className="mb-4">
           <h5>Output Grade Breakdown</h5>
           <Table bordered hover>
@@ -239,18 +292,22 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
               {Object.entries(gradeBreakdown || {}).map(([grade, kgs]) => (
                 <tr key={grade}>
                   <td>{grade}</td>
-                  <td className="text-end">{typeof kgs === 'number' ? kgs.toLocaleString() : kgs}</td>
+                  <td className="text-end">
+                    {typeof kgs === "number" ? kgs.toLocaleString() : kgs}
+                  </td>
                 </tr>
               ))}
               {Object.keys(gradeBreakdown || {}).length === 0 && (
                 <tr>
-                  <td colSpan="2" className="text-center text-muted">No grade breakdown available</td>
+                  <td colSpan="2" className="text-center text-muted">
+                    No grade breakdown available
+                  </td>
                 </tr>
               )}
             </tbody>
           </Table>
         </div>
-  
+
         {/* <div>
           <h5>Processing Details</h5>
           {processingDetails && processingDetails.length > 0 ? (
@@ -298,16 +355,20 @@ const BaggingOffDetailModal = ({ show, onHide, data, reportType }) => {
       aria-labelledby="bagging-off-detail-modal"
       centered
     >
-      <Modal.Header closeButton style={{ backgroundColor: '#E6F3F3' }}>
+      <Modal.Header closeButton style={{ backgroundColor: "#E6F3F3" }}>
         <Modal.Title id="bagging-off-detail-modal">
-          {reportType === 'batch' ? 'Batch Details' : 'Station Details'}
+          {reportType === "batch" ? "Batch Details" : "Station Details"}
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-        {reportType === 'batch' ? renderBatchDetails() : renderStationDetails()}
+      <Modal.Body style={{ maxHeight: "70vh", overflowY: "auto" }}>
+        {reportType === "batch" ? renderBatchDetails() : renderStationDetails()}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide} style={{ backgroundColor: '#4FB3B3', borderColor: '#4FB3B3' }}>
+        <Button
+          variant="secondary"
+          onClick={onHide}
+          style={{ backgroundColor: "#4FB3B3", borderColor: "#4FB3B3" }}
+        >
           Close
         </Button>
       </Modal.Footer>

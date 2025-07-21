@@ -1,22 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
-import { 
-  Container, 
-  Card, 
-  Table, 
-  Form, 
-  Badge,
-  Row,
-  Col,
-  Spinner,
-  Alert
-} from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { GetDeliveryReportNew } from '../action';
-import TableSkeletonLoader from './skeleton';
-import { DeliveryReportSummary } from './repordData';
-import CSVExport from '../../../../../sharedCompoents/csvfile';
-import { formatDate } from '../../../../../utils/formatDate';
+import React, { useState, useMemo } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { Container, Card, Table, Form, Row, Col, Alert } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { GetDeliveryReportNew } from "../action";
+import TableSkeletonLoader from "./skeleton";
+import { DeliveryReportSummary } from "./repordData";
+import CSVExport from "../../../../../sharedCompoents/csvfile";
+import { formatDate } from "../../../../../utils/formatDate";
+
 const theme = {
   primary: "#008080", // Sucafina teal
   secondary: "#4FB3B3", // Lighter teal
@@ -24,6 +15,7 @@ const theme = {
   neutral: "#E6F3F3", // Very light teal for backgrounds
   text: "#34495E",
 };
+
 const CollapsibleCWSTable = () => {
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,8 +24,8 @@ const CollapsibleCWSTable = () => {
 
   const groupedData = useMemo(() => {
     const groups = {};
-    
-    sampleData.forEach(item => {
+
+    sampleData.forEach((item) => {
       const key = `${item.cwsId}-${item.cwsName}`;
       if (!groups[key]) {
         groups[key] = {
@@ -45,10 +37,10 @@ const CollapsibleCWSTable = () => {
           inTransitKgs: 0,
           inTransitTruckNo: 0,
           variation: 0,
-          totalRecords: 0
+          totalRecords: 0,
         };
       }
-      
+
       groups[key].children.push(item);
       groups[key].transportedKgs += item.transportedKgs;
       groups[key].deliveredKgs += item.deliveredKgs;
@@ -63,15 +55,18 @@ const CollapsibleCWSTable = () => {
 
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return groupedData;
-    
+
     const normalizedSearch = searchQuery.toLowerCase();
-    return groupedData.filter(group => 
-      group.cwsName.toLowerCase().includes(normalizedSearch) ||
-      group.children.some(child => 
-        child.transportGroupId.toLowerCase().includes(normalizedSearch) ||
-        child.cwsName.toLowerCase().includes(normalizedSearch) ||
-        (child.inTransitTrucks && child.inTransitTrucks.toLowerCase().includes(normalizedSearch))
-      )
+    return groupedData.filter(
+      (group) =>
+        group.cwsName.toLowerCase().includes(normalizedSearch) ||
+        group.children.some(
+          (child) =>
+            child.transportGroupId.toLowerCase().includes(normalizedSearch) ||
+            child.cwsName.toLowerCase().includes(normalizedSearch) ||
+            (child.inTransitTrucks &&
+              child.inTransitTrucks.toLowerCase().includes(normalizedSearch))
+        )
     );
   }, [groupedData, searchQuery]);
 
@@ -86,7 +81,7 @@ const CollapsibleCWSTable = () => {
   };
 
   const formatreportDAte = (dateString) => {
-    if (!dateString) return '-';
+    if (!dateString) return "-";
     return formatDate(dateString);
   };
 
@@ -95,172 +90,237 @@ const CollapsibleCWSTable = () => {
   };
 
   const columns = [
-    { field: 'cwsName', header: 'CWS Station' },
-    { field: 'transportGroupId', header: 'Transport Group ID' },
-    { field: 'transferDate', header: 'Transfer Date', reder: (data) => formatreportDAte(data.transferDate) },
-    {  header: 'Arrival Date', reder:(data)=> formatreportDAte(data.arrivalDate) },
-    { field: 'transportedKgs', header: 'Transported (KG)' },
-    { field: 'deliveredKgs', header: 'Delivered (KG)' },
-    { field: 'inTransitKgs', header: 'In Transit (KG)' },
-    { field: 'inTransitTrucks', header: 'In Transit Trucks' },
-    { field: 'inTransitTruckNo', header: 'Truck No' },
-    { field: 'variation', header: 'Variation' }
-    ];
-  
+    { field: "cwsName", header: "CWS Station" },
+    { field: "transportGroupId", header: "Transport Group ID" },
+    {
+      field: "transferDate",
+      header: "Transfer Date",
+      reder: (data) => formatreportDAte(data.transferDate),
+    },
+    {
+      header: "Arrival Date",
+      reder: (data) => formatreportDAte(data.arrivalDate),
+    },
+    { field: "transportedKgs", header: "Transported (KG)" },
+    { field: "deliveredKgs", header: "Delivered (KG)" },
+    { field: "inTransitKgs", header: "In Transit (KG)" },
+    { field: "inTransitTrucks", header: "In Transit Trucks" },
+    { field: "inTransitTruckNo", header: "Truck No" },
+    { field: "variation", header: "Variation" },
+  ];
 
   const ErrorAlert = ({ error }) => (
     <Alert variant="danger" className="m-3">
       <Alert.Heading>Error Loading Data</Alert.Heading>
       <p className="mb-0">
-        {error?.message || 'An error occurred while fetching the delivery reports. Please try again later.'}
+        {error?.message ||
+          "An error occurred while fetching the delivery reports. Please try again later."}
       </p>
     </Alert>
   );
 
+  // Custom styles for sticky header
+  const stickyHeaderStyles = {
+    position: "sticky",
+    top: 0,
+    backgroundColor: "#f8f9fa", // Bootstrap's table-light background
+    zIndex: 10,
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+  };
+
   return (
     <div>
-        {
-        !error&&!isPending && (
-            <div className="p-4">
-
-    <DeliveryReportSummary data={data?.grandTotal}/>
-            </div>
-        )}
+      {!error && !isPending && (
+        <div className="p-4">
+          <DeliveryReportSummary data={data?.grandTotal} />
+        </div>
+      )}
       <Container fluid className="p-4">
-    <Card className="shadow-sm">
-        <Card.Header className="bg-opacity-10" style={{ backgroundColor: theme.neutral }}>
-          <Card.Title className="mb-0 text-dark d-flex align-items-center">
-            <CSVExport columns={columns} data={data?.data} filename='Delivery-report-file' />
-          </Card.Title>
-        </Card.Header>
-
-        <Card.Body>
-          {error ? (
-            <ErrorAlert error={error} />
-          ) : isPending ? (
-            <TableSkeletonLoader />
-          ) : (
-            <>
-              <Form.Control
-                type="text"
-                placeholder="Search CWS stations, transport groups, or truck numbers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="mb-3"
-                disabled={isPending}
+        <Card className="shadow-sm">
+          <Card.Header
+            className="bg-opacity-10"
+            style={{ backgroundColor: theme.neutral }}
+          >
+            <Card.Title className="mb-0 text-dark d-flex align-items-center">
+              <CSVExport
+                columns={columns}
+                data={data?.data}
+                filename="Delivery-report-file"
               />
+            </Card.Title>
+          </Card.Header>
 
-              <div className="table-responsive">
-                <Table striped bordered hover>
-                  <thead className="table-light">
-                    <tr>
-                      <th>CWS Station</th>
-                      <th>Transport Group ID</th>
-                      <th>Transfer Date</th>
-                      <th>Arrival Date</th>
-                      <th>Transported (KG)</th>
-                      <th>Delivered (KG)</th>
-                      <th>In Transit (KG)</th>
-                      <th>In Transit Trucks</th>
-                      <th>Truck No</th>
-                      <th>Variation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredData.map((group) => (
-                      <React.Fragment key={`${group.cwsId}-${group.cwsName}`}>
-                        <tr 
-                          className="table-hover cursor-pointer"
-                          onClick={() => toggleRow(`${group.cwsId}-${group.cwsName}`)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <td>
-                            <div className="d-flex align-items-center">
-                              {expandedRows.has(`${group.cwsId}-${group.cwsName}`) ? (
-                                <ChevronDown className="me-2" size={16} />
-                              ) : (
-                                <ChevronRight className="me-2" size={16} />
-                              )}
-                              <div>
-                                <div className="fw-bold">{group.cwsName}</div>
-                                <small className="text-muted">{group.totalRecords} records</small>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="text-muted">Multiple Groups</td>
-                          <td className="text-muted">-</td>
-                          <td className="text-muted">-</td>
-                          <td className="fw-bold">{formatNumber(group.transportedKgs)}</td>
-                          <td className="fw-bold">{formatNumber(group.deliveredKgs)}</td>
-                          <td className="fw-bold">{formatNumber(group.inTransitKgs)}</td>
-                          <td className="text-muted">
-                            {group.inTransitTruckNo > 0 ? `${group.inTransitTruckNo} trucks` : '-'}
-                          </td>
-                          <td className="fw-bold">{group.inTransitTruckNo}</td>
-                          <td>
-                            <span className={group.variation >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}>
-                              {formatNumber(group.variation)}
-                            </span>
-                          </td>
-                        </tr>
+          <Card.Body>
+            {error ? (
+              <ErrorAlert error={error} />
+            ) : isPending ? (
+              <TableSkeletonLoader />
+            ) : (
+              <>
+                <Form.Control
+                  type="text"
+                  placeholder="Search CWS stations, transport groups, or truck numbers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="mb-3"
+                  disabled={isPending}
+                />
 
-                        {expandedRows.has(`${group.cwsId}-${group.cwsName}`) && (
-                          group.children.map((child, index) => (
-                            <tr key={child.transportGroupId} className="table-secondary">
-                              <td>
-                                <div className="ps-4">
-                                  <div className="text-dark">{index +1}</div>
+                <div
+                  className="table-responsive"
+                  style={{ maxHeight: "600px", overflowY: "auto" }}
+                >
+                  <Table striped bordered hover>
+                    <thead className="table-light" style={stickyHeaderStyles}>
+                      <tr>
+                        <th>CWS Station</th>
+                        <th>Transport Group ID</th>
+                        <th>Transfer Date</th>
+                        <th>Arrival Date</th>
+                        <th>Transported (KG)</th>
+                        <th>Delivered (KG)</th>
+                        <th>In Transit (KG)</th>
+                        <th>In Transit Trucks</th>
+                        <th>Truck No</th>
+                        <th>Variation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredData.map((group) => (
+                        <React.Fragment key={`${group.cwsId}-${group.cwsName}`}>
+                          <tr
+                            className="table-hover cursor-pointer"
+                            onClick={() =>
+                              toggleRow(`${group.cwsId}-${group.cwsName}`)
+                            }
+                            style={{ cursor: "pointer" }}
+                          >
+                            <td>
+                              <div className="d-flex align-items-center">
+                                {expandedRows.has(
+                                  `${group.cwsId}-${group.cwsName}`
+                                ) ? (
+                                  <ChevronDown className="me-2" size={16} />
+                                ) : (
+                                  <ChevronRight className="me-2" size={16} />
+                                )}
+                                <div>
+                                  <div className="fw-bold">{group.cwsName}</div>
+                                  <small className="text-muted">
+                                    {group.totalRecords} records
+                                  </small>
                                 </div>
-                              </td>
-                              <td>{child.transportGroupId}</td>
-                              <td>{formatDate(child.transferDate)}</td>
-                              <td>{formatDate(child.arrivalDate)}</td>
-                              <td>{formatNumber(child.transportedKgs)}</td>
-                              <td>{formatNumber(child.deliveredKgs)}</td>
-                              <td>{formatNumber(child.inTransitKgs)}</td>
-                              <td className="text-muted">{child.inTransitTrucks || '-'}</td>
-                              <td>{child.inTransitTruckNo}</td>
-                              <td>
-                                <span className={child.variation >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}>
-                                  {formatNumber(child.variation)}
-                                </span>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </Table>
+                              </div>
+                            </td>
+                            <td className="text-muted">Multiple Groups</td>
+                            <td className="text-muted">-</td>
+                            <td className="text-muted">-</td>
+                            <td className="fw-bold">
+                              {formatNumber(group.transportedKgs)}
+                            </td>
+                            <td className="fw-bold">
+                              {formatNumber(group.deliveredKgs)}
+                            </td>
+                            <td className="fw-bold">
+                              {formatNumber(group.inTransitKgs)}
+                            </td>
+                            <td className="text-muted">
+                              {group.inTransitTruckNo > 0
+                                ? `${group.inTransitTruckNo} trucks`
+                                : "-"}
+                            </td>
+                            <td className="fw-bold">
+                              {group.inTransitTruckNo}
+                            </td>
+                            <td>
+                              <span
+                                className={
+                                  group.variation >= 0
+                                    ? "text-success fw-bold"
+                                    : "text-danger fw-bold"
+                                }
+                              >
+                                {formatNumber(group.variation)}
+                              </span>
+                            </td>
+                          </tr>
 
-                {filteredData.length === 0 && !isPending && (
-                  <div className="text-center py-4 text-muted">
-                    {searchQuery ? `No results found for "${searchQuery}"` : 'No data available'}
-                  </div>
-                )}
-              </div>
-            </>
+                          {expandedRows.has(
+                            `${group.cwsId}-${group.cwsName}`
+                          ) &&
+                            group.children.map((child, index) => (
+                              <tr
+                                key={child.transportGroupId}
+                                className="table-secondary"
+                              >
+                                <td>
+                                  <div className="ps-4">
+                                    <div className="text-dark">{index + 1}</div>
+                                  </div>
+                                </td>
+                                <td>{child.transportGroupId}</td>
+                                <td>{formatDate(child.transferDate)}</td>
+                                <td>{formatDate(child.arrivalDate)}</td>
+                                <td>{formatNumber(child.transportedKgs)}</td>
+                                <td>{formatNumber(child.deliveredKgs)}</td>
+                                <td>{formatNumber(child.inTransitKgs)}</td>
+                                <td className="text-muted">
+                                  {child.inTransitTrucks || "-"}
+                                </td>
+                                <td>{child.inTransitTruckNo}</td>
+                                <td>
+                                  <span
+                                    className={
+                                      child.variation >= 0
+                                        ? "text-success fw-bold"
+                                        : "text-danger fw-bold"
+                                    }
+                                  >
+                                    {formatNumber(child.variation)}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </Table>
+
+                  {filteredData.length === 0 && !isPending && (
+                    <div className="text-center py-4 text-muted">
+                      {searchQuery
+                        ? `No results found for "${searchQuery}"`
+                        : "No data available"}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </Card.Body>
+
+          {!isPending && !error && (
+            <Card.Footer className="bg-light">
+              <Row>
+                <Col sm={6}>
+                  <small className="text-muted">
+                    Total CWS Stations: {filteredData.length}
+                  </small>
+                </Col>
+                <Col sm={6} className="text-sm-end">
+                  <small className="text-muted">
+                    Total Records:{" "}
+                    {filteredData.reduce(
+                      (sum, group) => sum + group.totalRecords,
+                      0
+                    )}
+                  </small>
+                </Col>
+              </Row>
+            </Card.Footer>
           )}
-        </Card.Body>
-
-        {!isPending && !error && (
-          <Card.Footer className="bg-light">
-            <Row>
-              <Col sm={6}>
-                <small className="text-muted">Total CWS Stations: {filteredData.length}</small>
-              </Col>
-              <Col sm={6} className="text-sm-end">
-                <small className="text-muted">
-                  Total Records: {filteredData.reduce((sum, group) => sum + group.totalRecords, 0)}
-                </small>
-              </Col>
-            </Row>
-          </Card.Footer>
-        )}
-      </Card>
-    </Container>
-     </div>
-
+        </Card>
+      </Container>
+    </div>
   );
 };
 
