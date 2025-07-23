@@ -1,3 +1,4 @@
+// GeneralReportTable.jsx
 import { Pagination } from "../../../../../sharedCompoents/paginations";
 import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 import { Columns } from "./tableHeading";
