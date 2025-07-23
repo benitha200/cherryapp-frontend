@@ -1,7 +1,7 @@
 import { ReportsHeading } from "../../../../sharedCompoents/heading";
 import { GeneralReportTable } from "./components/generalReportTable";
 
-export default function () {
+function GeneralReport() {
   return (
     <>
       <ReportsHeading>General Report</ReportsHeading>
@@ -9,3 +9,5 @@ export default function () {
     </>
   );
 }
+
+export default GeneralReport;
