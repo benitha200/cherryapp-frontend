@@ -90,12 +90,6 @@ const Sidebar = () => {
     //   text: "Quality Report",
     // },
 
-    // {
-    //   path: "general-report",
-    //   icon: "file-earmark-text",
-    //   text: "Genral Report",
-    // },
-
     {
       path: "delivery-report",
       icon: "archive",
@@ -106,6 +100,11 @@ const Sidebar = () => {
       icon: "graph-up-arrow",
       text: "Quality Analysis Report",
     },
+    // {
+    //   path: "general-report",
+    //   icon: "patch-check-fill",
+    //   text: "Genral Report",
+    // },
   ];
 
   // Settings menu items for admin
@@ -156,22 +155,17 @@ const Sidebar = () => {
       { path: "/transport", icon: "truck", text: "Transport" },
       { path: "/stock", icon: "house", text: "Stock" },
       { path: "/received", icon: "box", text: "Delivery" },
-
     ];
-  } 
-   else if (user.role === "PRODUCTION") {
+  } else if (user.role === "PRODUCTION") {
     menuItems = [
       { path: "/received", icon: "box", text: "Delivery" },
       {
-      path: "delivery-report",
-      icon: "archive",
-      text: "Delivery Report",
-    },
-
+        path: "delivery-report",
+        icon: "archive",
+        text: "Delivery Report",
+      },
     ];
-  } 
-  
-  else if (user.role === "QUALITY") {
+  } else if (user.role === "QUALITY") {
     menuItems = [
       ...menuItems,
       {
