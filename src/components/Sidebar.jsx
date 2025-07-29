@@ -100,11 +100,11 @@ const Sidebar = () => {
       icon: "graph-up-arrow",
       text: "Quality Analysis Report",
     },
-    {
-      path: "general-report",
-      icon: "patch-check-fill",
-      text: "Genral Report",
-    },
+    // {
+    //   path: "general-report",
+    //   icon: "patch-check-fill",
+    //   text: "Genral Report",
+    // },
   ];
 
   // Settings menu items for admin
@@ -189,8 +189,8 @@ const Sidebar = () => {
           cwsInfo?.is_wet_parchment_sender === 1
             ? "/wet-transfer"
             : cwsInfo?.is_wet_parchment_sender === 3
-              ? "/wet-transfer-both"
-              : "/wet-transfer-receiver",
+            ? "/wet-transfer-both"
+            : "/wet-transfer-receiver",
         icon: "bag-check",
         text: "Wet Transfer",
       });

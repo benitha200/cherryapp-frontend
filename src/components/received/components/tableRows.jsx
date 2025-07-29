@@ -1,5 +1,5 @@
 import { Button } from "react-bootstrap";
-import ReusableTable from "../../../sharedCompoents/reusableTable"
+import ReusableTable from "../../../sharedCompoents/reusableTable";
 import { CreateStockDelivery, GetTranspotedTruck } from "../action";
 import { SingleTransportedTruck } from "./singleTranportedTruck";
 import { useState, useEffect, useMemo } from "react";
@@ -13,11 +13,13 @@ export const TransportedTruckTable = () => {
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [selectedId, setSelectedId] = useState({
     transportGroupId: "",
-    transferDate: ""
+    transferDate: "",
   });
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
+
   const [selectedTransportInfo, setSelectedTransportInfo] = useState({
     cws: "",
     trackPlatNumber: "",
@@ -34,21 +36,21 @@ export const TransportedTruckTable = () => {
 
   const searchInObject = (obj, searchTerm) => {
     const normalizedSearch = normalizeString(searchTerm);
-    
+
     if (!normalizedSearch) return true;
-    
+
     const searchableFields = [
-      'cwsName',
-      'plateNumbers', 
-      'transferDate',
-      'totalQuantity',
-      'totalBags',
-      'transportGroupId',
-      'driverNames',
-      'driverPhones'
+      "cwsName",
+      "plateNumbers",
+      "transferDate",
+      "totalQuantity",
+      "totalBags",
+      "transportGroupId",
+      "driverNames",
+      "driverPhones",
     ];
-    
-    return searchableFields.some(field => {
+
+    return searchableFields.some((field) => {
       const fieldValue = obj[field];
       const normalizedValue = normalizeString(fieldValue);
       return normalizedValue.includes(normalizedSearch);
@@ -57,7 +59,7 @@ export const TransportedTruckTable = () => {
 
   const handleopenModel = () => {
     setIsModelOpen(!isModelOpen);
-    
+
     if (isModelOpen) {
       setCategoryInputData({});
     }
@@ -66,26 +68,63 @@ export const TransportedTruckTable = () => {
   const onupdateSuccess = () => {
     toast.success("Data Created successfully");
     handleopenModel();
-  }
+  };
 
   const [categoryInputData, setCategoryInputData] = useState({});
-  const [ submitted, setSubmitted] = useState({
+  const [submitted, setSubmitted] = useState({
     submitted: false,
-    data: []
+    data: [],
   });
 
   const { isPending, error, data } = GetTranspotedTruck();
-  const { mutate, creatingError, isCreatingpending } = CreateStockDelivery(onupdateSuccess);
+  const { mutate, creatingError, isCreatingpending } =
+    CreateStockDelivery(onupdateSuccess);
 
+  if (creatingError) {
+    toast.error(
+      creatingError.message ??
+        "An error occurred while creating the stock delivery"
+    );
+  }
+
+  // Filter data based on search query
   const filteredData = useMemo(() => {
     if (!data?.data) return [];
-    
+
     if (!searchQuery.trim()) {
       return data.data;
     }
-    
-    return data.data.filter(item => searchInObject(item, searchQuery));
+
+    return data.data.filter((item) => searchInObject(item, searchQuery));
   }, [data?.data, searchQuery]);
+
+  // Calculate pagination values
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  // Get paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredData.slice(startIndex, endIndex);
+  }, [filteredData, currentPage, itemsPerPage]);
+
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // Reset to first page when items per page changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
+
+  // Ensure current page is valid when filtered data changes
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   useEffect(() => {
     if (Object.keys(categoryInputData).length > 0) {
@@ -95,16 +134,16 @@ export const TransportedTruckTable = () => {
 
   const handleCompleteAction = () => {
     const apiData = [];
-    
-    const arrivalDate = categoryInputData.arrivalDate ? 
-      new Date(categoryInputData.arrivalDate) : 
-      new Date();
-    
-    Object.keys(categoryInputData).forEach(categoryKey => {
-      if (categoryKey === 'arrivalDate') return;
-      
+
+    const arrivalDate = categoryInputData.arrivalDate
+      ? new Date(categoryInputData.arrivalDate)
+      : new Date();
+
+    Object.keys(categoryInputData).forEach((categoryKey) => {
+      if (categoryKey === "arrivalDate") return;
+
       const categoryData = categoryInputData[categoryKey];
-      
+
       if (categoryData && (categoryData.delivered || categoryData.wrn)) {
         const apiObject = {
           transferDate: selectedId?.transferDate,
@@ -112,9 +151,9 @@ export const TransportedTruckTable = () => {
           transportGroupId: selectedId.transportGroupId,
           category: categoryKey,
           deliveryKgs: parseFloat(categoryData.delivered || 0),
-          WRN: categoryData.wrn || ""
+          WRN: categoryData.wrn || "",
         };
-        
+
         apiData.push(apiObject);
       }
     });
@@ -125,7 +164,7 @@ export const TransportedTruckTable = () => {
     }
 
     console.log("API Data to send:", apiData);
-    
+
     mutate(apiData);
   };
 
@@ -167,7 +206,7 @@ export const TransportedTruckTable = () => {
       header: "Actions",
       render: (item) => (
         <Button
-          variant={item?.status === 'RECEIVED' ? "warning": "success"}
+          variant={item?.status === "RECEIVED" ? "warning" : "success"}
           onClick={() => {
             handleopenModel();
             setSelectedId({
@@ -184,23 +223,26 @@ export const TransportedTruckTable = () => {
 
             setCategories(item?.cupProfiles || []);
             setCategoryInputData({});
-            if(item?.status === "RECEIVED") {
+            if (item?.status === "RECEIVED") {
               setSubmitted({
                 submitted: true,
-                data:{ transportGroupId: item?.transportGroupId, transferDate: item?.transferDate,  }
+                data: {
+                  transportGroupId: item?.transportGroupId,
+                  transferDate: item?.transferDate,
+                },
               });
-            }else {
+            } else {
               setSubmitted({
                 submitted: false,
-                data: []
+                data: [],
               });
             }
           }}
         >
           <i className="bi bi-pencil-square"></i>{" "}
         </Button>
-      )
-    }
+      ),
+    },
   ];
 
   if (isPending) return <TransportedTrackDelivery />;
@@ -208,23 +250,29 @@ export const TransportedTruckTable = () => {
 
   return (
     <>
-      <ReusableTable 
-        data={filteredData} 
-        columns={columns} 
-        pageSizeOptions={[5, 10, 20]} 
-        pageSize={5} 
-        rowsPerPageOptions={[5, 10, 20]}
+      <ReusableTable
+        data={paginatedData} // Use paginated data instead of filteredData
+        columns={columns}
+        pageSizeOption={[50, 100, 1000]}
+        pageSize={5}
         emptyStateMessage={
-          searchQuery.trim() 
+          searchQuery.trim()
             ? `No transported trucks found matching "${searchQuery}"`
             : "There are no transported trucks available."
         }
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        onPageSizeChange={setItemsPerPage}
+        itemsPerPage={itemsPerPage}
       >
-        <Pagination currentPage={currentPage} totalPages={1} itemsPerPage={5} onPageChange={setCurrentPage}/>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages} // Use calculated total pages
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </ReusableTable>
-      
+
       <GenericModel
         isOpen={isModelOpen && !submitted.submitted}
         onClose={handleopenModel}
@@ -235,12 +283,12 @@ export const TransportedTruckTable = () => {
         cancelButtonText="Cancel"
         modalSize="xl"
         onConfirmDisalbe={
-          (Object.keys(categoryInputData).length === 0 || 
-           Object.keys(categoryInputData).every(key => key === 'arrivalDate'))
+          Object.keys(categoryInputData).length === 0 ||
+          Object.keys(categoryInputData).every((key) => key === "arrivalDate")
         }
       >
-        <SingleTransportedTruck 
-          selectedTransportInfo={selectedTransportInfo} 
+        <SingleTransportedTruck
+          selectedTransportInfo={selectedTransportInfo}
           categories={categories}
           setInfo={setCategoryInputData}
         />
@@ -249,16 +297,17 @@ export const TransportedTruckTable = () => {
         isOpen={isModelOpen && submitted.submitted}
         title="received Truck"
         onClose={handleopenModel}
-        onConfirm={()=>null}
+        onConfirm={() => null}
         isLoading={isCreatingpending}
         confirmButtonText="Complete"
         cancelButtonText="Cancel"
         modalSize="xl"
-        submitButton = {false}
-        >
-        
-< SingleTransportedTruckdisplay selectedTransportInfo={submitted?.data}/>
-        </GenericModel>
+        submitButton={false}
+      >
+        <SingleTransportedTruckdisplay
+          selectedTransportInfo={submitted?.data}
+        />
+      </GenericModel>
     </>
   );
 };
