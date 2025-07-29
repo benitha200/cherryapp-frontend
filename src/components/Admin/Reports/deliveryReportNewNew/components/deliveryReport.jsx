@@ -56,19 +56,48 @@ const CollapsibleCWSTable = () => {
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return groupedData;
 
-    const normalizedSearch = searchQuery.toLowerCase();
-    return groupedData.filter(
+    const normalizedSearch = searchQuery?.toLowerCase();
+    return groupedData?.filter(
       (group) =>
-        group.cwsName.toLowerCase().includes(normalizedSearch) ||
-        group.children.some(
+        group?.cwsName?.toLowerCase()?.includes(normalizedSearch) ||
+        group?.children?.some(
           (child) =>
-            child.transportGroupId.toLowerCase().includes(normalizedSearch) ||
-            child.cwsName.toLowerCase().includes(normalizedSearch) ||
+            child.transportGroupId?.toLowerCase()?.includes(normalizedSearch) ||
+            child.cwsName?.toLowerCase()?.includes(normalizedSearch) ||
             (child.inTransitTrucks &&
-              child.inTransitTrucks.toLowerCase().includes(normalizedSearch))
+              child.inTransitTrucks?.toLowerCase()?.includes(normalizedSearch))
         )
     );
   }, [groupedData, searchQuery]);
+
+  // Calculate dynamic summary based on filtered data
+  const dynamicSummary = useMemo(() => {
+    if (!searchQuery.trim()) {
+      // Return original grand total when no search is applied
+      return data?.grandTotal;
+    }
+
+    // Calculate totals from filtered data when search is applied
+    // Using the exact field names that DeliveryReportSummary expects
+    const calculatedSummary = filteredData.reduce(
+      (acc, group) => ({
+        transportedKgs: (acc.transportedKgs || 0) + (group.transportedKgs || 0),
+        deliveredKgs: (acc.deliveredKgs || 0) + (group.deliveredKgs || 0),
+        inTransitKgs: (acc.inTransitKgs || 0) + (group.inTransitKgs || 0),
+        variation: (acc.variation || 0) + (group.variation || 0),
+      }),
+      {
+        transportedKgs: 0,
+        deliveredKgs: 0,
+        inTransitKgs: 0,
+        variation: 0,
+      }
+    );
+
+    console.log("Calculated Summary for search:", calculatedSummary);
+
+    return calculatedSummary;
+  }, [filteredData, searchQuery, data?.grandTotal]);
 
   const toggleRow = (cwsId) => {
     const newExpandedRows = new Set(expandedRows);
@@ -119,11 +148,10 @@ const CollapsibleCWSTable = () => {
     </Alert>
   );
 
-  // Custom styles for sticky header
   const stickyHeaderStyles = {
     position: "sticky",
     top: -1,
-    backgroundColor: "#f8f9fa", // Bootstrap's table-light background
+    backgroundColor: "#f8f9fa",
     zIndex: 10,
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
   };
@@ -132,7 +160,7 @@ const CollapsibleCWSTable = () => {
     <div>
       {!error && !isPending && (
         <div className="p-4">
-          <DeliveryReportSummary data={data?.grandTotal} />
+          <DeliveryReportSummary data={dynamicSummary} />
         </div>
       )}
       <Container fluid className="p-4">
