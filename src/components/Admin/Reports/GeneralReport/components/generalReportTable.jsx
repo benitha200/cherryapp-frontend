@@ -3,11 +3,15 @@ import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 import { Columns } from "./tableHeading";
 import { GetGeneralReport } from "../action";
 import ProcessingTableSkeletonLoader from "./LoderSkeleton";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 export const GeneralReportTable = () => {
   const { isPending, data } = GetGeneralReport();
   const [querySearcy, setQuerySearch] = useState("");
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
   // filter states
   const [filters, setFilters] = useState({
@@ -123,6 +127,34 @@ export const GeneralReportTable = () => {
     });
   }, [flattenedData, filters]);
 
+  // Calculate pagination values
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  // Get paginated data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredData.slice(startIndex, endIndex);
+  }, [filteredData, currentPage, itemsPerPage]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, querySearcy]);
+
+  // Reset to first page when items per page changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
+
+  // Ensure current page is valid when filtered data changes
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   const getUniqueValues = (data, path) => {
     const values = new Set();
     data?.forEach((item) => {
@@ -175,12 +207,22 @@ export const GeneralReportTable = () => {
         month: "",
       },
     });
+    setQuerySearch("");
   };
 
   function handBatchSearch(value) {
     setQuerySearch(value);
     handleFilterChange("batch", value);
   }
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+  };
+
   if (isPending) {
     return <ProcessingTableSkeletonLoader rows={5} />;
   }
@@ -360,8 +402,6 @@ export const GeneralReportTable = () => {
               }}
             >
               <option value="">All Capping Score</option>
-              {/* <option value="A">Grade A</option> */}
-              {/* <option value="B">Grade B</option> */}
               {uniqueGrades.map((grade) => (
                 <option key={grade} value={grade}>
                   {grade}
@@ -508,23 +548,26 @@ export const GeneralReportTable = () => {
             fontWeight: "bold",
           }}
         >
-          Showing {filteredData.length} of {flattenedData.length} records
+          Showing {paginatedData.length} of {filteredData.length} filtered
+          records ({flattenedData.length} total records)
         </div>
       </div>
 
       <ReusableTable
         columns={Columns}
-        data={filteredData}
-        onPageSizeChange={() => null}
+        data={paginatedData}
+        onPageSizeChange={handlePageSizeChange}
         searchQuery={querySearcy}
         setSearchQuery={handBatchSearch}
+        pageSizeOption={[25, 50, 100, 200]}
+        itemsPerPage={itemsPerPage}
       >
         <Pagination
-          currentPage={1}
-          totalPages={Math.ceil(filteredData.length / 5)}
-          totalItems={filteredData.length}
-          itemsPerPage={5}
-          onPageChange={() => null}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
         />
       </ReusableTable>
     </>
