@@ -94,8 +94,6 @@ const CollapsibleCWSTable = () => {
       }
     );
 
-    console.log("Calculated Summary for search:", calculatedSummary);
-
     return calculatedSummary;
   }, [filteredData, searchQuery, data?.grandTotal]);
 
