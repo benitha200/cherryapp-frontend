@@ -126,11 +126,7 @@ export const TransportedTruckTable = () => {
     }
   }, [currentPage, totalPages]);
 
-  useEffect(() => {
-    if (Object.keys(categoryInputData).length > 0) {
-      console.log("Category Input Data Changed:", categoryInputData);
-    }
-  }, [categoryInputData]);
+  useEffect(() => {}, [categoryInputData]);
 
   const handleCompleteAction = () => {
     const apiData = [];
@@ -162,9 +158,6 @@ export const TransportedTruckTable = () => {
       toast.error("Please fill in at least one category with delivery data");
       return;
     }
-
-    console.log("API Data to send:", apiData);
-
     mutate(apiData);
   };
 
