@@ -71,7 +71,7 @@ const Sidebar = () => {
 
   const qualityItemsAdmin = [
     { path: "/quality-all", icon: "capsule", text: "Sample" },
-    // { path: "/quality-delivery", icon: "box", text: "Delivery" },
+    { path: "/quality-delivery", icon: "box", text: "Quality Delivery" },
   ];
 
   // Reports menu items

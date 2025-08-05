@@ -6,7 +6,7 @@ export default function Delivery() {
     <div>
       <p>sohome</p>
       <DerivalyTable />
-      {/* <DelivarySkeleton /> */}
+      <DelivarySkeleton />
     </div>
   );
 }
