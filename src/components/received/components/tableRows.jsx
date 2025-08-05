@@ -8,6 +8,7 @@ import { GenericModel } from "../../../sharedCompoents/genericModel";
 import { Pagination } from "../../../sharedCompoents/paginations";
 import { SingleTransportedTruckdisplay } from "./displayTransportedTrucks";
 import TransportedTrackDelivery from "./sekeleton";
+import { DeliveryExeleData } from "./excelRepot";
 
 export const TransportedTruckTable = () => {
   const [isModelOpen, setIsModelOpen] = useState(false);
@@ -243,6 +244,7 @@ export const TransportedTruckTable = () => {
 
   return (
     <>
+      <DeliveryExeleData />
       <ReusableTable
         data={paginatedData} // Use paginated data instead of filteredData
         columns={columns}
