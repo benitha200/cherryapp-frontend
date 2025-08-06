@@ -223,6 +223,24 @@ export const Columns = [
       </span>
     ),
   },
+
+   {
+    field: "truckNumber",
+    header: "15+ %",
+    render: (item) => (
+      <div style={{ width: "8rem" }}>
+        {item?.transfer?.[0]?.truckNumber || "-"}
+      </div>
+    ),
+  }, {
+    field: "truckNumber",
+    header: "14/13 %",
+    render: (item) => (
+      <div style={{ width: "8rem" }}>
+        {item?.transfer?.[0]?.truckNumber || "-"}
+      </div>
+    ),
+  },
   {
     field: "truckNumber",
     header: "Truck No",

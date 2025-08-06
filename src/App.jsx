@@ -40,7 +40,7 @@ import WetTransferAdmin from "./components/Admin/WetTransfer/WetTransferAdmin.js
 import Quality from "./components/Admin/quality/index.jsx";
 import OfflineModal from "./sharedCompoents/networkError.jsx";
 import NotFoundPage from "./sharedCompoents/404/404.jsx";
-import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
+// import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
 import { Toaster } from "react-hot-toast";
 import QualityReport from "./components/Admin/quality/report/index.jsx";
 import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";

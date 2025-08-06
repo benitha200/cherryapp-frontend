@@ -57,6 +57,22 @@ export const TransportedTruckTable = () => {
     });
   };
 
+  // Function to check if categories contain valid entries
+  const hasValidCategories = (cupProfiles) => {
+    if (!cupProfiles || cupProfiles.length === 0) return false;
+    
+    return cupProfiles.some(category => {
+      const upperCategory = category.toUpperCase();
+      return (
+        upperCategory.startsWith('C1') || 
+        upperCategory.startsWith('C2') || 
+        upperCategory.startsWith('S86') || 
+        upperCategory.startsWith('S87') || 
+        upperCategory.startsWith('S88')
+      );
+    });
+  };
+
   const handleopenModel = () => {
     setIsModelOpen(!isModelOpen);
 
@@ -77,23 +93,15 @@ export const TransportedTruckTable = () => {
   });
 
   const { isPending, error, data } = GetTranspotedTruck();
-  const { mutate, creatingError, isCreatingpending } =
+  const { mutate, isCreatingpending } =
     CreateStockDelivery(onupdateSuccess);
 
-  if (creatingError) {
-    toast.error(
-      creatingError.message ??
-        "An error occurred while creating the stock delivery"
-    );
-  }
-
-  // Filter data to only include records with "RECEIVED" status
+  // Filter data to only include records with "RECEIVED" status and valid categories
   const receivedData = useMemo(() => {
     if (!data?.data) return [];
     
     return data.data.filter((item) => {
-      // Check if the item has "RECEIVED" status
-      return item?.status === "RECEIVED";
+      return  hasValidCategories(item?.cupProfiles);
     });
   }, [data?.data]);
 
@@ -153,21 +161,18 @@ export const TransportedTruckTable = () => {
 
       if (hasData) {
         const apiObject = {
-          // transferDate: selectedId?.transferDate,
           transportGroupId: selectedId.transportGroupId,
           labMoisture: parseFloat(categoryData.labMoisture||0),
           sixteenPlus: parseFloat(categoryData.plus16 || 0),
           fifteen: parseFloat(categoryData.fifteen || 0),
-          // qualityGrade14: parseFloat(categoryData.fourteen || 0),
+          fourteen: parseFloat(categoryData.fourteen || 0),
           thirteen: parseFloat(categoryData.thirteen || 0),
           b12: parseFloat(categoryData.b12 || 0),
           defect: parseFloat(categoryData.defect || 0),
           ppScore: parseFloat(categoryData.ppScore || 0),
           category: categoryKey,
           sampleStorageId:parseFloat(categoryData.sampleStorage||0)
-       
         };
-
         apiData.push(apiObject);
       }
     });
@@ -178,6 +183,39 @@ export const TransportedTruckTable = () => {
     }
 
     mutate(apiData);
+  };
+
+  const handleActionClick = (item) => {
+    handleopenModel();
+    setSelectedId({
+      transportGroupId: item?.transportGroupId,
+      transferDate: item?.transferDate,
+    });
+    setSelectedTransportInfo((prev) => ({
+      ...prev,
+      cws: item?.cwsName,
+      trackPlatNumber: item?.plateNumbers,
+      quantity: item?.totalQuantity,
+      driver: item?.driverNames,
+    }));
+
+    setCategories(item?.cupProfiles || []);
+    setCategoryInputData({});
+    
+    if (item?.qualityStatus == true) {
+      setSubmitted({
+        submitted: true,
+        data: {
+          transportGroupId: item?.transportGroupId,
+          transferDate: item?.transferDate,
+        },
+      });
+    } else {
+      setSubmitted({
+        submitted: false,
+        data: [],
+      });
+    }
   };
 
   const columns = [
@@ -231,37 +269,7 @@ export const TransportedTruckTable = () => {
       render: (item) => (
         <Button
           variant={item?.qualityStatus == true ? "warning" : "success"}
-          onClick={() => {
-            handleopenModel();
-            setSelectedId({
-              transportGroupId: item?.transportGroupId,
-              transferDate: item?.transferDate,
-            });
-            setSelectedTransportInfo((prev) => ({
-              ...prev,
-              cws: item?.cwsName,
-              trackPlatNumber: item?.plateNumbers,
-              quantity: item?.totalQuantity,
-              driver: item?.driverNames,
-            }));
-
-            setCategories(item?.cupProfiles || []);
-            setCategoryInputData({});
-            if (item?.qualityStatus == true ) {
-              setSubmitted({
-                submitted: true,
-                data: {
-                  transportGroupId: item?.transportGroupId,
-                  transferDate: item?.transferDate,
-                },
-              });
-            } else {
-              setSubmitted({
-                submitted: false,
-                data: [],
-              });
-            }
-          }}
+          onClick={() => handleActionClick(item)}
         >
           <i className="bi bi-pencil-square"></i>{" "}
         </Button>
@@ -275,14 +283,14 @@ export const TransportedTruckTable = () => {
   return (
     <>
       <ReusableTable
-        data={paginatedData} // Use paginated data instead of filteredData
+        data={paginatedData}
         columns={columns}
         pageSizeOption={[50, 100, 1000]}
         pageSize={5}
         emptyStateMessage={
           searchQuery.trim()
-            ? `No received trucks found matching "${searchQuery}"`
-            : "There are no received trucks available for quality analysis."
+            ? `No received trucks with valid categories found matching "${searchQuery}"`
+            : "There are no received trucks with valid categories (C1, C2, S86, S87, S88) available for quality analysis."
         }
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -291,7 +299,7 @@ export const TransportedTruckTable = () => {
       >
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages} // Use calculated total pages
+          totalPages={totalPages}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

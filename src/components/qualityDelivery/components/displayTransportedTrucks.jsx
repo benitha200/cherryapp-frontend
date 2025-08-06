@@ -1,6 +1,7 @@
 import { Row, Col, Card, Table, Form } from "react-bootstrap";
 import { GetTransportedTracyBytransferGroupIdAndDate } from "../action";
 import { GetSampleStorage } from "../../Admin/quality/receivedTrack/actions";
+import { formatCategory } from "../../../utils/formatString";
 
 export const SingleTransportedTruckdisplay = ({
   selectedTransportInfo,
@@ -210,7 +211,7 @@ export const SingleTransportedTruckdisplay = ({
                           {qualityData.map((item) => (
                             <tr key={item.id}>
                               <td className="fw-bold align-middle w-50">
-                                {item.category}
+                                {formatCategory( item.category)}
                   
                               </td>
                               {qualityColumns.map((column) => (

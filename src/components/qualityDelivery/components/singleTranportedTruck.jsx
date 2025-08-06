@@ -1,6 +1,7 @@
 import { Form, Row, Col, Card, Table } from "react-bootstrap";
 import PropTypes from "prop-types";
 import { GetSampleStorage } from "../../Admin/quality/receivedTrack/actions";
+import { formatCategory} from '../../../utils/formatString'
  
 export const SingleTransportedTruck = ({
   setInfo,
@@ -219,21 +220,21 @@ export const SingleTransportedTruck = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {validKeys.map(
-                          (category) =>
-                            includeInValidKeys(category) && (
-                              <tr key={category}>
-                                <td className="fw-bold align-middle w-75">
-                                  {category}
+                        {validKeys.map((category) => {
+                          if (!includeInValidKeys(category)) return null;
+                          return (
+                            <tr key={category}>
+                              <td className="fw-bold align-middle w-75">
+                                {formatCategory(category)}
+                              </td>
+                              {qualityColumns.map((column) => (
+                                <td key={column.key}>
+                                  {renderFormControl(category, column)}
                                 </td>
-                                {qualityColumns.map((column) => (
-                                  <td key={column.key}>
-                                    {renderFormControl(category, column)}
-                                  </td>
-                                ))}
-                              </tr>
-                            )
-                        )}
+                              ))}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </Table>
                   </div>
