@@ -16,6 +16,7 @@ const processingTheme = {
 };
 
 const ReusableTable = ({
+  HeaderButton = null,
   children,
   data = [],
   columns = [],
@@ -99,6 +100,9 @@ const ReusableTable = ({
                   </Button>
                 </div>
               )}
+ <div>
+      {HeaderButton && HeaderButton}
+    </div>
               {isQualityDelivery && downloadSummary && (
                 <div className="d-flex" style={{ width: "13rem" }}>
                   <Button

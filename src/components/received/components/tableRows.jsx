@@ -88,7 +88,6 @@ export const TransportedTruckTable = () => {
     );
   }
 
-  // Filter data based on search query
   const filteredData = useMemo(() => {
     if (!data?.data) return [];
 
@@ -99,28 +98,23 @@ export const TransportedTruckTable = () => {
     return data.data.filter((item) => searchInObject(item, searchQuery));
   }, [data?.data, searchQuery]);
 
-  // Calculate pagination values
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  // Get paginated data
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filteredData.slice(startIndex, endIndex);
   }, [filteredData, currentPage, itemsPerPage]);
 
-  // Reset to first page when search query changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  // Reset to first page when items per page changes
   useEffect(() => {
     setCurrentPage(1);
   }, [itemsPerPage]);
 
-  // Ensure current page is valid when filtered data changes
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
@@ -244,9 +238,10 @@ export const TransportedTruckTable = () => {
 
   return (
     <>
-      <DeliveryExeleData />
+     
       <ReusableTable
-        data={paginatedData} // Use paginated data instead of filteredData
+        HeaderButton={ <DeliveryExeleData />}
+        data={paginatedData} 
         columns={columns}
         pageSizeOption={[50, 100, 1000]}
         pageSize={5}
@@ -262,7 +257,7 @@ export const TransportedTruckTable = () => {
       >
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages} // Use calculated total pages
+          totalPages={totalPages} 
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createStockDeliveryRecord, getTransportedTrackById, transportedTruck } from "../../apis/transportedTrack";
+import { createStockDeliveryRecord, getTransportedTrackById, transportedTruck, transportedTruckQualityDeliveryExcel } from "../../apis/transportedTrack";
 import toast from "react-hot-toast";
 export const GetTranspotedTruck = () => {
   const { isPending, error, data } = useQuery({
-    queryKey: ["TransportedTrucks"],
+    queryKey: ["TransportedTrucksQualityDelivery"],
     queryFn: async () => await transportedTruck(),
   });
   return { isPending, error, data };
@@ -46,7 +46,7 @@ export const CreateStockDelivery = (onupdateSuccess) => {
       return createStockDeliveryRecord(payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["TransportedTrucks"] });
+      queryClient.invalidateQueries({ queryKey: ["TransportedTrucksQualityDelivery"] });
       onupdateSuccess();
     },
 
@@ -62,8 +62,16 @@ export const CreateStockDelivery = (onupdateSuccess) => {
 
 export const GetTransportedTracyBytransferGroupIdAndDate = (transferGroupId, tranportDate) => {
   const { isPending, error, data } = useQuery({
-    queryKey: ["TransportedTruckById", transferGroupId, tranportDate],
+    queryKey: ["TransportedTruckByIdQualityDelivery", transferGroupId, tranportDate],
     queryFn: async () => await getTransportedTrackById(transferGroupId, tranportDate),
+  });
+  return { isPending, error, data };
+};
+
+export const GetTranspotedTrackForExel = () => {
+  const { isPending, error, data } = useQuery({
+    queryKey: ["TransportedTrucksExcele"],
+    queryFn: async () => await transportedTruckQualityDeliveryExcel(),
   });
   return { isPending, error, data };
 };
