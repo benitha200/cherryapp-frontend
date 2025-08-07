@@ -1,5 +1,6 @@
 import CSVExporter from "../../../sharedCompoents/csvfile";
 import { formatDate } from "../../../utils/formatDate";
+import { GetTranspotedTrackForExel } from "../action";
 
 export const DeliveryExeleData = () => {
   const formatreportDAte = (dateString) => {
@@ -7,6 +8,26 @@ export const DeliveryExeleData = () => {
     return formatDate(dateString);
   };
 
+  const { data: apiResponse } = GetTranspotedTrackForExel();
+  
+  const transformedData = apiResponse?.data?.flatMap((transportGroup) => {
+    if (!transportGroup.deliveryDetails || transportGroup.deliveryDetails.length === 0) {
+      return [];
+
+    }
+    return transportGroup.deliveryDetails.map((delivery) => ({
+      cwsName: transportGroup.cwsName,
+      PlateNumbers: transportGroup.plateNumbers,
+      transportGroupId: transportGroup.transportGroupId,
+      transferDate: transportGroup.transferDate,
+      arrivalDate: delivery.arrivalDate,
+      transportedKgs: transportGroup.totalQuantity, 
+      driverName: transportGroup.driverNames,
+      deliveredKgs: delivery.deliveryKgs, 
+      category: delivery.category,
+      wrn: delivery.WRN, 
+    }));
+  }) || [];
   const columns = [
     { field: "cwsName", header: "CWS Station" },
     { field: "PlateNumbers", header: "Plate Numbers" },
@@ -14,11 +35,12 @@ export const DeliveryExeleData = () => {
     {
       field: "transferDate",
       header: "Transfer Date",
-      reder: (data) => formatreportDAte(data.transferDate),
+      render: (data) => formatreportDAte(data.transferDate),
     },
     {
+      field: "arrivalDate",
       header: "Arrival Date",
-      reder: (data) => formatreportDAte(data.arrivalDate),
+      render: (data) => formatreportDAte(data.arrivalDate),
     },
     { field: "transportedKgs", header: "Transported (KG)" },
     { field: "driverName", header: "Driver Name" },
@@ -27,25 +49,10 @@ export const DeliveryExeleData = () => {
     { field: "wrn", header: "WRN" },
   ];
 
-  const data = [
-    {
-      cwsName: "Mashesha",
-      PlateNumbers: "RAE123B",
-      transportGroupId: "TG-456",
-      transferDate: "2025-07-20",
-      arrivalDate: "2025-07-21",
-      transportedKgs: 1500,
-      driverName: "John Doe",
-      deliveredKgs: 1495,
-      category: "S86",
-      wrn: "WRN-789",
-    },
-  ];
-
   return (
     <CSVExporter
       columns={columns}
-      data={data}
+      data={transformedData}
       filename="Delivery-report-file"
     />
   );
