@@ -1,23 +1,25 @@
-import { exportQualityReportCSV } from "./QualityReportCsv";
-import processQualityReportData from "./exceleDataRaw";
-
 import { useState } from "react";
 import { columns } from "./reportColumns";
-import { Button, Col, Form, InputGroup } from "react-bootstrap";
 import { GetReport } from "../action";
-import { ReprotTable } from "./reportRaws";
 import { DashboardCard } from "./dashboardCard";
 import { DashboardCardWithPercentages } from "./DashboardCardWithPercentages";
 import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithComma";
 import DeliveryReportSkeleton from "./skeleton";
+import ReusableTable from "../../../../../sharedCompoents/reusableTable";
+import { QualityAnalysisExcel } from "./downloadableExele";
 
 export const GeneralReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
-  const { isPending, error, data } = GetReport();
-  if (error) {
-    // return <Error error={error?.message ?? "Failed to fetch report Data."} />;
-  }
+  const [totals, setTotals] = useState({
+    totalTransported: 0,
+    totalDelivered: 0,
+    totalVariation: 0,
+    averageFiftenDelivered: 0,
+    averagethirteenFourteenDelivered: 0,
+    averageLowgradeDelivered: 0,
+  });
+  const { isPending, data } = GetReport();
 
   const processingTheme = {
     primary: "#008080",
@@ -32,11 +34,16 @@ export const GeneralReportTable = () => {
     tableBorder: "#D1E0E0",
     emptyStateBackground: "#F5FAFA",
   };
-
-  function exportExceleWithTrackCategoryAndDate() {
-    exportQualityReportCSV(processQualityReportData(data?.data?.report ?? []));
+  if (data?.data) {
+    [].map((element) => {
+      totals.totalTransported += element?.transportedKgs ?? 0;
+      totals.totalDelivered += element?.deliveredKgs ?? 0;
+      totals.totalVariation += element?.variation ?? 0;
+      totals.averageFiftenDelivered += element?.k ?? 0;
+      totals.averagethirteenFourteenDelivered += element?.k ?? 0;
+      totals.averageLowgradeDelivered += element?.k ?? 0;
+    });
   }
-
   return isPending ? (
     <DeliveryReportSkeleton />
   ) : (
@@ -74,20 +81,10 @@ export const GeneralReportTable = () => {
           </div>
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCardWithPercentages
-              title=" Average 15+ Delivered"
+              title=" Average 16+ Delivered"
               value={`${formatNumberWithCommas(
-                data?.data?.grandTotals?.GrandtotAvg15PlusDelivery ?? 0
+                totals.totalTransported ?? 0
               )} kgs`}
-              mainValue={
-                data?.data?.grandTotals?.GrandtotAvg15PlusDelivery ?? 0
-              }
-              totalDelivered={
-                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
-              }
-              totalHighGrade={
-                data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0
-              }
-              iconClass=""
               type="avg15Plus"
             />
           </div>
@@ -126,40 +123,7 @@ export const GeneralReportTable = () => {
             />
           </div>
         </div>
-
         <div className="card">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-1">
-              <h4 className="mb-0">Station Quality report</h4>
-              <div className=" d-flex">
-                <Col style={{ width: "16rem" }}>
-                  <div className="d-flex">
-                    <Button
-                      variant="outline-success"
-                      className="me-2"
-                      onClick={() => exportExceleWithTrackCategoryAndDate()}
-                    >
-                      <i className="bi bi-download "></i> Download Details
-                    </Button>
-                  </div>
-                </Col>
-
-                <div style={{ width: "250px" }}>
-                  <InputGroup>
-                    <InputGroup.Text>
-                      <i className="bi bi-search"></i>
-                    </InputGroup.Text>
-                    <Form.Control
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </InputGroup>
-                </div>
-              </div>
-            </div>
-          </div>
           <div
             className="table-responsive"
             style={{ height: "60vh", overflowY: "auto" }}
@@ -173,27 +137,8 @@ export const GeneralReportTable = () => {
                 border: `1px solid ${processingTheme.tableBorder}`,
               }}
             >
-              <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
-                <tr>
-                  {columns.map((column, index) => (
-                    <th
-                      key={index}
-                      style={{
-                        backgroundColor:
-                          processingTheme.tableHeader || "#f8f9fa",
-                        color: processingTheme.primary,
-                        padding: "10px 15px",
-                        whiteSpace: "nowrap",
-                        borderBottom: `1px solid ${processingTheme.tableBorder}`,
-                      }}
-                    >
-                      {column.header || column.field}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
               <tbody>
-                {data?.data?.report?.length == 0 ? (
+                {data?.data?.length == 0 ? (
                   <tr>
                     <td colSpan={columns?.length}>
                       <div className="text-center fw-bold fs-5 p-3 border border-warning rounded bg-light text-dark">
@@ -202,29 +147,31 @@ export const GeneralReportTable = () => {
                     </td>
                   </tr>
                 ) : (
-                  (!searchQuery
-                    ? data?.data?.report
-                    : data?.data?.report?.filter((element) =>
-                        element?.cws?.name
-                          ?.toLowerCase()
-                          ?.includes(searchQuery.toLowerCase())
-                      )
-                  ).map((element) => (
-                    <ReprotTable
-                      data={element ?? []}
-                      columns={columns}
-                      pageSizeOptions={[5, 10, 20]}
-                      initialPageSize={5}
-                      isLoading={false}
-                      onPageSizeChange={setItemsPerPage}
-                      rowKeyField="batchNo"
-                      itemsPerPage={itemsPerPage}
-                      emptyStateMessage={"There is no data"}
-                      totalTransportedKgs={
-                        data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0
-                      }
-                    />
-                  ))
+                  <ReusableTable
+                    data={
+                      !searchQuery
+                        ? data?.data
+                        : data?.data?.filter((element) =>
+                            element?.cwsName
+                              ?.toLowerCase()
+                              ?.includes(searchQuery?.trim()?.toLowerCase())
+                          ) ?? []
+                    }
+                    columns={columns}
+                    pageSizeOptions={[5, 10, 20]}
+                    initialPageSize={5}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    isLoading={false}
+                    onPageSizeChange={setItemsPerPage}
+                    rowKeyField="batchNo"
+                    itemsPerPage={itemsPerPage}
+                    emptyStateMessage={"Failed to find report data."}
+                    HeaderButton={<QualityAnalysisExcel />}
+                    totalTransportedKgs={
+                      data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0
+                    }
+                  />
                 )}
               </tbody>
             </table>
