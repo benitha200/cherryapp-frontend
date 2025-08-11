@@ -40,7 +40,7 @@ import WetTransferAdmin from "./components/Admin/WetTransfer/WetTransferAdmin.js
 import Quality from "./components/Admin/quality/index.jsx";
 import OfflineModal from "./sharedCompoents/networkError.jsx";
 import NotFoundPage from "./sharedCompoents/404/404.jsx";
-import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
+// import DeliveryTracks from "./components/Admin/quality/receivedTrack/index.jsx";
 import { Toaster } from "react-hot-toast";
 import QualityReport from "./components/Admin/quality/report/index.jsx";
 import StockManagement from "./components/Admin/Cherry/StockManagement.jsx";
@@ -49,7 +49,8 @@ import GeneralReport from "./components/Admin/Reports/GeneralReport/index.jsx";
 import DeliveryReport from "./components/Admin/Reports/deliveryReportNewNew/index.jsx";
 import QualityAnalysisReport from "./components/Admin/Reports/QualityAnalysisNEw/index.jsx";
 import { TransportedTrucks } from "./components/received/index.jsx";
-import SampleElement from "./components/Admin/Reports/GeneralReport/index.jsx";
+import SampleElement from "./components/Admin/quality/receivedTrack/index.jsx";
+import SampleElement2 from "./components/qualityDelivery/index.jsx";
 
 const AppContent = () => {
   const location = useLocation();
@@ -110,6 +111,7 @@ const AppContent = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/my-account" element={<MyAccount />} />
               <Route path="/sample" element={<SampleElement />} />
+              <Route path="/sample2" element={<SampleElement2 />} />
               <Route
                 path="/"
                 element={
@@ -150,7 +152,7 @@ const AppContent = () => {
                 <Route path="/pricing" element={<PricingManagement />} />
                 <Route path="/users" element={<Users />} />
 
-                <Route path="/quality-delivery" element={<DeliveryTracks />} />
+                <Route path="/quality-delivery" element={<SampleElement2 />} />
               </Route>
               {/* GUARANTEE CWS MANAGER ONLY */}
               <Route

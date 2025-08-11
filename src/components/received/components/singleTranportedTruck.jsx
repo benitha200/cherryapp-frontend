@@ -1,4 +1,5 @@
 import { Form, Row, Col, Card } from "react-bootstrap";
+import { formatCategory } from "../../../utils/formatString";
 
 export const SingleTransportedTruck = ({
   setInfo,
@@ -37,7 +38,7 @@ export const SingleTransportedTruck = ({
     <Col md={4} key={categoryCode} className="mb-3">
       <Card className="h-100">
         <Card.Header className=" text-white" style={{ backgroundColor: "#76d8f0ff" }}>
-          <h6 className="mb-0">{categoryCode}</h6>
+          <h6 className="mb-0">{formatCategory(categoryCode)}</h6>
         </Card.Header>
         <Card.Body className="p-3">
           <Form.Group className="mb-2">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 
 // Consistent theme colors
@@ -13,6 +13,8 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+  const [qualityOpen, setQualityOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -69,7 +71,7 @@ const Sidebar = () => {
 
   const qualityItemsAdmin = [
     { path: "/quality-all", icon: "capsule", text: "Sample" },
-    // { path: "/quality-delivery", icon: "box", text: "Delivery" },
+    { path: "/quality-delivery", icon: "box", text: "Quality Delivery" },
   ];
 
   // Reports menu items

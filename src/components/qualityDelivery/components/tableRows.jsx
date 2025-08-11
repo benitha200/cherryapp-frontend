@@ -8,7 +8,6 @@ import { GenericModel } from "../../../sharedCompoents/genericModel";
 import { Pagination } from "../../../sharedCompoents/paginations";
 import { SingleTransportedTruckdisplay } from "./displayTransportedTrucks";
 import TransportedTrackDelivery from "./sekeleton";
-import { DeliveryExeleData } from "./excelRepot";
 
 export const TransportedTruckTable = () => {
   const [isModelOpen, setIsModelOpen] = useState(false);
@@ -58,6 +57,22 @@ export const TransportedTruckTable = () => {
     });
   };
 
+  // Function to check if categories contain valid entries
+  const hasValidCategories = (cupProfiles) => {
+    if (!cupProfiles || cupProfiles.length === 0) return false;
+    
+    return cupProfiles.some(category => {
+      const upperCategory = category.toUpperCase();
+      return (
+        upperCategory.startsWith('C1') || 
+        upperCategory.startsWith('C2') || 
+        upperCategory.startsWith('S86') || 
+        upperCategory.startsWith('S87') || 
+        upperCategory.startsWith('S88')
+      );
+    });
+  };
+
   const handleopenModel = () => {
     setIsModelOpen(!isModelOpen);
 
@@ -78,25 +93,27 @@ export const TransportedTruckTable = () => {
   });
 
   const { isPending, error, data } = GetTranspotedTruck();
-  const { mutate, creatingError, isCreatingpending } =
+  const { mutate, isCreatingpending } =
     CreateStockDelivery(onupdateSuccess);
 
-  if (creatingError) {
-    toast.error(
-      creatingError.message ??
-        "An error occurred while creating the stock delivery"
-    );
-  }
+  // Filter data to only include records with "RECEIVED" status and valid categories
+  const receivedData = useMemo(() => {
+    if (!data?.data) return [];
+    
+    return data.data.filter((item) => {
+      return  hasValidCategories(item?.cupProfiles);
+    });
+  }, [data?.data]);
 
   const filteredData = useMemo(() => {
-    if (!data?.data) return [];
+    if (!receivedData.length) return [];
 
     if (!searchQuery.trim()) {
-      return data.data;
+      return receivedData;
     }
 
-    return data.data.filter((item) => searchInObject(item, searchQuery));
-  }, [data?.data, searchQuery]);
+    return receivedData.filter((item) => searchInObject(item, searchQuery));
+  }, [receivedData, searchQuery]);
 
   const totalItems = filteredData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -126,34 +143,79 @@ export const TransportedTruckTable = () => {
   const handleCompleteAction = () => {
     const apiData = [];
 
-    const arrivalDate = categoryInputData.arrivalDate
-      ? new Date(categoryInputData.arrivalDate)
-      : new Date();
-
     Object.keys(categoryInputData).forEach((categoryKey) => {
       if (categoryKey === "arrivalDate") return;
 
       const categoryData = categoryInputData[categoryKey];
+      const hasData =
+        categoryData &&
+        (categoryData.delivered ||
+          categoryData.wrn ||
+          categoryData.plus16 ||
+          categoryData.fifteen ||
+          categoryData.fourteen ||
+          categoryData.thirteen ||
+          categoryData.b12 ||
+          categoryData.defect ||
+          categoryData.ppScore);
 
-      if (categoryData && (categoryData.delivered || categoryData.wrn)) {
+      if (hasData) {
         const apiObject = {
-          transferDate: selectedId?.transferDate,
-          arrivalDate: arrivalDate,
           transportGroupId: selectedId.transportGroupId,
+          labMoisture: parseFloat(categoryData.labMoisture||0),
+          sixteenPlus: parseFloat(categoryData.plus16 || 0),
+          fifteen: parseFloat(categoryData.fifteen || 0),
+          fourteen: parseFloat(categoryData.fourteen || 0),
+          thirteen: parseFloat(categoryData.thirteen || 0),
+          b12: parseFloat(categoryData.b12 || 0),
+          defect: parseFloat(categoryData.defect || 0),
+          ppScore: parseFloat(categoryData.ppScore || 0),
           category: categoryKey,
-          deliveryKgs: parseFloat(categoryData.delivered || 0),
-          WRN: categoryData.wrn || "",
+          sampleStorageId:parseFloat(categoryData.sampleStorage||0)
         };
-
         apiData.push(apiObject);
       }
     });
 
     if (apiData.length === 0) {
-      toast.error("Please fill in at least one category with delivery data");
+      toast.error("Please fill in at least one category with data");
       return;
     }
+
     mutate(apiData);
+  };
+
+  const handleActionClick = (item) => {
+    handleopenModel();
+    setSelectedId({
+      transportGroupId: item?.transportGroupId,
+      transferDate: item?.transferDate,
+    });
+    setSelectedTransportInfo((prev) => ({
+      ...prev,
+      cws: item?.cwsName,
+      trackPlatNumber: item?.plateNumbers,
+      quantity: item?.totalQuantity,
+      driver: item?.driverNames,
+    }));
+
+    setCategories(item?.cupProfiles || []);
+    setCategoryInputData({});
+    
+    if (item?.qualityStatus == true) {
+      setSubmitted({
+        submitted: true,
+        data: {
+          transportGroupId: item?.transportGroupId,
+          transferDate: item?.transferDate,
+        },
+      });
+    } else {
+      setSubmitted({
+        submitted: false,
+        data: [],
+      });
+    }
   };
 
   const columns = [
@@ -190,42 +252,24 @@ export const TransportedTruckTable = () => {
       header: "driver Phone",
     },
     {
+      field: "status",
+      header: "Status",
+      render: (item) => (
+        <span className={`badge ${
+          item?.status === 'RECEIVED' ? 'bg-success' : 
+          item?.status === 'COMPLETED' ? 'bg-primary' : 'bg-secondary'
+        }`}>
+          {item?.status || 'N/A'}
+        </span>
+      ),
+    },
+    {
       field: "category",
       header: "Actions",
       render: (item) => (
         <Button
-          variant={item?.status === "RECEIVED" ? "warning" : "success"}
-          onClick={() => {
-            handleopenModel();
-            setSelectedId({
-              transportGroupId: item?.transportGroupId,
-              transferDate: item?.transferDate,
-            });
-            setSelectedTransportInfo((prev) => ({
-              ...prev,
-              cws: item?.cwsName,
-              trackPlatNumber: item?.plateNumbers,
-              quantity: item?.totalQuantity,
-              driver: item?.driverNames,
-            }));
-
-            setCategories(item?.cupProfiles || []);
-            setCategoryInputData({});
-            if (item?.status === "RECEIVED") {
-              setSubmitted({
-                submitted: true,
-                data: {
-                  transportGroupId: item?.transportGroupId,
-                  transferDate: item?.transferDate,
-                },
-              });
-            } else {
-              setSubmitted({
-                submitted: false,
-                data: [],
-              });
-            }
-          }}
+          variant={item?.qualityStatus == true ? "warning" : "success"}
+          onClick={() => handleActionClick(item)}
         >
           <i className="bi bi-pencil-square"></i>{" "}
         </Button>
@@ -238,17 +282,15 @@ export const TransportedTruckTable = () => {
 
   return (
     <>
-     
       <ReusableTable
-        HeaderButton={ <DeliveryExeleData />}
-        data={paginatedData} 
+        data={paginatedData}
         columns={columns}
         pageSizeOption={[50, 100, 1000]}
         pageSize={5}
         emptyStateMessage={
           searchQuery.trim()
-            ? `No transported trucks found matching "${searchQuery}"`
-            : "There are no transported trucks available."
+            ? `No received trucks with valid categories found matching "${searchQuery}"`
+            : "There are no received trucks with valid categories (C1, C2, S86, S87, S88) available for quality analysis."
         }
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -257,7 +299,7 @@ export const TransportedTruckTable = () => {
       >
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages} 
+          totalPages={totalPages}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
@@ -268,7 +310,7 @@ export const TransportedTruckTable = () => {
         onClose={handleopenModel}
         onConfirm={handleCompleteAction}
         isLoading={isCreatingpending}
-        title="Received Truck"
+        title="Quality Analysis - Received Truck"
         confirmButtonText="Complete"
         cancelButtonText="Cancel"
         modalSize="xl"
@@ -283,9 +325,10 @@ export const TransportedTruckTable = () => {
           setInfo={setCategoryInputData}
         />
       </GenericModel>
+
       <GenericModel
         isOpen={isModelOpen && submitted.submitted}
-        title="received Truck"
+        title="Quality Analysis Results"
         onClose={handleopenModel}
         onConfirm={() => null}
         isLoading={isCreatingpending}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import API_URL from "../../../constants/Constants";
 import BaggingOffDetailModal from "./BaggingOffDetailModal";
@@ -94,7 +94,7 @@ const BaggingOffReport = () => {
   // Helper function to extract base batch number
   const getBaseBatchNo = (batchNo) => {
     // Handle both formats: with and without dash
-    return batchNo.includes("-") ? batchNo.split("-")[0] : batchNo;
+    return batchNo?.includes("-") ? batchNo.split("-")[0] : batchNo;
   };
 
   const fetchReports = async () => {
@@ -219,7 +219,7 @@ const BaggingOffReport = () => {
       if (
         filters.batchNo &&
         reportType === "batch" &&
-        !report.batchNo.includes(filters.batchNo)
+        !report?.batchNo?.includes(filters.batchNo)
       ) {
         return false;
       }
@@ -309,6 +309,73 @@ const BaggingOffReport = () => {
     startIndex,
     startIndex + itemsPerPage
   );
+
+  // DYNAMIC SUMMARY CALCULATION BASED ON FILTERED DATA
+  const calculateDynamicSummaries = () => {
+    if (reportType === "batch") {
+      // For batch report - calculate from filtered batch data
+      let totalInputKgs = 0;
+      let totalOutputKgs = 0;
+      let nonNaturalInputKgs = 0;
+      let nonNaturalOutputKgs = 0;
+
+      filteredData.forEach((report) => {
+        const batchInfo = report.batchInfo || report;
+        const baseBatchNo = getBaseBatchNo(batchInfo.batchNo);
+        const inputKgs = batchInfo.totalInputKgs || batchInfo.totalKgs || 0;
+        const outputKgs = batchInfo.totalOutputKgs || batchInfo.totalKgs || 0;
+
+        // Add to total regardless of processing type
+        totalInputKgs += inputKgs;
+        totalOutputKgs += outputKgs;
+
+        // Only include non-natural batches in the non-natural calculation
+        if (!baseBatchHasNatural[baseBatchNo]) {
+          nonNaturalInputKgs += inputKgs;
+          nonNaturalOutputKgs += outputKgs;
+        }
+      });
+
+      // Use non-natural values for outturn calculation, but show total values in cards
+      const nonNaturalOutturn =
+        nonNaturalInputKgs > 0
+          ? ((nonNaturalOutputKgs / nonNaturalInputKgs) * 100).toFixed(2)
+          : 0;
+
+      return {
+        totalNonNaturalInputKgs: totalInputKgs, // Show total input KGs (including natural)
+        totalNonNaturalOutputKgs: totalOutputKgs, // Show total output KGs (including natural)
+        overallNonNaturalOutturn: parseFloat(nonNaturalOutturn), // But calculate outturn from non-natural only
+        totalRecords: filteredData.length,
+        // Keep separate values for accurate calculations
+        actualNonNaturalInputKgs: nonNaturalInputKgs,
+        actualNonNaturalOutputKgs: nonNaturalOutputKgs,
+      };
+    } else {
+      // For station report - calculate from filtered station data
+      let totalInputKgs = 0;
+      let totalOutputKgs = 0;
+
+      filteredData.forEach((station) => {
+        totalInputKgs += station.nonNaturalInputKgs || 0;
+        totalOutputKgs += station.nonNaturalOutputKgs || 0;
+      });
+
+      const outturn =
+        totalInputKgs > 0
+          ? ((totalOutputKgs / totalInputKgs) * 100).toFixed(2)
+          : 0;
+
+      return {
+        totalNonNaturalInputKgs: totalInputKgs,
+        totalNonNaturalOutputKgs: totalOutputKgs,
+        overallNonNaturalOutturn: parseFloat(outturn),
+        totalRecords: filteredData.length,
+      };
+    }
+  };
+
+  const summaries = calculateDynamicSummaries();
 
   // Downloads
   const downloadTableAsExcel = () => {
@@ -581,28 +648,6 @@ const BaggingOffReport = () => {
     link.click();
     document.body.removeChild(link);
   };
-
-  const calculateSummaries = () => {
-    if (reportType === "batch") {
-      return {
-        totalNonNaturalInputKgs: overallMetrics.totalNonNaturalInputKgs,
-        totalNonNaturalOutputKgs: overallMetrics.totalNonNaturalOutputKgs,
-        overallNonNaturalOutturn: overallMetrics.overallNonNaturalOutturn,
-        totalRecords: overallMetrics.totalBatches,
-      };
-    } else {
-      return {
-        totalNonNaturalInputKgs: overallMetrics.totalNonNaturalInputKgs,
-        totalNonNaturalOutputKgs: overallMetrics.totalNonNaturalOutputKgs,
-        overallNonNaturalOutturn: overallMetrics.overallNonNaturalOutturn,
-        totalRecords: overallMetrics.totalStations,
-        totalBatches: overallMetrics.totalBatches,
-        totalProcessings: overallMetrics.totalProcessings,
-      };
-    }
-  };
-
-  const summaries = calculateSummaries();
 
   const renderBatchTable = () => {
     return (
@@ -962,8 +1007,8 @@ const BaggingOffReport = () => {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      {!loading && !error && filteredData.length > 0 && (
+      {/* Dynamic Summary Cards - Now reflects filtered data */}
+      {!loading && !error && (
         <div className="row mb-4">
           <div className="col-md-3">
             <div className="card" style={{ backgroundColor: theme.neutral }}>
@@ -972,6 +1017,18 @@ const BaggingOffReport = () => {
                   {reportType === "batch" ? "Total Batches" : "Total Stations"}
                 </h6>
                 <h4 className="card-text">{summaries.totalRecords}</h4>
+                <small className="text-muted">
+                  {filteredData.length ===
+                  (reportType === "batch"
+                    ? batchReports.length
+                    : stationSummaries.length)
+                    ? "All records"
+                    : `Filtered from ${
+                        reportType === "batch"
+                          ? batchReports.length
+                          : stationSummaries.length
+                      }`}
+                </small>
               </div>
             </div>
           </div>
@@ -982,6 +1039,11 @@ const BaggingOffReport = () => {
                 <h4 className="card-text">
                   {summaries.totalNonNaturalInputKgs.toLocaleString()}
                 </h4>
+                <small className="text-muted">
+                  {reportType === "batch"
+                    ? "All processing types"
+                    : "Non-natural processing"}
+                </small>
               </div>
             </div>
           </div>
@@ -992,6 +1054,11 @@ const BaggingOffReport = () => {
                 <h4 className="card-text">
                   {summaries.totalNonNaturalOutputKgs.toLocaleString()}
                 </h4>
+                <small className="text-muted">
+                  {reportType === "batch"
+                    ? "All processing types"
+                    : "Non-natural processing"}
+                </small>
               </div>
             </div>
           </div>
@@ -1001,14 +1068,26 @@ const BaggingOffReport = () => {
                 <h6 className="card-title">
                   Overall Outturn (Without NATURAL)
                 </h6>
-                <h4 className="card-text">
+                <h4
+                  className="card-text"
+                  style={{
+                    color:
+                      summaries.overallNonNaturalOutturn >= 20.5 &&
+                      summaries.overallNonNaturalOutturn <= 25
+                        ? theme.primary
+                        : "red",
+                  }}
+                >
                   {summaries.overallNonNaturalOutturn}%
                 </h4>
+                <small className="text-muted">From filtered data</small>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Loading state for summary cards */}
       {loading && (
         <div className="row mb-4">
           <div className="col-md-3">
@@ -1017,7 +1096,9 @@ const BaggingOffReport = () => {
                 <h6 className="card-title">
                   {reportType === "batch" ? "Total Batches" : "Total Stations"}
                 </h6>
-                <h4 className="card-text">-</h4>
+                <div className="placeholder-glow">
+                  <span className="placeholder col-6"></span>
+                </div>
               </div>
             </div>
           </div>
@@ -1025,7 +1106,9 @@ const BaggingOffReport = () => {
             <div className="card" style={{ backgroundColor: theme.neutral }}>
               <div className="card-body">
                 <h6 className="card-title">Total Input KGs</h6>
-                <h4 className="card-text">-</h4>
+                <div className="placeholder-glow">
+                  <span className="placeholder col-8"></span>
+                </div>
               </div>
             </div>
           </div>
@@ -1033,7 +1116,9 @@ const BaggingOffReport = () => {
             <div className="card" style={{ backgroundColor: theme.neutral }}>
               <div className="card-body">
                 <h6 className="card-title">Total Output KGs</h6>
-                <h4 className="card-text">-</h4>
+                <div className="placeholder-glow">
+                  <span className="placeholder col-8"></span>
+                </div>
               </div>
             </div>
           </div>
@@ -1043,7 +1128,9 @@ const BaggingOffReport = () => {
                 <h6 className="card-title">
                   Overall Outturn (Without NATURAL)
                 </h6>
-                <h4 className="card-text">-</h4>
+                <div className="placeholder-glow">
+                  <span className="placeholder col-4"></span>
+                </div>
               </div>
             </div>
           </div>
@@ -1163,6 +1250,7 @@ const BaggingOffReport = () => {
             </div>
           )}
         </div>
+
         {/* Add BaggingOffDetailModal */}
         <BaggingOffDetailModal
           show={showDetailModal}
