@@ -11,7 +11,7 @@ import { QualityAnalysisExcel } from "./downloadableExele";
 export const GeneralReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
-  const [totals, setTotals] = useState({
+  const [total, setTotal] = useState({
     totalTransported: 0,
     totalDelivered: 0,
     totalVariation: 0,
@@ -34,16 +34,7 @@ export const GeneralReportTable = () => {
     tableBorder: "#D1E0E0",
     emptyStateBackground: "#F5FAFA",
   };
-  if (data?.data) {
-    [].map((element) => {
-      totals.totalTransported += element?.transportedKgs ?? 0;
-      totals.totalDelivered += element?.deliveredKgs ?? 0;
-      totals.totalVariation += element?.variation ?? 0;
-      totals.averageFiftenDelivered += element?.k ?? 0;
-      totals.averagethirteenFourteenDelivered += element?.k ?? 0;
-      totals.averageLowgradeDelivered += element?.k ?? 0;
-    });
-  }
+
   return isPending ? (
     <DeliveryReportSkeleton />
   ) : (
@@ -80,47 +71,13 @@ export const GeneralReportTable = () => {
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
-            <DashboardCardWithPercentages
-              title=" Average 16+ Delivered"
-              value={`${formatNumberWithCommas(
-                totals.totalTransported ?? 0
-              )} kgs`}
-              type="avg15Plus"
-            />
+            <DashboardCardWithPercentages title=" Average 16+ Delivered" />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
-            <DashboardCardWithPercentages
-              title="Average 13/14 Delivered"
-              value={`${formatNumberWithCommas(
-                data?.data?.grandTotals?.GrandtotAvg1314Delivery ?? 0
-              )} kgs`}
-              mainValue={data?.data?.grandTotals?.GrandtotAvg1314Delivery ?? 0}
-              totalDelivered={
-                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
-              }
-              totalHighGrade={
-                data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0
-              }
-              iconClass=""
-              type="avg1314"
-            />
+            <DashboardCardWithPercentages title="Average 13/14 Delivered" />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
-            <DashboardCardWithPercentages
-              title=" Average Lowgrade Delivered"
-              value={`${formatNumberWithCommas(
-                data?.data?.grandTotals?.GrandtotAVLGDelivery ?? 0
-              )} kgs`}
-              mainValue={data?.data?.grandTotals?.GrandtotAVLGDelivery ?? 0}
-              totalDelivered={
-                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
-              }
-              totalHighGrade={
-                data?.data?.grandTotals?.GrandtotalHighGradeDeliveredKgs ?? 0
-              }
-              iconClass=""
-              type="avgLowGrade"
-            />
+            <DashboardCardWithPercentages title=" Average Lowgrade Delivered" />
           </div>
         </div>
         <div className="card">
