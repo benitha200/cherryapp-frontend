@@ -6,7 +6,7 @@ export const report = async () => {
   const loggedinuser = loggedInUser();
   try {
     const res = await axios.get(
-      `${API_URL}/quality-delivery/testing-delivery-report/`,
+      `${API_URL}/quality-delivery/analysis-report`,
 
       {
         headers: {
@@ -20,6 +20,22 @@ export const report = async () => {
   }
 };
 
+export const reportExcel = async () => {
+  const loggedinuser = loggedInUser();
+  try {
+    const res = await axios.get(
+      `${API_URL}/quality-delivery/quality-analysis-report-by-truck`,
+      {
+        headers: {
+          Authorization: `Bearer ${loggedinuser?.token}`,
+        },
+      }
+    );
+    return res?.data;
+  } catch (error) {
+    return error;
+  }
+};
 
 export const deliveryReportDadta = async () => {
   const loggedinuser = loggedInUser();
