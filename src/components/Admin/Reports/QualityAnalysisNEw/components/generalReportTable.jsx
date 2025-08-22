@@ -45,18 +45,16 @@ export const GeneralReportTable = () => {
             <DashboardCard
               title="Total Transported "
               value={formatNumberWithCommas(
-                data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0
+                data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 300000
               )}
-              iconClass=""
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCard
               title="Total Delivered "
               value={formatNumberWithCommas(
-                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0
+                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 200000
               )}
-              iconClass=""
             />
           </div>
 
@@ -64,29 +62,37 @@ export const GeneralReportTable = () => {
             <DashboardCard
               title="Total Variation "
               value={formatNumberWithCommas(
-                (data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 0) -
+                (data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 100000) -
                   (data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0)
               )}
-              iconClass=""
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
-            <DashboardCardWithPercentages title=" Average 16+ Delivered" />
+            <DashboardCardWithPercentages
+              title=" Average 16+ Delivered"
+              percentageOfHighGrade={20}
+            />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
-            <DashboardCardWithPercentages title="Average 13/14 Delivered" />
+            <DashboardCardWithPercentages
+              title="Average 13/14 Delivered"
+              percentageOfHighGrade={30}
+            />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
-            <DashboardCardWithPercentages title=" Average Lowgrade Delivered" />
+            <DashboardCardWithPercentages
+              title=" Average Lowgrade Delivered"
+              percentageOfHighGrade={40}
+            />
           </div>
         </div>
-        <div className="card">
+        <div className="">
           <div
-            className="table-responsive"
-            style={{ height: "60vh", overflowY: "auto" }}
+          // className="table-responsive"
+          // style={{ height: "60vh", overflowY: "auto" }}
           >
             <table
-              className="table table-hover"
+              className="table table-hover "
               style={{
                 borderCollapse: "separate",
                 borderSpacing: 0,

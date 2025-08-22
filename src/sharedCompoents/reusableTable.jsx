@@ -100,9 +100,7 @@ const ReusableTable = ({
                   </Button>
                 </div>
               )}
- <div>
-      {HeaderButton && HeaderButton}
-    </div>
+              <div>{HeaderButton && HeaderButton}</div>
               {isQualityDelivery && downloadSummary && (
                 <div className="d-flex" style={{ width: "13rem" }}>
                   <Button
@@ -138,7 +136,10 @@ const ReusableTable = ({
         </Card.Body>
       </div>
 
-      <div className="table-responsive mt-4">
+      <div
+        className="table-responsive mt-4"
+        style={{ height: "70vh", overflowY: "auto" }}
+      >
         <table
           className="table"
           style={{

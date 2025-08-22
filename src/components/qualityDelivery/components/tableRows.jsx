@@ -208,6 +208,10 @@ export const TransportedTruckTable = () => {
         data: {
           transportGroupId: item?.transportGroupId,
           transferDate: item?.transferDate,
+          cws: item?.cwsName ?? "-",
+          quantity: item?.totalQuantity ?? "-",
+          driver: item?.driverNames ?? "-",
+          trackPlatNumber: item?.plateNumbers ?? "-",
         },
       });
     } else {

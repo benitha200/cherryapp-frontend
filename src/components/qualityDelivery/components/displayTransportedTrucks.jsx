@@ -3,16 +3,15 @@ import { GetTransportedTracyBytransferGroupIdAndDate } from "../action";
 import { GetSampleStorage } from "../../Admin/quality/receivedTrack/actions";
 import { formatCategory } from "../../../utils/formatString";
 
-export const SingleTransportedTruckdisplay = ({
-  selectedTransportInfo,
-}) => {
+export const SingleTransportedTruckdisplay = ({ selectedTransportInfo }) => {
   const { transportGroupId } = selectedTransportInfo;
 
-  const { isPending, error, data } = GetTransportedTracyBytransferGroupIdAndDate(transportGroupId);
+  const { isPending, error, data } =
+    GetTransportedTracyBytransferGroupIdAndDate(transportGroupId);
   const { sampleStoragedata } = GetSampleStorage();
-  
+
   const qualityData = data?.data || [];
-  
+
   if (isPending) {
     return (
       <Card.Body>
@@ -50,14 +49,14 @@ export const SingleTransportedTruckdisplay = ({
 
   // Helper function to get sample storage name by ID
   const getSampleStorageName = (storageId) => {
-    if (!sampleStoragedata || !storageId) return '';
-    const storage = sampleStoragedata.find(item => item.id === storageId);
-    return storage ? storage.name : '';
+    if (!sampleStoragedata || !storageId) return "";
+    const storage = sampleStoragedata.find((item) => item.id === storageId);
+    return storage ? storage.name : "";
   };
 
   // Helper function to render form control based on field type
   const renderDisplayValue = (item, column) => {
-    if (column.key === 'sampleStorage') {
+    if (column.key === "sampleStorage") {
       const storageName = getSampleStorageName(item[column.field]);
       return (
         <Form.Control
@@ -69,7 +68,7 @@ export const SingleTransportedTruckdisplay = ({
         />
       );
     }
-    
+
     return (
       <Form.Control
         type="number"
@@ -82,11 +81,11 @@ export const SingleTransportedTruckdisplay = ({
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
-
+  console.log("::::::::::::::::::::::", { selectedTransportInfo });
   return (
     <Card.Body>
       <Row className="mb-3">
@@ -130,17 +129,20 @@ export const SingleTransportedTruckdisplay = ({
 
               {qualityData.length > 0 && (
                 <Row className="mb-4">
-                 
                   <Col md={6}>
                     <Form.Group>
                       <Form.Label>
                         <strong>Status</strong>
                       </Form.Label>
                       <div className="mt-2">
-                        <span className={`badge fs-6 ${
-                          qualityData[0]?.status === 'COMPLETED' ? 'bg-success' : 'bg-warning'
-                        }`}>
-                          {qualityData[0]?.status || 'N/A'}
+                        <span
+                          className={`badge fs-6 ${
+                            qualityData[0]?.status === "COMPLETED"
+                              ? "bg-success"
+                              : "bg-warning"
+                          }`}
+                        >
+                          {qualityData[0]?.status || "N/A"}
                         </span>
                       </div>
                     </Form.Group>
@@ -161,6 +163,12 @@ export const SingleTransportedTruckdisplay = ({
                               className="text-white"
                             >
                               Category
+                            </th>
+                            <th
+                              style={{ backgroundColor: "#76d8f0ff" }}
+                              className="text-white"
+                            >
+                              Batch No
                             </th>
                             <th
                               style={{ backgroundColor: "#D4AF37" }}
@@ -198,7 +206,9 @@ export const SingleTransportedTruckdisplay = ({
                             >
                               B12
                             </th>
-                            <th style={{ backgroundColor: "#C0C0C0" }}>Defect</th>
+                            <th style={{ backgroundColor: "#C0C0C0" }}>
+                              Defect
+                            </th>
                             <th style={{ backgroundColor: "#C0C0C0" }}>
                               PP Score(%)
                             </th>
@@ -211,11 +221,13 @@ export const SingleTransportedTruckdisplay = ({
                           {qualityData.map((item) => (
                             <tr key={item.id}>
                               <td className="fw-bold align-middle w-50">
-                                {formatCategory( item.category)}
-                  
+                                {formatCategory(item.category)}
+                              </td>
+                              <td className="fw-bold align-middle w-50">
+                                {item?.batchNo ?? "-"}
                               </td>
                               {qualityColumns.map((column) => (
-                                <td key={column.key} >
+                                <td key={column.key}>
                                   {renderDisplayValue(item, column)}
                                 </td>
                               ))}
@@ -236,12 +248,12 @@ export const SingleTransportedTruckdisplay = ({
                 <Row className="mt-3">
                   <Col md={12}>
                     <div className="text-muted small">
-                      <strong>Last Updated:</strong> {formatDate(qualityData[0]?.updatedAt)}
+                      <strong>Last Updated:</strong>{" "}
+                      {formatDate(qualityData[0]?.updatedAt)}
                     </div>
                   </Col>
                 </Row>
               )}
-
             </Card.Body>
           </Card>
         </Col>

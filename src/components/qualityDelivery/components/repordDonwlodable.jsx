@@ -82,16 +82,6 @@ export const QualityDeliveryExeleData = () => {
     { field: "processingType", header: "Processing Type" },
     { field: "driverName", header: "Driver Name" },
     { field: "transportedKgs", header: "Transported Kgs" },
-    {
-      field: "createdAt",
-      header: "Created At",
-      render: (data) => formatreportDAte(data.createdAt),
-    },
-    {
-      field: "updatedAt",
-      header: "Updated At",
-      render: (data) => formatreportDAte(data.updatedAt),
-    },
   ];
 
   return (
