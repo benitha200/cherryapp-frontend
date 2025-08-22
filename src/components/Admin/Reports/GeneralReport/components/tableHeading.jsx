@@ -86,23 +86,13 @@ const getCupProfileBadgeStyle = (profile) => {
   };
 };
 
-const calculateOutturn = (item) => {
-  const purchasedKgs = item?.purchaseInfo?.totalKgs || 0;
-  const baggingOffKgs = item?.baggingOff?.totalOutputKgs || 0;
-
-  if (purchasedKgs > 0 && baggingOffKgs > 0) {
-    return ((baggingOffKgs / purchasedKgs) * 100).toFixed(1);
-  }
-  return "-";
-};
-
 const getTotalBaggedKgs = (item) => {
   return item?.baggingOff?.totalOutputKgs || 0;
 };
 
 const getCupProfile = (item, type = "sample") => {
   if (type === "delivery" && item?.qualityDelivery?.length > 0) {
-    return item.qualityDelivery[0]?.category || "-";
+    return item.qualityDelivery[0]?.newCategory || "-";
   }
 
   if (item?.transfer?.length > 0) {
@@ -111,6 +101,10 @@ const getCupProfile = (item, type = "sample") => {
 
   return "-";
 };
+const getCupsixteenPlus = (item) => item.qualityDelivery[0]?.sixteenPlus || "-";
+const getCupfifteenPlus = (item) => item.qualityDelivery[0]?.fifteen || "-";
+const getCupfroutteenPlus = (item) => item.qualityDelivery[0]?.fourteen || "-";
+const getCupthirteenPlus = (item) => item.qualityDelivery[0]?.thirteen || "-";
 
 export const Columns = [
   {
@@ -224,22 +218,37 @@ export const Columns = [
     ),
   },
 
-   {
+  {
+    field: "sixteenPlus",
+    header: "16+ %",
+    render: (item) => {
+      const p = getCupsixteenPlus(item);
+      return <div style={{ width: "8rem" }}>{p}</div>;
+    },
+  },
+  {
     field: "truckNumber",
-    header: "15+ %",
-    render: (item) => (
-      <div style={{ width: "8rem" }}>
-        {item?.transfer?.[0]?.truckNumber || "-"}
-      </div>
-    ),
-  }, {
+    header: "14 %",
+    render: (item) => {
+      const p = getCupfifteenPlus(item);
+      return <div style={{ width: "8rem" }}>{p}</div>;
+    },
+  },
+  {
     field: "truckNumber",
-    header: "14/13 %",
-    render: (item) => (
-      <div style={{ width: "8rem" }}>
-        {item?.transfer?.[0]?.truckNumber || "-"}
-      </div>
-    ),
+    header: "14 %",
+    render: (item) => {
+      const p = getCupfroutteenPlus(item);
+      return <div style={{ width: "8rem" }}>{p}</div>;
+    },
+  },
+  {
+    field: "truckNumber",
+    header: "13 %",
+    render: (item) => {
+      const p = getCupthirteenPlus(item, "delivery");
+      return <div style={{ width: "8rem" }}>{p}</div>;
+    },
   },
   {
     field: "truckNumber",
@@ -294,29 +303,5 @@ export const Columns = [
           "-"}
       </div>
     ),
-  },
-  {
-    field: "outturn",
-    header: "Outturn (%)",
-    render: (item) => {
-      const outturn = calculateOutturn(item);
-      const outturnValue = parseFloat(outturn);
-      const isGoodOutturn = outturnValue >= 20.5 && outturnValue <= 25;
-
-      return (
-        <span
-          style={{
-            textAlign: "right",
-            color: isGoodOutturn ? theme.primary : "red",
-            backgroundColor: theme.neutral,
-            padding: "4px 8px",
-            borderRadius: "3px",
-            fontWeight: "bold",
-          }}
-        >
-          {outturn}%
-        </span>
-      );
-    },
   },
 ];

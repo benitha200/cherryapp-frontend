@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 
 export const DashboardCardWithPercentages = ({
   title,
-  iconClass,
   percentageOfHighGrade = 0,
 }) => {
   return (
@@ -34,14 +33,6 @@ export const DashboardCardWithPercentages = ({
             {percentageOfHighGrade} %
           </p>
         </div>
-        {iconClass && (
-          <div className="d-flex justify-content-end mt-1">
-            <i
-              className={`${iconClass} text-primary`}
-              style={{ fontSize: "1rem" }}
-            ></i>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -50,5 +41,4 @@ export const DashboardCardWithPercentages = ({
 DashboardCardWithPercentages.propTypes = {
   title: PropTypes.string.isRequired,
   percentageOfHighGrade: PropTypes.string.isRequired,
-  iconClass: PropTypes.string.isRequired,
 };

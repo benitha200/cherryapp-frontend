@@ -174,7 +174,7 @@ export const GeneralReportTable = () => {
   );
   const uniqueGrades = [
     ...getUniqueValues(flattenedData, "transfer.0.cupProfile"),
-    ...getUniqueValues(flattenedData, "qualityDelivery.0.category"),
+    ...getUniqueValues(flattenedData, "qualityDelivery.0.newCategory"),
   ].filter((value, index, self) => self.indexOf(value) === index);
 
   const handleFilterChange = (filterType, value) => {
@@ -402,11 +402,16 @@ export const GeneralReportTable = () => {
               }}
             >
               <option value="">All Capping Score</option>
-              {uniqueGrades.map((grade) => (
-                <option key={grade} value={grade}>
-                  {grade}
-                </option>
-              ))}
+              {uniqueGrades
+                .filter(
+                  (element) =>
+                    element !== "-" && element !== "Select Cup Profile"
+                )
+                .map((grade) => (
+                  <option key={grade} value={grade}>
+                    {grade}
+                  </option>
+                ))}
             </select>
           </div>
 
