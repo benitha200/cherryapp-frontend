@@ -102,11 +102,11 @@ const Sidebar = () => {
       icon: "graph-up-arrow",
       text: "Quality Analysis Report",
     },
-    // {
-    //   path: "general-report",
-    //   icon: "patch-check-fill",
-    //   text: "Genral Report",
-    // },
+    {
+      path: "general-report",
+      icon: "patch-check-fill",
+      text: "Genral Report",
+    },
   ];
 
   // Settings menu items for admin
