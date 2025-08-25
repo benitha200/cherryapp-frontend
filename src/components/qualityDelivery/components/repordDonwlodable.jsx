@@ -69,10 +69,10 @@ export const QualityDeliveryExeleData = () => {
     },
     { field: "status", header: "Status" },
     { field: "labMoisture", header: "Lab Moisture" },
-    { field: "sixteenPlus", header: "+16" },
-    { field: "fifteen", header: "15" },
-    { field: "fourteen", header: "14" },
-    { field: "thirteen", header: "13" },
+    { field: "sixteenPlus", header: "\u200B+16" }, // Zero-width space
+    { field: "fifteen", header: "\u200B15" },
+    { field: "fourteen", header: "\u200B14" },
+    { field: "thirteen", header: "\u200B13" },
     { field: "b12", header: "B12" },
     { field: "defect", header: "Defect" },
     { field: "ppScore", header: "PP Score" },
@@ -88,7 +88,8 @@ export const QualityDeliveryExeleData = () => {
     <CSVExporter
       columns={columns}
       data={transformedData}
-      filename={`Quality_Delivery_Report_${new Date().getFullYear()}_${
+      buttonName="ByBatch"
+      filename={`Quality_Delivery_Report_By_Batch${new Date().getFullYear()}_${
         new Date().getMonth() + 1
       }_${new Date().getDate()}`}
     />
