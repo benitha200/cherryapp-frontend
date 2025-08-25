@@ -21,51 +21,57 @@ export const QualityDeliveryExeleDataByTrack = () => {
   }
 
   const transformedData =
-    apiResponse?.data?.map((transportGroup) => {
+    apiResponse?.data?.flatMap((transportGroup) => {
       if (
         !transportGroup?.qualityDeliveries?.data ||
         transportGroup?.qualityDeliveries?.data?.length === 0
       ) {
         return [];
       }
-      // start
-      return {
-        batchNo: transportGroup.qualityDeliveries?.data[0]?.batchNo,
-        cwsName: transportGroup.cwsName,
-        plateNumbers: transportGroup.plateNumbers,
-        transportGroupId: transportGroup.transportGroupId,
-        transferDate: transportGroup.transferDate,
-        status: transportGroup.qualityDeliveries?.data[0]?.status,
-        labMoisture: transportGroup.qualityDeliveries?.data[0]?.labMoisture,
-        sixteenPlus: transportGroup.qualityDeliveries?.data[0]?.sixteenPlus,
-        fifteen: transportGroup.qualityDeliveries?.data[0]?.fifteen,
-        fourteen: transportGroup.qualityDeliveries?.data[0]?.fourteen,
-        thirteen: transportGroup.qualityDeliveries?.data[0]?.thirteen,
-        b12: transportGroup.qualityDeliveries?.data[0]?.b12,
-        defect: transportGroup.qualityDeliveries?.data[0]?.defect,
-        ppScore: transportGroup.qualityDeliveries?.data[0]?.ppScore,
-        sampleStorageId:
-          transportGroup.qualityDeliveries?.data[0]?.sampleStorageId,
-        originalCategory:
-          extractCategoryAndProcessingType(
-            transportGroup.qualityDeliveries?.data[0]?.category
-          )?.category ?? "-",
-        newCategory: transportGroup.qualityDeliveries?.data[0]?.newCategory,
-        processingType:
-          extractCategoryAndProcessingType(
-            transportGroup.qualityDeliveries?.data[0]?.category
-          )?.processingType ?? "-",
-        driverName: transportGroup.driverNames,
-        transportedKgs: transportGroup.totalQuantity,
-        createdAt: transportGroup.qualityDeliveries?.data[0]?.createdAt,
-        updatedAt: transportGroup.qualityDeliveries?.data[0]?.updatedAt,
-      };
 
-      // end
+      // Group deliveries by category within this transport group
+      const categoryMap = new Map();
+
+      transportGroup.qualityDeliveries.data.forEach((delivery) => {
+        const extractedCategory = extractCategoryAndProcessingType(
+          delivery.category
+        );
+        const categoryKey = extractedCategory?.category ?? "-";
+
+        // Only keep the first occurrence of each category for this transport group
+        if (!categoryMap.has(categoryKey)) {
+          categoryMap.set(categoryKey, {
+            batchNo: delivery.batchNo,
+            cwsName: transportGroup.cwsName,
+            plateNumbers: transportGroup.plateNumbers,
+            transportGroupId: transportGroup.transportGroupId,
+            transferDate: transportGroup.transferDate,
+            status: delivery.status,
+            labMoisture: delivery.labMoisture,
+            sixteenPlus: delivery.sixteenPlus,
+            fifteen: delivery.fifteen,
+            fourteen: delivery.fourteen,
+            thirteen: delivery.thirteen,
+            b12: delivery.b12,
+            defect: delivery.defect,
+            ppScore: delivery.ppScore,
+            sampleStorageId: delivery.sampleStorageId,
+            originalCategory: categoryKey,
+            newCategory: delivery.newCategory,
+            processingType: extractedCategory?.processingType ?? "-",
+            driverName: transportGroup.driverNames,
+            transportedKgs: transportGroup.totalQuantity,
+            createdAt: delivery.createdAt,
+            updatedAt: delivery.updatedAt,
+          });
+        }
+      });
+
+      // Return array of unique category records for this transport group
+      return Array.from(categoryMap.values());
     }) || [];
 
   const columns = [
-    { field: "batchNo", header: "BATCH_NO" },
     { field: "cwsName", header: "CWS" },
     { field: "plateNumbers", header: "Plate Number" },
     { field: "transportGroupId", header: "Transport Group ID" },
@@ -76,10 +82,10 @@ export const QualityDeliveryExeleDataByTrack = () => {
     },
     { field: "status", header: "Status" },
     { field: "labMoisture", header: "Lab Moisture" },
-    { field: "sixteenPlus", header: "\u200B+16" }, // Zero-width space
-    { field: "fifteen", header: "\u200B15" },
-    { field: "fourteen", header: "\u200B14" },
-    { field: "thirteen", header: "\u200B13" },
+    { field: "sixteenPlus", header: "+16" },
+    { field: "fifteen", header: "15" },
+    { field: "fourteen", header: "14" },
+    { field: "thirteen", header: "13" },
     { field: "b12", header: "B12" },
     { field: "defect", header: "Defect" },
     { field: "ppScore", header: "PP Score" },
