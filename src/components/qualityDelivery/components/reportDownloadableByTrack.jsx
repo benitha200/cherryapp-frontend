@@ -2,7 +2,7 @@ import CSVExporter from "../../../sharedCompoents/csvfile";
 import { formatDate } from "../../../utils/formatDate";
 import { GetTranspotedTruckExelReport } from "../action";
 
-export const QualityDeliveryExeleData = () => {
+export const QualityDeliveryExeleDataByTrack = () => {
   const formatreportDAte = (dateString) => {
     if (!dateString) return "-";
     return formatDate(dateString);
@@ -21,40 +21,47 @@ export const QualityDeliveryExeleData = () => {
   }
 
   const transformedData =
-    apiResponse?.data?.flatMap((transportGroup) => {
+    apiResponse?.data?.map((transportGroup) => {
       if (
         !transportGroup?.qualityDeliveries?.data ||
         transportGroup?.qualityDeliveries?.data?.length === 0
       ) {
         return [];
       }
-      return transportGroup.qualityDeliveries?.data?.map((delivery) => ({
-        batchNo: delivery.batchNo,
+      // start
+      return {
+        batchNo: transportGroup.qualityDeliveries?.data[0]?.batchNo,
         cwsName: transportGroup.cwsName,
         plateNumbers: transportGroup.plateNumbers,
         transportGroupId: transportGroup.transportGroupId,
         transferDate: transportGroup.transferDate,
-        status: delivery.status,
-        labMoisture: delivery.labMoisture,
-        sixteenPlus: delivery.sixteenPlus,
-        fifteen: delivery.fifteen,
-        fourteen: delivery.fourteen,
-        thirteen: delivery.thirteen,
-        b12: delivery.b12,
-        defect: delivery.defect,
-        ppScore: delivery.ppScore,
-        sampleStorageId: delivery.sampleStorageId,
+        status: transportGroup.qualityDeliveries?.data[0]?.status,
+        labMoisture: transportGroup.qualityDeliveries?.data[0]?.labMoisture,
+        sixteenPlus: transportGroup.qualityDeliveries?.data[0]?.sixteenPlus,
+        fifteen: transportGroup.qualityDeliveries?.data[0]?.fifteen,
+        fourteen: transportGroup.qualityDeliveries?.data[0]?.fourteen,
+        thirteen: transportGroup.qualityDeliveries?.data[0]?.thirteen,
+        b12: transportGroup.qualityDeliveries?.data[0]?.b12,
+        defect: transportGroup.qualityDeliveries?.data[0]?.defect,
+        ppScore: transportGroup.qualityDeliveries?.data[0]?.ppScore,
+        sampleStorageId:
+          transportGroup.qualityDeliveries?.data[0]?.sampleStorageId,
         originalCategory:
-          extractCategoryAndProcessingType(delivery.category)?.category ?? "-",
-        newCategory: delivery.newCategory,
+          extractCategoryAndProcessingType(
+            transportGroup.qualityDeliveries?.data[0]?.category
+          )?.category ?? "-",
+        newCategory: transportGroup.qualityDeliveries?.data[0]?.newCategory,
         processingType:
-          extractCategoryAndProcessingType(delivery.category)?.processingType ??
-          "-",
+          extractCategoryAndProcessingType(
+            transportGroup.qualityDeliveries?.data[0]?.category
+          )?.processingType ?? "-",
         driverName: transportGroup.driverNames,
         transportedKgs: transportGroup.totalQuantity,
-        createdAt: delivery.createdAt,
-        updatedAt: delivery.updatedAt,
-      }));
+        createdAt: transportGroup.qualityDeliveries?.data[0]?.createdAt,
+        updatedAt: transportGroup.qualityDeliveries?.data[0]?.updatedAt,
+      };
+
+      // end
     }) || [];
 
   const columns = [
@@ -88,8 +95,8 @@ export const QualityDeliveryExeleData = () => {
     <CSVExporter
       columns={columns}
       data={transformedData}
-      buttonName="ByBatch"
-      filename={`Quality_Delivery_Report_By_Batch${new Date().getFullYear()}_${
+      buttonName="ByTrack"
+      filename={`Quality_Delivery_Report_By_Track${new Date().getFullYear()}_${
         new Date().getMonth() + 1
       }_${new Date().getDate()}`}
     />
