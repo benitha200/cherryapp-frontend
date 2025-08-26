@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { columns } from "./reportColumns";
 import { GetReport } from "../action";
 import { DashboardCard } from "./dashboardCard";
@@ -7,6 +7,7 @@ import { formatNumberWithCommas } from "../../../../../utils/formatNumberWithCom
 import DeliveryReportSkeleton from "./skeleton";
 import ReusableTable from "../../../../../sharedCompoents/reusableTable";
 import { QualityAnalysisExcel } from "./downloadableExele";
+import { calculateTotals } from "./totalsCalculation";
 
 export const GeneralReportTable = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -21,6 +22,12 @@ export const GeneralReportTable = () => {
   });
   const { isPending, data } = GetReport();
 
+  useEffect(() => {
+    if (data && data.data && data.data.length > 0) {
+      const totals = calculateTotals(data.data);
+      setTotal(totals);
+    }
+  }, [data]);
   const processingTheme = {
     primary: "#008080",
     secondary: "#4FB3B3",
@@ -34,55 +41,54 @@ export const GeneralReportTable = () => {
     tableBorder: "#D1E0E0",
     emptyStateBackground: "#F5FAFA",
   };
+  if (isPending) return <DeliveryReportSkeleton />;
 
-  return isPending ? (
-    <DeliveryReportSkeleton />
-  ) : (
-    !isPending && data && (
+  return (
+    !isPending &&
+    data && (
       <div>
         <div className="row g-3 mb-4">
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCard
               title="Total Transported "
-              value={formatNumberWithCommas(
-                data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 300000
-              )}
+              value={formatNumberWithCommas(total?.totalTransported)}
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCard
               title="Total Delivered "
-              value={formatNumberWithCommas(
-                data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 200000
-              )}
+              value={formatNumberWithCommas(total.totalDelivered)}
             />
           </div>
 
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCard
               title="Total Variation "
-              value={formatNumberWithCommas(
-                (data?.data?.grandTotals?.GrandtotalDeliveredKgs ?? 100000) -
-                  (data?.data?.grandTotals?.GrandtotalTransportedKgs ?? 0)
-              )}
+              value={formatNumberWithCommas(total?.totalVariation)}
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCardWithPercentages
               title=" Average 16+ Delivered"
-              percentageOfHighGrade={20}
+              percentageOfHighGrade={formatNumberWithCommas(
+                total.averageFiftenDelivered
+              )}
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCardWithPercentages
               title="Average 13/14 Delivered"
-              percentageOfHighGrade={30}
+              percentageOfHighGrade={formatNumberWithCommas(
+                total.averagethirteenFourteenDelivered
+              )}
             />
           </div>
           <div className="col-12 col-lg-2 col-md-4">
             <DashboardCardWithPercentages
               title=" Average Lowgrade Delivered"
-              percentageOfHighGrade={40}
+              percentageOfHighGrade={formatNumberWithCommas(
+                total.averageLowgradeDelivered
+              )}
             />
           </div>
         </div>
