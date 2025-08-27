@@ -194,7 +194,7 @@ export const TransportedTruckTable = () => {
       header: "Actions",
       render: (item) => (
         <Button
-          variant={item?.status === "RECEIVED" ? "warning" : "success"}
+          variant={item?.status === "DELIVERED" ? "warning" : "success"}
           onClick={() => {
             handleopenModel();
             setSelectedId({
@@ -211,7 +211,7 @@ export const TransportedTruckTable = () => {
 
             setCategories(item?.cupProfiles || []);
             setCategoryInputData({});
-            if (item?.status === "RECEIVED") {
+            if (item?.status === "DELIVERED") {
               setSubmitted({
                 submitted: true,
                 data: {
@@ -238,10 +238,9 @@ export const TransportedTruckTable = () => {
 
   return (
     <>
-     
       <ReusableTable
-        HeaderButton={ <DeliveryExeleData />}
-        data={paginatedData} 
+        HeaderButton={<DeliveryExeleData />}
+        data={paginatedData}
         columns={columns}
         pageSizeOption={[50, 100, 1000]}
         pageSize={5}
@@ -257,7 +256,7 @@ export const TransportedTruckTable = () => {
       >
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages} 
+          totalPages={totalPages}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

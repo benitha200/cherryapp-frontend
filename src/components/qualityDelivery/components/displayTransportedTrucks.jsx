@@ -85,7 +85,6 @@ export const SingleTransportedTruckdisplay = ({ selectedTransportInfo }) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
-  console.log("::::::::::::::::::::::", { selectedTransportInfo });
   return (
     <Card.Body>
       <Row className="mb-3">
@@ -120,6 +119,14 @@ export const SingleTransportedTruckdisplay = ({ selectedTransportInfo }) => {
                     <strong className="me-2">Truck:</strong>
                     <span className="badge bg-secondary">
                       {selectedTransportInfo?.trackPlatNumber}
+                    </span>
+                  </div>
+                </Col>
+                <Col xs="auto">
+                  <div className="d-flex align-items-center">
+                    <strong className="me-2">Delivered kgs:</strong>
+                    <span className="badge bg-secondary">
+                      {selectedTransportInfo?.deliverdKgs}
                     </span>
                   </div>
                 </Col>

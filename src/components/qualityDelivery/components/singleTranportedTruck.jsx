@@ -1,25 +1,25 @@
 import { Form, Row, Col, Card, Table } from "react-bootstrap";
 import PropTypes from "prop-types";
 import { GetSampleStorage } from "../../Admin/quality/receivedTrack/actions";
-import { formatCategory} from '../../../utils/formatString'
- 
+import { formatCategory } from "../../../utils/formatString";
+
 export const SingleTransportedTruck = ({
   setInfo,
   categories,
   selectedTransportInfo,
 }) => {
   // Filter categories to only include C1, C2, S86, S87, S88 and exclude A2, A3
-  const filteredCategories = categories.filter(category => {
+  const filteredCategories = categories.filter((category) => {
     const upperCategory = category.toUpperCase();
     return (
-      (upperCategory.startsWith('C1') || 
-       upperCategory.startsWith('C2') || 
-       upperCategory.startsWith('S86') || 
-       upperCategory.startsWith('S87') || 
-       upperCategory.startsWith('S88')) 
+      upperCategory.startsWith("C1") ||
+      upperCategory.startsWith("C2") ||
+      upperCategory.startsWith("S86") ||
+      upperCategory.startsWith("S87") ||
+      upperCategory.startsWith("S88")
     );
   });
-  
+
   const validKeys = [...new Set(filteredCategories)];
   const includeInValidKeys = (key) => validKeys.includes(key);
   const { sampleStoragePending, sampleStoragedata } = GetSampleStorage();
@@ -63,41 +63,34 @@ export const SingleTransportedTruck = ({
 
   // Helper function to render form control based on field type
   const renderFormControl = (category, column) => {
-    if (column.key === 'sampleStorage') {
+    if (column.key === "sampleStorage") {
       return (
         <Form.Select
           size="sm"
           onChange={(e) =>
-            handleCategoryChange(
-              category,
-              column.key,
-              e.target.value
-            )
+            handleCategoryChange(category, column.key, e.target.value)
           }
           style={{ minWidth: "120px" }}
         >
           <option value="">Select...</option>
-          
-          {!sampleStoragePending &&sampleStoragedata?.map((storage) => (
-            <option key={storage.id} value={storage.id}>
-              {storage.name}
-            </option>
-          ))}
+
+          {!sampleStoragePending &&
+            sampleStoragedata?.map((storage) => (
+              <option key={storage.id} value={storage.id}>
+                {storage.name}
+              </option>
+            ))}
         </Form.Select>
       );
     }
-    
+
     return (
       <Form.Control
         type="number"
         placeholder="0"
         size="sm"
         onChange={(e) =>
-          handleCategoryChange(
-            category,
-            column.key,
-            e.target.value
-          )
+          handleCategoryChange(category, column.key, e.target.value)
         }
         style={{ minWidth: "80px" }}
       />
@@ -138,6 +131,14 @@ export const SingleTransportedTruck = ({
                     <strong className="me-2">Truck:</strong>
                     <span className="badge bg-secondary">
                       {selectedTransportInfo?.trackPlatNumber}
+                    </span>
+                  </div>
+                </Col>
+                <Col xs="auto">
+                  <div className="d-flex align-items-center">
+                    <strong className="me-2">DeliveredKgs:</strong>
+                    <span className="badge bg-secondary">
+                      {selectedTransportInfo?.deliverdKgs}
                     </span>
                   </div>
                 </Col>
