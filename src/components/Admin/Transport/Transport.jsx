@@ -284,6 +284,7 @@ const Transport = () => {
           truckNumber: record.truckNumber,
           driverName: record.driverName,
           driverPhone: record.driverPhone,
+          transportGroupId: record?.transportGroupId,
         };
       }
       groups[groupId].records.push(record);
@@ -334,6 +335,12 @@ const Transport = () => {
                 searchTerm.toLowerCase().trim()?.replace(/\s+/g, "")
               ) ||
             record.truckNumber
+              ?.toLowerCase()
+              ?.replace(/\s+/g, "")
+              ?.includes(
+                searchTerm.toLowerCase().trim()?.replace(/\s+/g, "")
+              ) ||
+            record.transportGroupId
               ?.toLowerCase()
               ?.replace(/\s+/g, "")
               ?.includes(
@@ -956,6 +963,10 @@ const Transport = () => {
                                       <div className="mb-2">
                                         <strong>Truck Number:</strong>{" "}
                                         {group.truckNumber}
+                                      </div>
+                                      <div className="mb-2">
+                                        <strong>Transport GroupId:</strong>{" "}
+                                        {group?.transportGroupId}
                                       </div>
                                       <div className="mb-2">
                                         <strong>Driver:</strong>{" "}

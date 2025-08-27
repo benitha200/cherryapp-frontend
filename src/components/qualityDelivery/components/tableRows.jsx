@@ -25,6 +25,7 @@ export const TransportedTruckTable = () => {
   const [selectedTransportInfo, setSelectedTransportInfo] = useState({
     cws: "",
     trackPlatNumber: "",
+    deliverdKgs: 0,
     quantity: "",
     driver: "",
     driverPhone: "",
@@ -196,6 +197,10 @@ export const TransportedTruckTable = () => {
       ...prev,
       cws: item?.cwsName,
       trackPlatNumber: item?.plateNumbers,
+      deliverdKgs: item?.deliveryDetails?.reduce(
+        (acc, element) => acc + (element?.deliveryKgs ?? 0),
+        0
+      ),
       quantity: item?.totalQuantity,
       driver: item?.driverNames,
     }));
@@ -213,6 +218,10 @@ export const TransportedTruckTable = () => {
           quantity: item?.totalQuantity ?? "-",
           driver: item?.driverNames ?? "-",
           trackPlatNumber: item?.plateNumbers ?? "-",
+          deliverdKgs: item?.deliveryDetails?.reduce(
+            (acc, element) => acc + (element?.deliveryKgs ?? 0),
+            0
+          ),
         },
       });
     } else {
@@ -262,7 +271,7 @@ export const TransportedTruckTable = () => {
       render: (item) => (
         <span
           className={`badge ${
-            item?.status === "RECEIVED"
+            item?.status === "DELIVERED"
               ? "bg-success"
               : item?.status === "COMPLETED"
               ? "bg-primary"
