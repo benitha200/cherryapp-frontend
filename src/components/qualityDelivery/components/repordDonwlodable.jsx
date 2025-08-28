@@ -28,6 +28,10 @@ export const QualityDeliveryExeleData = () => {
       ) {
         return [];
       }
+      const deliveredKgs = transportGroup?.deliveryDetails?.reduce(
+        (acc, element) => acc + (element?.deliveryKgs ?? 0),
+        0
+      );
       return transportGroup.qualityDeliveries?.data?.map((delivery) => ({
         batchNo: delivery.batchNo,
         cwsName: transportGroup.cwsName,
@@ -51,6 +55,7 @@ export const QualityDeliveryExeleData = () => {
           extractCategoryAndProcessingType(delivery.category)?.processingType ??
           "-",
         driverName: transportGroup.driverNames,
+        deliveredKgs: deliveredKgs,
         transportedKgs: transportGroup.totalQuantity,
         createdAt: delivery.createdAt,
         updatedAt: delivery.updatedAt,
@@ -69,10 +74,10 @@ export const QualityDeliveryExeleData = () => {
     },
     { field: "status", header: "Status" },
     { field: "labMoisture", header: "Lab Moisture" },
-    { field: "sixteenPlus", header: "\u200B+16" }, // Zero-width space
-    { field: "fifteen", header: "\u200B15" },
-    { field: "fourteen", header: "\u200B14" },
-    { field: "thirteen", header: "\u200B13" },
+    { field: "sixteenPlus", header: "+16" },
+    { field: "fifteen", header: "15" },
+    { field: "fourteen", header: "14" },
+    { field: "thirteen", header: "13" },
     { field: "b12", header: "B12" },
     { field: "defect", header: "Defect" },
     { field: "ppScore", header: "PP Score" },
@@ -81,7 +86,8 @@ export const QualityDeliveryExeleData = () => {
     { field: "newCategory", header: "New Category" },
     { field: "processingType", header: "Processing Type" },
     { field: "driverName", header: "Driver Name" },
-    { field: "transportedKgs", header: "Transported Kgs" },
+    { field: "deliveredKgs", header: "Total Truck Derevered Kgs" },
+    { field: "transportedKgs", header: "Total Truck Transported Kgs" },
   ];
 
   return (
