@@ -60,10 +60,11 @@ export const QualityDeliveryExeleDataByTrack = () => {
             newCategory: delivery.newCategory,
             processingType: extractedCategory?.processingType ?? "-",
             driverName: transportGroup.driverNames,
-            deliveredKgs: transportGroup?.deliveryDetails?.reduce(
-              (acc, element) => acc + (element?.deliveryKgs ?? 0),
-              0
-            ),
+            deliveredKgs: transportGroup?.deliveryDetails?.filter((element) =>
+              element?.category
+                ?.toLowerCase()
+                ?.startsWith(categoryKey?.toLowerCase())
+            )[0]?.deliveryKgs,
             transportedKgs: transportGroup.totalQuantity,
             createdAt: delivery.createdAt,
             updatedAt: delivery.updatedAt,
@@ -98,7 +99,7 @@ export const QualityDeliveryExeleDataByTrack = () => {
     { field: "newCategory", header: "New Category" },
     { field: "processingType", header: "Processing Type" },
     { field: "driverName", header: "Driver Name" },
-    { field: "deliveredKgs", header: "Total Truck Derevered Kgs" },
+    { field: "deliveredKgs", header: " Derevered Kgs" },
     { field: "transportedKgs", header: "Total Truck Transported Kgs" },
   ];
 
