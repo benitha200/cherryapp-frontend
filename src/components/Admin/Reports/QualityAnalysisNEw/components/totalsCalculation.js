@@ -1,5 +1,4 @@
 export const calculateTotals = (data) => {
-  console.log("Calculating totals with data:", data);
   let initial = {
     totalTransported: 0,
     totalDelivered: 0,

@@ -9,37 +9,45 @@ export const DeliveryExeleData = () => {
   };
 
   const { data: apiResponse } = GetTranspotedTrackForExel();
-  function extractCategoryAndProcessingType(fullCategory){
-  const categoryMatch = fullCategory.match(/^([A-Z]+\d+)/);
-  const processingMatch = fullCategory.match(/\[(.*?)\]/);
+  function extractCategoryAndProcessingType(fullCategory) {
+    const categoryMatch = fullCategory.match(/^([A-Z]+\d+)/);
+    const processingMatch = fullCategory.match(/\[(.*?)\]/);
 
-  return {
-    category: categoryMatch ? categoryMatch[1] : fullCategory,
-    processingType: processingMatch ? processingMatch[1] : null,
-  };
-}
+    return {
+      category: categoryMatch ? categoryMatch[1] : fullCategory,
+      processingType: processingMatch ? processingMatch[1] : null,
+    };
+  }
 
-  
-  const transformedData = apiResponse?.data?.flatMap((transportGroup) => {
-    if (!transportGroup.deliveryDetails || transportGroup.deliveryDetails.length === 0) {
-      return [];
+  const transformedData =
+    apiResponse?.data?.flatMap((transportGroup) => {
+      if (
+        !transportGroup.deliveryDetails ||
+        transportGroup.deliveryDetails.length === 0
+      ) {
+        return [];
+      }
+      return transportGroup.deliveryDetails.map((delivery) => ({
+        cwsName: transportGroup.cwsName,
+        PlateNumbers: transportGroup.plateNumbers,
+        transportGroupId: transportGroup.transportGroupId,
+        transferDate: transportGroup.transferDate,
+        arrivalDate: delivery.arrivalDate,
+        transportedKgs:
+          transportGroup.outputKgs[
+            extractCategoryAndProcessingType(delivery.category)?.category ?? "-"
+          ] ?? 0,
+        driverName: transportGroup.driverNames,
+        deliveredKgs: delivery.deliveryKgs,
+        category:
+          extractCategoryAndProcessingType(delivery.category)?.category ?? "-",
+        processingType:
+          extractCategoryAndProcessingType(delivery.category)?.processingType ??
+          "-",
 
-    }
-    return transportGroup.deliveryDetails.map((delivery) => ({
-      cwsName: transportGroup.cwsName,
-      PlateNumbers: transportGroup.plateNumbers,
-      transportGroupId: transportGroup.transportGroupId,
-      transferDate: transportGroup.transferDate,
-      arrivalDate: delivery.arrivalDate,
-      transportedKgs: transportGroup.totalQuantity, 
-      driverName: transportGroup.driverNames,
-      deliveredKgs: delivery.deliveryKgs, 
-      category: extractCategoryAndProcessingType(delivery.category)?.category??'-',
-      processingType: extractCategoryAndProcessingType(delivery.category)?.processingType??'-',
-
-      wrn: delivery.WRN, 
-    }));
-  }) || [];
+        wrn: delivery.WRN,
+      }));
+    }) || [];
   const columns = [
     { field: "cwsName", header: "CWS Station" },
     { field: "PlateNumbers", header: "Plate Numbers" },
@@ -57,7 +65,7 @@ export const DeliveryExeleData = () => {
     { field: "transportedKgs", header: "Transported (KG)" },
     { field: "driverName", header: "Driver Name" },
     { field: "deliveredKgs", header: "Delivered (Kg)" },
-    { field: "processingType", header:"Processing type"},
+    { field: "processingType", header: "Processing type" },
     { field: "category", header: "Category" },
     { field: "wrn", header: "WRN" },
   ];
@@ -66,7 +74,9 @@ export const DeliveryExeleData = () => {
     <CSVExporter
       columns={columns}
       data={transformedData}
-      filename="Delivery-report-file"
+      filename={`Delivery-report-file_${new Date().getDate()}_${
+        new Date().getMonth() + 1
+      }_${new Date().getFullYear()}`}
     />
   );
 };
