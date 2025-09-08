@@ -23,7 +23,6 @@ export const QualityAnalysisExcel = () => {
             transferDate: item.transportedDate || "-",
             arrivalDate: item.arrivalDate || "-",
             transportedKgs: item.transportedKgs || 0,
-            driverName: "-",
             deliveredKgs: item.deliveredKgs || 0,
             processingType:
               qualityDelivery.original_category
@@ -45,7 +44,6 @@ export const QualityAnalysisExcel = () => {
           transferDate: item.transportedDate || "-",
           arrivalDate: item.arrivalDate || "-",
           transportedKgs: item.transportedKgs || 0,
-          driverName: "-",
           deliveredKgs: item.deliveredKgs || 0,
           processingType: "-",
           category: "-",
@@ -56,23 +54,22 @@ export const QualityAnalysisExcel = () => {
   }
 
   const columns = [
-    { field: "cwsName", header: "Track" },
-    { field: "PlateNumbers", header: "Transport Group ID" },
-    { field: "transportGroupId", header: "Transported Kgs" },
+    { field: "cwsName", header: "CWS" },
+    { field: "PlateNumbers", header: "Plat Number" },
+    { field: "transportGroupId", header: "Transport Group Id" },
     {
       field: "transferDate",
-      header: "Delivered Kgs",
+      header: "Transfer Date",
       render: (data) => formatreportDAte(data.transferDate),
     },
     {
       field: "arrivalDate",
-      header: "Variation (Kgs)",
+      header: "Arrival Date",
       render: (data) => formatreportDAte(data.arrivalDate),
     },
-    { field: "transportedKgs", header: "PCA of AVG 15+" },
-    { field: "driverName", header: "PCA 13/14" },
-    { field: "deliveredKgs", header: "PCA of AVG LG" },
-    { field: "processingType", header: "PCA of OT Delivery" },
+    { field: "transportedKgs", header: "Transported kgs" },
+    { field: "deliveredKgs", header: "Delivered Kgs" },
+    { field: "processingType", header: "Processing type" },
     { field: "category", header: "Category" },
     { field: "wrn", header: "WRN" },
   ];
