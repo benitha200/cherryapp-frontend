@@ -55,7 +55,8 @@ export const getTransportedTrackById = async (
 export const transportedTruckQualityDeliveryExcel = async () => {
   const loggedinuser = loggedInUser();
   try {
-    const res = await axios.get(`${API_URL}/stock/transported-trucks/all`, {
+    // const res = await axios.get(`${API_URL}/stock/transported-trucks/all`, {
+    const res = await axios.get(`${API_URL}/stock/transported-trucks`, {
       headers: {
         Authorization: `Bearer ${loggedinuser?.token}`,
       },
