@@ -9,6 +9,8 @@ import { Pagination } from "../../../sharedCompoents/paginations";
 import { SingleTransportedTruckdisplay } from "./displayTransportedTrucks";
 import TransportedTrackDelivery from "./sekeleton";
 import { DeliveryExeleData } from "./excelRepot";
+import { DeliveryExeleDataHighGrade } from "./excelReportHighGrade";
+import { DeliveryExeleDataLowGrade } from "./excelReportLowgrade";
 
 export const TransportedTruckTable = () => {
   const [isModelOpen, setIsModelOpen] = useState(false);
@@ -239,7 +241,13 @@ export const TransportedTruckTable = () => {
   return (
     <>
       <ReusableTable
-        HeaderButton={<DeliveryExeleData />}
+        HeaderButton={
+          <div className="d-flex gap-2">
+            <DeliveryExeleData />
+            <DeliveryExeleDataHighGrade />
+            <DeliveryExeleDataLowGrade />
+          </div>
+        }
         data={paginatedData}
         columns={columns}
         pageSizeOption={[50, 100, 1000]}
