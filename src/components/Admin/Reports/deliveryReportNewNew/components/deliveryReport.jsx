@@ -131,8 +131,16 @@ const CollapsibleCWSTable = () => {
     { field: "transportedKgs", header: "Transported (KG)" },
     { field: "deliveredKgs", header: "Delivered (KG)" },
     { field: "inTransitKgs", header: "In Transit (KG)" },
-    { field: "inTransitTrucks", header: "In Transit Trucks" },
-    { field: "inTransitTruckNo", header: "Truck No" },
+    {
+      field: "inTransitTrucks",
+      header: "In Transit Trucks",
+      reder: (data) => formatreportDAte(data?.inTransitTrucks ?? "-"),
+    },
+    {
+      field: "inTransitTruckNo",
+      header: "Truck No",
+      reder: (data) => formatreportDAte(data?.inTransitTruckNo ?? "-"),
+    },
     { field: "variation", header: "Variation" },
   ];
 
@@ -171,7 +179,9 @@ const CollapsibleCWSTable = () => {
               <CSVExport
                 columns={columns}
                 data={data?.data}
-                filename="Delivery-report-file"
+                filename={`Delivery-report-file-${new Date().getDate()}-${
+                  new Date().getMonth() + 1
+                }-${new Date().getFullYear()}`}
               />
             </Card.Title>
           </Card.Header>
