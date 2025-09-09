@@ -100,7 +100,6 @@ export const QualityDeliveryExeleDataByTrack = () => {
     { field: "processingType", header: "Processing Type" },
     { field: "driverName", header: "Driver Name" },
     { field: "deliveredKgs", header: " Derevered Kgs" },
-    { field: "transportedKgs", header: "Total Truck Transported Kgs" },
   ];
 
   return (
