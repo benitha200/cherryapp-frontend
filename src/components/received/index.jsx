@@ -4,7 +4,7 @@ import { TransportedTruckTable } from "./components/tableRows";
 export const TransportedTrucks = () => {
   return (
     <div>
-      <ReportsHeading>Transported Truck report</ReportsHeading>
+      <ReportsHeading>Delivered Truck Report</ReportsHeading>
       <TransportedTruckTable />
     </div>
   );
