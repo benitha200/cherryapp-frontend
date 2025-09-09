@@ -74,6 +74,7 @@ export const DeliveryExeleData = () => {
     <CSVExporter
       columns={columns}
       data={transformedData}
+      buttonName="FullReport"
       filename={`Delivery-report-_${new Date().getFullYear()}_${
         new Date().getMonth() + 1
       }_${new Date().getDate()}`}
