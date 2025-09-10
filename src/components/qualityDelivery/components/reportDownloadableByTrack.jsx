@@ -60,6 +60,9 @@ export const QualityDeliveryExeleDataByTrack = () => {
             processingType: extractedCategory?.processingType ?? "-",
             driverName: transportGroup.driverNames,
             deliveredKgs: transportGroup?.deliveryDetails?.filter((element) => {
+              if (delivery?.category?.includes("Natural")) {
+                return element?.category?.includes("Natural");
+              }
               return delivery?.category
                 ?.split("-")
                 ?.slice(0, 2)
@@ -68,6 +71,7 @@ export const QualityDeliveryExeleDataByTrack = () => {
                 ?.toLowerCase()
                 ?.startsWith(
                   element?.category
+
                     ?.split("-")
                     ?.slice(0, 2)
                     ?.join("")
