@@ -82,7 +82,6 @@ export const QualityDeliveryExeleDataByTrack = () => {
         }
       });
 
-      console.log(categoryMap, ":::::::::::::::::::::::::::;;");
       // Return array of unique category records for this transport group
       return Array.from(categoryMap.values());
     }) || [];
