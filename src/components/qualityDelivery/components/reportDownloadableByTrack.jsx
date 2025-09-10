@@ -61,8 +61,19 @@ export const QualityDeliveryExeleDataByTrack = () => {
             driverName: transportGroup.driverNames,
             deliveredKgs: transportGroup?.deliveryDetails?.filter((element) =>
               element?.category
+                ?.split("-")
+                ?.join("")
+                ?.slice(0, 2)
+                ?.replaceAll(" ", "")
                 ?.toLowerCase()
-                ?.startsWith(delivery?.category?.toLowerCase())
+                ?.startsWith(
+                  delivery?.category
+                    ?.split("-")
+                    ?.join("")
+                    ?.slice(0, 2)
+                    ?.replaceAll(" ", "")
+                    ?.toLowerCase()
+                )
             )[0]?.deliveryKgs,
             transportedKgs: transportGroup.totalQuantity,
             createdAt: delivery.createdAt,
@@ -71,6 +82,7 @@ export const QualityDeliveryExeleDataByTrack = () => {
         }
       });
 
+      console.log(categoryMap, ":::::::::::::::::::::::::::;;");
       // Return array of unique category records for this transport group
       return Array.from(categoryMap.values());
     }) || [];
