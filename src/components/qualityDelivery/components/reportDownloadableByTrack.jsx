@@ -40,7 +40,7 @@ export const QualityDeliveryExeleDataByTrack = () => {
 
         // Only keep the first occurrence of each category for this transport group
         // if (!categoryMap.has(categoryKey)) {
-        categoryMap.set(categoryKey, {
+        categoryMap.set(`${delivery?.category?.split(" ")?.join()}`, {
           batchNo: delivery.batchNo,
           cwsName: transportGroup.cwsName,
           plateNumbers: transportGroup.plateNumbers,
