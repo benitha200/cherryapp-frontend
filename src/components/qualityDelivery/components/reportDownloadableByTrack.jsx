@@ -39,37 +39,37 @@ export const QualityDeliveryExeleDataByTrack = () => {
         const categoryKey = extractedCategory?.category ?? "-";
 
         // Only keep the first occurrence of each category for this transport group
-        if (!categoryMap.has(delivery?.category)) {
-          categoryMap.set(delivery?.category, {
-            batchNo: delivery.batchNo,
-            cwsName: transportGroup.cwsName,
-            plateNumbers: transportGroup.plateNumbers,
-            transportGroupId: transportGroup.transportGroupId,
-            transferDate: transportGroup.transferDate,
-            status: delivery.status,
-            labMoisture: delivery.labMoisture,
-            sixteenPlus: delivery.sixteenPlus,
-            fifteen: delivery.fifteen,
-            fourteen: delivery.fourteen,
-            thirteen: delivery.thirteen,
-            b12: delivery.b12,
-            defect: delivery.defect,
-            ppScore: delivery.ppScore,
-            sampleStorageId: delivery.sampleStorageId,
-            originalCategory: categoryKey,
-            newCategory: delivery.newCategory,
-            processingType: extractedCategory?.processingType ?? "-",
-            driverName: transportGroup.driverNames,
-            deliveredKgs: transportGroup?.deliveryDetails?.filter((element) =>
-              element?.category
-                ?.toLowerCase()
-                ?.startsWith(categoryKey?.toLowerCase())
-            )[0]?.deliveryKgs,
-            transportedKgs: transportGroup.totalQuantity,
-            createdAt: delivery.createdAt,
-            updatedAt: delivery.updatedAt,
-          });
-        }
+        // if (!categoryMap.has(categoryKey)) {
+        categoryMap.set(categoryKey, {
+          batchNo: delivery.batchNo,
+          cwsName: transportGroup.cwsName,
+          plateNumbers: transportGroup.plateNumbers,
+          transportGroupId: transportGroup.transportGroupId,
+          transferDate: transportGroup.transferDate,
+          status: delivery.status,
+          labMoisture: delivery.labMoisture,
+          sixteenPlus: delivery.sixteenPlus,
+          fifteen: delivery.fifteen,
+          fourteen: delivery.fourteen,
+          thirteen: delivery.thirteen,
+          b12: delivery.b12,
+          defect: delivery.defect,
+          ppScore: delivery.ppScore,
+          sampleStorageId: delivery.sampleStorageId,
+          originalCategory: categoryKey,
+          newCategory: delivery.newCategory,
+          processingType: extractedCategory?.processingType ?? "-",
+          driverName: transportGroup.driverNames,
+          deliveredKgs: transportGroup?.deliveryDetails?.filter((element) =>
+            element?.category
+              ?.toLowerCase()
+              ?.startsWith(categoryKey?.toLowerCase())
+          )[0]?.deliveryKgs,
+          transportedKgs: transportGroup.totalQuantity,
+          createdAt: delivery.createdAt,
+          updatedAt: delivery.updatedAt,
+        });
+        // }
       });
 
       // Return array of unique category records for this transport group
