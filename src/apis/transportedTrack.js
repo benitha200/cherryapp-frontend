@@ -77,6 +77,7 @@ export const transportedTruckExcelReport = async () => {
         },
       }
     );
+
     return res?.data;
   } catch (error) {
     return error;
